@@ -57,32 +57,35 @@ func main() {
 	// fmt.Println(count)
 
 	// GET FULL BLOCK
-	latestBlockHeight := header.Number
-	block, err := client.BlockByNumber(context.Background(), latestBlockHeight)
-	if err != nil {
-		log.Fatal(err)
-	}
-	printBlock(block)
+	// block, err := client.BlockByNumber(context.Background(), header.Number)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// printBlock(block)
 
 	// Go over last x blocks
+	var latestBlockHeight = header.Number
 	var one = big.NewInt(1)
 
-	var numBlocks int64 = 12
-	start := big.NewInt(0).Sub(latestBlockHeight, one)
-	end := big.NewInt(0).Sub(latestBlockHeight, big.NewInt(numBlocks))
+	var numBlocks int64 = 3
+	var end = big.NewInt(0).Sub(latestBlockHeight, big.NewInt(numBlocks))
 
-	for blockHeight := new(big.Int).Set(start); blockHeight.Cmp(end) > 0; blockHeight.Sub(blockHeight, one) {
+	// transactions := make([]types.Transaction, 1)
+	var transactions types.Transactions = types.Transactions{}
+
+	for blockHeight := new(big.Int).Set(latestBlockHeight); blockHeight.Cmp(end) > 0; blockHeight.Sub(blockHeight, one) {
 		// fmt.Println(blockHeight, "fetching...")
 		blockX, err := client.BlockByNumber(context.Background(), blockHeight)
 		if err != nil {
 			log.Fatal(err)
 		}
 		printBlock(blockX)
+		transactions = append(transactions, blockX.Transactions()...)
 	}
+	fmt.Println("tx total", len(transactions))
 }
 
 func printBlock(block *types.Block) {
 	t := time.Unix(int64(block.Header().Time), 0)
 	fmt.Printf("%d \t %s \t tx=%d\n", block.Header().Number, t, len(block.Transactions()))
-
 }
