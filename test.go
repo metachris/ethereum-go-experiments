@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"math/big"
 	"time"
 
@@ -64,25 +65,55 @@ func main() {
 	// printBlock(block)
 
 	// Go over last x blocks
-	var latestBlockHeight = header.Number
 	var one = big.NewInt(1)
+
+	var latestBlockHeight = header.Number
 
 	var numBlocks int64 = 3
 	var end = big.NewInt(0).Sub(latestBlockHeight, big.NewInt(numBlocks))
 
 	// transactions := make([]types.Transaction, 1)
-	var transactions types.Transactions = types.Transactions{}
+	var transactions []*types.Transaction
+	var valueTotal = big.NewInt(0)
 
+	numTransactionsWithZeroValue := 0
+
+	// Collect all blocks and transactions
 	for blockHeight := new(big.Int).Set(latestBlockHeight); blockHeight.Cmp(end) > 0; blockHeight.Sub(blockHeight, one) {
 		// fmt.Println(blockHeight, "fetching...")
-		blockX, err := client.BlockByNumber(context.Background(), blockHeight)
+		currentBlock, err := client.BlockByNumber(context.Background(), blockHeight)
 		if err != nil {
 			log.Fatal(err)
 		}
-		printBlock(blockX)
-		transactions = append(transactions, blockX.Transactions()...)
+		printBlock(currentBlock)
+		transactions = append(transactions, currentBlock.Transactions()...)
+
+		for _, v := range currentBlock.Transactions() {
+			valueTotal = big.NewInt(0).Add(valueTotal, v.Value())
+			if isBigIntZero(v.Value()) {
+				numTransactionsWithZeroValue += 1
+			}
+		}
 	}
-	fmt.Println("tx total", len(transactions))
+
+	fmt.Println("total transactions:", len(transactions), "- zero value:", numTransactionsWithZeroValue)
+
+	// ETH value transferred
+	balanceInEth := weiToEth(valueTotal)
+	fmt.Println("total value transferred:", balanceInEth.Text('f', 2), "ETH")
+
+}
+
+func isBigIntZero(n *big.Int) bool {
+	return len(n.Bits()) == 0
+}
+
+func weiToEth(wei *big.Int) (ethValue *big.Float) {
+	// wei / 10^18
+	fbalance := new(big.Float)
+	fbalance.SetString(wei.String())
+	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	return
 }
 
 func printBlock(block *types.Block) {
