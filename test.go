@@ -6,11 +6,20 @@ import (
 	"log"
 	"math"
 	"math/big"
+	"sort"
 	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+type AddressInfo struct {
+	address       string
+	numTxSent     int
+	numTxReceived int
+	valueSent     big.Int
+	valueReceived big.Int
+}
 
 func main() {
 	nodeAddr := "http://95.217.145.161:8545"
@@ -23,7 +32,6 @@ func main() {
 	}
 
 	fmt.Println("Connected")
-	_ = client // we'll use this in the upcoming sections
 
 	// address := common.HexToAddress("0x160cD5F7ab0DdaBe67A3e393e86F39c5329c4622")
 	// fmt.Println(address.Hex())        // 0x71C7656EC7ab88b098defB751B7401B5f6d8976F
@@ -72,11 +80,13 @@ func main() {
 	var numBlocks int64 = 3
 	var end = big.NewInt(0).Sub(latestBlockHeight, big.NewInt(numBlocks))
 
-	// transactions := make([]types.Transaction, 1)
-	var transactions []*types.Transaction
-	var valueTotal = big.NewInt(0)
-
+	// var transactions []*types.Transaction // list of transactions
+	addresses := make(map[string]*AddressInfo)
+	txTypes := make(map[uint8]int)
+	valueTotal := big.NewInt(0)
+	numTransactions := 0
 	numTransactionsWithZeroValue := 0
+	numTransactionsWithData := 0
 
 	// Collect all blocks and transactions
 	for blockHeight := new(big.Int).Set(latestBlockHeight); blockHeight.Cmp(end) > 0; blockHeight.Sub(blockHeight, one) {
@@ -86,22 +96,76 @@ func main() {
 			log.Fatal(err)
 		}
 		printBlock(currentBlock)
-		transactions = append(transactions, currentBlock.Transactions()...)
+		// transactions = append(transactions, currentBlock.Transactions()...)
+		numTransactions += len(currentBlock.Transactions())
 
-		for _, v := range currentBlock.Transactions() {
-			valueTotal = big.NewInt(0).Add(valueTotal, v.Value())
-			if isBigIntZero(v.Value()) {
+		// Iterate over all transactions
+		for _, tx := range currentBlock.Transactions() {
+			// Count total value
+			valueTotal = big.NewInt(0).Add(valueTotal, tx.Value())
+
+			// Count number of transactions without value
+			if isBigIntZero(tx.Value()) {
 				numTransactionsWithZeroValue += 1
+			}
+
+			// Count tx types
+			txTypes[tx.Type()] += 1
+
+			// Count sender addresses
+			// println(tx.To().String())
+			if tx.To() != nil {
+				toAddrInfo, exists := addresses[tx.To().String()]
+				if !exists {
+					toAddrInfo = &AddressInfo{address: tx.To().String()}
+					addresses[tx.To().String()] = toAddrInfo
+				}
+
+				toAddrInfo.numTxReceived += 1
+				toAddrInfo.valueReceived = *big.NewInt(0).Add(&toAddrInfo.valueReceived, tx.Value())
+			}
+
+			txData := tx.Data()
+			if len(txData) > 0 {
+				numTransactionsWithData += 1
 			}
 		}
 	}
 
-	fmt.Println("total transactions:", len(transactions), "- zero value:", numTransactionsWithZeroValue)
+	// fmt.Println("total transactions:", numTransactions, "- zero value:", numTransactionsWithZeroValue)
+	fmt.Println("tx types:", txTypes)
+	fmt.Println("total transactions:", numTransactions)
+	fmt.Println("- with value:", numTransactions-numTransactionsWithZeroValue)
+	fmt.Println("- zero value:", numTransactionsWithZeroValue)
+	fmt.Println("- with data: ", numTransactionsWithData)
 
 	// ETH value transferred
-	balanceInEth := weiToEth(valueTotal)
-	fmt.Println("total value transferred:", balanceInEth.Text('f', 2), "ETH")
+	fmt.Println("total value transferred:", weiToEth(valueTotal).Text('f', 2), "ETH")
 
+	// Address details
+	fmt.Println("total addresses:", len(addresses))
+
+	// Create addresses array, for sorting
+	_addresses := make([]*AddressInfo, 0, len(addresses))
+	for _, k := range addresses {
+		_addresses = append(_addresses, k)
+	}
+
+	/* SORT BY NUM_TX_RECEIVED */
+	fmt.Println("")
+	fmt.Println("Top 10 addresses by num-tx-received")
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].numTxReceived > _addresses[j].numTxReceived })
+	for _, v := range _addresses[:10] {
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueReceived).String())
+	}
+
+	/* SORT BY AMOUNT_RECEIVED */
+	fmt.Println("")
+	fmt.Println("Top 10 addresses by value-received")
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueReceived.Cmp(&_addresses[j].valueReceived) == 1 })
+	for _, v := range _addresses[:10] {
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueReceived).String())
+	}
 }
 
 func isBigIntZero(n *big.Int) bool {
