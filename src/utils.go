@@ -3,8 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
 )
+
+var one = big.NewInt(1)
 
 func makeTime(dayString string, hour int, min int) time.Time {
 	dateString := fmt.Sprintf("%sT%02d:%02d:00Z", dayString, hour, min)
@@ -44,4 +50,21 @@ func Abs(x int64) int64 {
 		return -x
 	}
 	return x
+}
+
+func isBigIntZero(n *big.Int) bool {
+	return len(n.Bits()) == 0
+}
+
+func weiToEth(wei *big.Int) (ethValue *big.Float) {
+	// wei / 10^18
+	fbalance := new(big.Float)
+	fbalance.SetString(wei.String())
+	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	return
+}
+
+func printBlock(block *types.Block) {
+	t := time.Unix(int64(block.Header().Time), 0)
+	fmt.Printf("%d \t %s \t %d \t tx=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()))
 }
