@@ -65,3 +65,13 @@ ERC 721:
 * https://etherscan.io/tx/0xc4bbf3633cd5fc760ebe3eab4b2d54cad4220125997bb696cf17f0e5e48466a9 (rarible)
 * https://etherscan.io/tx/0x18bd3184549fc2456f2968d3565f620413336ab556613440eea803b153f62fc3 (rarible)
 * https://etherscan.io/tx/0x2909d76a36a5daf8c9b998841b516461b27961dd4edbc009338f9e87fef2b44d (Hashmasks)
+
+
+---
+
+Reference block: 1619546404
+
+* https://etherscan.io/block/12323940
+* Timestamp (sec): 1619546404
+* UTC: Tue Apr 27 2021 18:00:04 GMT+0000
+* VIE: 2021-04-27 20:00:04 +0200 CEST

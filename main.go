@@ -84,7 +84,7 @@ func main() {
 
 	var latestBlockHeight = header.Number
 
-	var numBlocks int64 = 3
+	var numBlocks int64 = 20
 	var end = big.NewInt(0).Sub(latestBlockHeight, big.NewInt(numBlocks))
 
 	// var transactions []*types.Transaction // list of transactions

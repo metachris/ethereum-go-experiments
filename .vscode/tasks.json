@@ -6,7 +6,7 @@
         {
             "label": "go run .",
             "type": "shell",
-            "command": "go run .",
+            "command": "time go run .",
             "problemMatcher": [],
             "group": {
                 "kind": "test",
