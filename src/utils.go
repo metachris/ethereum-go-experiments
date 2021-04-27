@@ -69,9 +69,8 @@ func printBlock(block *types.Block) {
 	fmt.Printf("%d \t %s \t %d \t tx=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()))
 }
 
-type MyBigInt big.Int
-
-func (i MyBigInt) MarshalJSON() ([]byte, error) {
-	i2 := big.Int(i)
-	return []byte(fmt.Sprintf(`"%s"`, i2.String())), nil
+func check(e error) {
+	if e != nil {
+		log.Fatal(e)
+	}
 }
