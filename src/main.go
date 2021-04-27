@@ -12,8 +12,16 @@ import (
 )
 
 func main() {
-
 	nodeAddr := "http://95.217.145.161:8545"
+
+	// Start of analysis
+	dayStr := "2020-04-27"
+	hour := 17 // 0:00 - 0:59
+	startTime := makeTime(dayStr, hour, 0)
+	startTimestamp := startTime.Unix()
+
+	// End of analysis
+	endTimestamp := startTimestamp + 10 // 10 sec
 
 	fmt.Println("Connecting to Ethereum node at", nodeAddr)
 	client, err := ethclient.Dial(nodeAddr)
@@ -21,16 +29,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dayStr := "2020-04-27"
-	hour := 17 // 0:00 - 0:59
+	fmt.Println("target time:", startTimestamp, "/", startTime)
 
-	targetTime := makeTime(dayStr, hour)
-	targetTimestamp := targetTime.Unix()
-	fmt.Println("target time:", targetTimestamp, "/", targetTime)
-
-	block := getBlockAtTimestamp(client, targetTimestamp)
+	block := getBlockAtTimestamp(client, startTimestamp)
 	tm := time.Unix(int64(block.Time()), 0)
 	fmt.Println("block:", block.Number(), block.Time(), tm)
+
+	analyzeBlocks(block.Number(), endTimestamp)
+}
+
+// Analyze blocks starting at specific block number, until a certain target timestamp
+func analyzeBlocks(startBlockNumber *big.Int, endTimestamp int64) {
 
 }
 

@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func makeTime(dayString string, hour int) time.Time {
-	dateString := fmt.Sprintf("%sT%02d:00:00Z", dayString, hour)
+func makeTime(dayString string, hour int, min int) time.Time {
+	dateString := fmt.Sprintf("%sT%02d:%02d:00Z", dayString, hour, min)
 	// fmt.Println(ts)
 	t, err := time.Parse(time.RFC3339, dateString)
 	if err != nil {
