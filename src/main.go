@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
@@ -14,33 +15,33 @@ import (
 )
 
 type AddressInfo struct {
-	address       string
-	numTxSent     int
-	numTxReceived int
-	valueSent     *big.Int
-	valueReceived *big.Int
+	Address       string
+	NumTxSent     int
+	NumTxReceived int
+	ValueSent     *big.Int
+	ValueReceived *big.Int
 }
 
 func NewAddressInfo(address string) *AddressInfo {
 	return &AddressInfo{
-		address:       address,
-		valueSent:     big.NewInt(0),
-		valueReceived: big.NewInt(0),
+		Address:       address,
+		ValueSent:     big.NewInt(0),
+		ValueReceived: big.NewInt(0),
 	}
 }
 
 type AnalysisResult struct {
-	startBlockNumber *big.Int
-	endBlockNumber   *big.Int
+	StartBlockNumber *big.Int
+	EndBlockNumber   *big.Int
 
-	addresses                        map[string]*AddressInfo
-	txTypes                          map[uint8]int
-	valueTotal                       *big.Int
-	numBlocks                        int
-	numTransactions                  int
-	numTransactionsWithZeroValue     int
-	numTransactionsWithData          int
-	numTransactionsWithTokenTransfer int
+	Addresses                        map[string]*AddressInfo
+	TxTypes                          map[uint8]int
+	ValueTotal                       *big.Int
+	NumBlocks                        int
+	NumTransactions                  int
+	NumTransactionsWithZeroValue     int
+	NumTransactionsWithData          int
+	NumTransactionsWithTokenTransfer int
 }
 
 func NewResult() *AnalysisResult {
@@ -48,11 +49,11 @@ func NewResult() *AnalysisResult {
 	txTypes := make(map[uint8]int)
 
 	return &AnalysisResult{
-		addresses:        addresses,
-		txTypes:          txTypes,
-		valueTotal:       big.NewInt(0),
-		startBlockNumber: big.NewInt(0),
-		endBlockNumber:   big.NewInt(0),
+		Addresses:        addresses,
+		TxTypes:          txTypes,
+		ValueTotal:       big.NewInt(0),
+		StartBlockNumber: big.NewInt(0),
+		EndBlockNumber:   big.NewInt(0),
 	}
 }
 
@@ -103,9 +104,9 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber *big.Int, endTimes
 
 		printBlock(currentBlock)
 
-		result.endBlockNumber = currentBlockNumber
-		result.numBlocks += 1
-		result.numTransactions += len(currentBlock.Transactions())
+		result.EndBlockNumber = currentBlockNumber
+		result.NumBlocks += 1
+		result.NumTransactions += len(currentBlock.Transactions())
 
 		// Iterate over all transactions
 		for _, tx := range currentBlock.Transactions() {
@@ -114,52 +115,52 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber *big.Int, endTimes
 
 			// Count number of transactions without value
 			if isBigIntZero(tx.Value()) {
-				result.numTransactionsWithZeroValue += 1
+				result.NumTransactionsWithZeroValue += 1
 			}
 
 			// Count tx types
-			result.txTypes[tx.Type()] += 1
+			result.TxTypes[tx.Type()] += 1
 
 			// Count sender addresses
 			// println(tx.To().String())
 			if tx.To() != nil {
-				toAddrInfo, exists := result.addresses[tx.To().String()]
+				toAddrInfo, exists := result.Addresses[tx.To().String()]
 				if !exists {
 					// toAddrInfo = &AddressInfo{address: tx.To().String()}
 					toAddrInfo = NewAddressInfo(tx.To().String())
-					result.addresses[tx.To().String()] = toAddrInfo
+					result.Addresses[tx.To().String()] = toAddrInfo
 				}
 
-				toAddrInfo.numTxReceived += 1
-				toAddrInfo.valueReceived = big.NewInt(0).Add(toAddrInfo.valueReceived, tx.Value())
+				toAddrInfo.NumTxReceived += 1
+				toAddrInfo.ValueReceived = big.NewInt(0).Add(toAddrInfo.ValueReceived, tx.Value())
 			}
 
 			// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
 			if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
 				fromHex := msg.From().Hex()
 				// fmt.Println(fromHex)
-				fromAddrInfo, exists := result.addresses[fromHex]
+				fromAddrInfo, exists := result.Addresses[fromHex]
 				if !exists {
 					// fromAddrInfo = &AddressInfo{address: fromHex}
 					fromAddrInfo = NewAddressInfo(fromHex)
-					result.addresses[fromHex] = fromAddrInfo
+					result.Addresses[fromHex] = fromAddrInfo
 				}
 
-				fromAddrInfo.numTxSent += 1
-				fromAddrInfo.valueSent = big.NewInt(0).Add(fromAddrInfo.valueSent, tx.Value())
+				fromAddrInfo.NumTxSent += 1
+				fromAddrInfo.ValueSent = big.NewInt(0).Add(fromAddrInfo.ValueSent, tx.Value())
 			}
 
 			// Check for token transfer
 			data := tx.Data()
 			// fmt.Println(data)
 			if len(data) > 0 {
-				result.numTransactionsWithData += 1
+				result.NumTransactionsWithData += 1
 
 				if len(data) > 4 {
 					methodId := hex.EncodeToString(data[:4])
 					// fmt.Println(methodId)
 					if methodId == "a9059cbb" || methodId == "23b872dd" {
-						result.numTransactionsWithTokenTransfer += 1
+						result.NumTransactionsWithTokenTransfer += 1
 					}
 				}
 			}
@@ -169,56 +170,63 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber *big.Int, endTimes
 	}
 
 	// fmt.Println("total transactions:", numTransactions, "- zero value:", numTransactionsWithZeroValue)
-	fmt.Println("total blocks:", result.numBlocks)
-	fmt.Println("total transactions:", result.numTransactions, "/ types:", result.txTypes)
-	fmt.Println("- with value:", result.numTransactions-result.numTransactionsWithZeroValue)
-	fmt.Println("- zero value:", result.numTransactionsWithZeroValue)
-	fmt.Println("- with data: ", result.numTransactionsWithData)
-	fmt.Printf("- with token transfer: %d (%.2f%%)\n", result.numTransactionsWithTokenTransfer, (float64(result.numTransactionsWithTokenTransfer)/float64(result.numTransactions))*100)
+	fmt.Println("total blocks:", result.NumBlocks)
+	fmt.Println("total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
+	fmt.Println("- with value:", result.NumTransactions-result.NumTransactionsWithZeroValue)
+	fmt.Println("- zero value:", result.NumTransactionsWithZeroValue)
+	fmt.Println("- with data: ", result.NumTransactionsWithData)
+	fmt.Printf("- with token transfer: %d (%.2f%%)\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
 
 	// ETH value transferred
-	// fmt.Println("total value transferred:", weiToEth(result.valueTotal).Text('f', 2), "ETH")
+	fmt.Println("total value transferred:", weiToEth(result.ValueTotal).Text('f', 2), "ETH")
 
 	// Address details
-	fmt.Println("total addresses:", len(result.addresses))
+	fmt.Println("total addresses:", len(result.Addresses))
 
 	// Create addresses array, for sorting
-	_addresses := make([]*AddressInfo, 0, len(result.addresses))
-	for _, k := range result.addresses {
+	_addresses := make([]*AddressInfo, 0, len(result.Addresses))
+	for _, k := range result.Addresses {
 		_addresses = append(_addresses, k)
 	}
 
 	/* SORT BY NUM_TX_RECEIVED */
 	fmt.Println("")
 	fmt.Println("Top 10 addresses by num-tx-received")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].numTxReceived > _addresses[j].numTxReceived })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	for _, v := range _addresses[:10] {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.ValueReceived).String())
 	}
 
 	/* SORT BY NUM_TX_SENT */
 	fmt.Println("")
 	fmt.Println("Top 10 addresses by num-tx-sent")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].numTxSent > _addresses[j].numTxSent })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	for _, v := range _addresses[:10] {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.ValueReceived).String())
 	}
 
 	/* SORT BY VALUE_RECEIVED */
 	fmt.Println("")
 	fmt.Println("Top 10 addresses by value-received")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueReceived.Cmp(_addresses[j].valueReceived) == 1 })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceived.Cmp(_addresses[j].ValueReceived) == 1 })
 	for _, v := range _addresses[:10] {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.ValueReceived).String())
 	}
 
 	/* SORT BY VALUE_SENT */
 	fmt.Println("")
 	fmt.Println("Top 10 addresses by value-sent")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueSent.Cmp(_addresses[j].valueSent) == 1 })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSent.Cmp(_addresses[j].ValueSent) == 1 })
 	for _, v := range _addresses[:10] {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(v.valueSent).String())
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.ValueSent).String())
 	}
+
+	j, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(j))
+
 }
 
 // getBlockAtTimestamp searches for a block that is within 30 seconds of the target timestamp.
