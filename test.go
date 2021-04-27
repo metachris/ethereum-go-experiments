@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"math"
@@ -32,6 +33,12 @@ func main() {
 	}
 
 	fmt.Println("Connected")
+
+	// chainID, err := client.NetworkID(context.Background())
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println("ChainID:", chainID)
 
 	// address := common.HexToAddress("0x160cD5F7ab0DdaBe67A3e393e86F39c5329c4622")
 	// fmt.Println(address.Hex())        // 0x71C7656EC7ab88b098defB751B7401B5f6d8976F
@@ -87,6 +94,7 @@ func main() {
 	numTransactions := 0
 	numTransactionsWithZeroValue := 0
 	numTransactionsWithData := 0
+	numTransactionsWithTokenTransfer := 0
 
 	// Collect all blocks and transactions
 	for blockHeight := new(big.Int).Set(latestBlockHeight); blockHeight.Cmp(end) > 0; blockHeight.Sub(blockHeight, one) {
@@ -125,9 +133,33 @@ func main() {
 				toAddrInfo.valueReceived = *big.NewInt(0).Add(&toAddrInfo.valueReceived, tx.Value())
 			}
 
-			txData := tx.Data()
-			if len(txData) > 0 {
+			// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
+			if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
+				fromHex := msg.From().Hex()
+				// fmt.Println(fromHex)
+				fromAddrInfo, exists := addresses[fromHex]
+				if !exists {
+					fromAddrInfo = &AddressInfo{address: fromHex}
+					addresses[fromHex] = fromAddrInfo
+				}
+
+				fromAddrInfo.numTxSent += 1
+				fromAddrInfo.valueSent = *big.NewInt(0).Add(&fromAddrInfo.valueSent, tx.Value())
+			}
+
+			// Check for token transfer
+			data := tx.Data()
+			// fmt.Println(data)
+			if len(data) > 0 {
 				numTransactionsWithData += 1
+
+				if len(data) > 4 {
+					methodId := hex.EncodeToString(data[:4])
+					// fmt.Println(methodId)
+					if methodId == "a9059cbb" || methodId == "23b872dd" {
+						numTransactionsWithTokenTransfer += 1
+					}
+				}
 			}
 		}
 	}
@@ -138,6 +170,7 @@ func main() {
 	fmt.Println("- with value:", numTransactions-numTransactionsWithZeroValue)
 	fmt.Println("- zero value:", numTransactionsWithZeroValue)
 	fmt.Println("- with data: ", numTransactionsWithData)
+	fmt.Println("- with token transfer: ", numTransactionsWithTokenTransfer)
 
 	// ETH value transferred
 	fmt.Println("total value transferred:", weiToEth(valueTotal).Text('f', 2), "ETH")
@@ -159,12 +192,28 @@ func main() {
 		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueReceived).String())
 	}
 
-	/* SORT BY AMOUNT_RECEIVED */
+	/* SORT BY NUM_TX_SENT */
+	fmt.Println("")
+	fmt.Println("Top 10 addresses by num-tx-sent")
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].numTxSent > _addresses[j].numTxSent })
+	for _, v := range _addresses[:10] {
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueReceived).String())
+	}
+
+	/* SORT BY VALUE_RECEIVED */
 	fmt.Println("")
 	fmt.Println("Top 10 addresses by value-received")
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueReceived.Cmp(&_addresses[j].valueReceived) == 1 })
 	for _, v := range _addresses[:10] {
 		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueReceived).String())
+	}
+
+	/* SORT BY VALUE_SENT */
+	fmt.Println("")
+	fmt.Println("Top 10 addresses by value-sent")
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueSent.Cmp(&_addresses[j].valueSent) == 1 })
+	for _, v := range _addresses[:10] {
+		fmt.Printf("%s \t %d \t %d \t %s\n", v.address, v.numTxReceived, v.numTxSent, weiToEth(&v.valueSent).String())
 	}
 }
 
