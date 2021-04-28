@@ -16,15 +16,17 @@ import (
 )
 
 const TOP_ADDRESS_COUNT = 20
+const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 50
 
 type AddressInfo struct {
-	Address          string
-	NumTxSent        int
-	NumTxReceived    int
-	valueSent        *big.Int
-	ValueSentEth     string
-	valueReceived    *big.Int
-	ValueReceivedEth string
+	Address           string
+	NumTxSent         int
+	NumTxReceived     int
+	NumTokenTransfers int
+	valueSent         *big.Int
+	ValueSentEth      string
+	valueReceived     *big.Int
+	ValueReceivedEth  string
 }
 
 func NewAddressInfo(address string) *AddressInfo {
@@ -50,21 +52,23 @@ type AnalysisResult struct {
 	NumTransactionsWithData          int
 	NumTransactionsWithTokenTransfer int
 
-	AddressesTopNumTxReceived []*AddressInfo
-	AddressesTopNumTxSent     []*AddressInfo
-	AddressesTopValueReceived []*AddressInfo
-	AddressesTopValueSent     []*AddressInfo
+	AddressesTopNumTxReceived  []*AddressInfo
+	AddressesTopNumTxSent      []*AddressInfo
+	AddressesTopValueReceived  []*AddressInfo
+	AddressesTopValueSent      []*AddressInfo
+	AddressesTopTokenTransfers []*AddressInfo
 }
 
 func NewResult() *AnalysisResult {
 	return &AnalysisResult{
-		valueTotalWei:             new(big.Int),
-		addresses:                 make(map[string]*AddressInfo),
-		TxTypes:                   make(map[uint8]int),
-		AddressesTopNumTxReceived: make([]*AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopNumTxSent:     make([]*AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopValueReceived: make([]*AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopValueSent:     make([]*AddressInfo, TOP_ADDRESS_COUNT),
+		valueTotalWei:              new(big.Int),
+		addresses:                  make(map[string]*AddressInfo),
+		TxTypes:                    make(map[uint8]int),
+		AddressesTopNumTxReceived:  make([]*AddressInfo, TOP_ADDRESS_COUNT),
+		AddressesTopNumTxSent:      make([]*AddressInfo, TOP_ADDRESS_COUNT),
+		AddressesTopValueReceived:  make([]*AddressInfo, TOP_ADDRESS_COUNT),
+		AddressesTopValueSent:      make([]*AddressInfo, TOP_ADDRESS_COUNT),
+		AddressesTopTokenTransfers: make([]*AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
 	}
 }
 
@@ -82,7 +86,7 @@ func main() {
 	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
 	// End of analysis
-	endTimestamp := startTimestamp + 60
+	endTimestamp := startTimestamp + 60*5
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
 	fmt.Println("Connecting to Ethereum node at", nodeAddr)
@@ -177,6 +181,14 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 					// fmt.Println(methodId)
 					if methodId == "a9059cbb" || methodId == "23b872dd" {
 						result.NumTransactionsWithTokenTransfer += 1
+
+						toAddrInfo, exists := result.addresses[tx.To().String()]
+						if !exists {
+							// toAddrInfo = &AddressInfo{address: tx.To().String()}
+							toAddrInfo = NewAddressInfo(tx.To().String())
+							result.addresses[tx.To().String()] = toAddrInfo
+						}
+						toAddrInfo.NumTokenTransfers += 1
 					}
 				}
 			}
@@ -243,6 +255,15 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	copy(result.AddressesTopValueSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopValueSent {
 		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.valueSent).String())
+	}
+
+	/* SORT BY TOKEN_TRANSFERS */
+	fmt.Println("")
+	fmt.Printf("Top %d addresses by token-transfers\n", TOP_ADDRESS_TOKEN_TRANSFER_COUNT)
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTokenTransfers > _addresses[j].NumTokenTransfers })
+	copy(result.AddressesTopTokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
+	for _, v := range result.AddressesTopTokenTransfers {
+		fmt.Printf("%s \t %d token transfers \t %d tx received\n", v.Address, v.NumTokenTransfers, v.NumTxReceived)
 	}
 
 	j, err := json.MarshalIndent(result, "", " ")
