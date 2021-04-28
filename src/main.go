@@ -73,15 +73,16 @@ func main() {
 	// nodeAddr := "/server/geth.ipc"
 
 	// Start of analysis (UTC)
-	dayStr := "2021-04-27"
-	hour := 17
-	min := 49
-	startTime := makeTime(dayStr, hour, min)
-	startTimestamp := startTime.Unix()
-	fmt.Println("startTime:", startTimestamp, "/", startTime)
+	// dayStr := "2021-04-27"
+	// hour := 17
+	// min := 49
+	// startTime := makeTime(dayStr, hour, min)
+	// startTimestamp := startTime.Unix()
+	startTimestamp := time.Now().UTC().Unix() - 60*60
+	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
 	// End of analysis
-	endTimestamp := startTimestamp + 30
+	endTimestamp := startTimestamp + 60
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
 	fmt.Println("Connecting to Ethereum node at", nodeAddr)
@@ -91,7 +92,7 @@ func main() {
 	}
 
 	block := getBlockAtTimestamp(client, startTimestamp)
-	fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0))
+	fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 
 	analyzeBlocks(client, block.Number().Int64(), uint64(endTimestamp))
 }
@@ -210,7 +211,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	/* SORT BY NUM_TX_RECEIVED */
 	fmt.Println("")
-	fmt.Println("Top 10 addresses by num-tx-received")
+	fmt.Printf("Top %d addresses by num-tx-received\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	copy(result.AddressesTopNumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopNumTxReceived {
@@ -219,7 +220,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	/* SORT BY NUM_TX_SENT */
 	fmt.Println("")
-	fmt.Println("Top 10 addresses by num-tx-sent")
+	fmt.Printf("Top %d addresses by num-tx-sent\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	copy(result.AddressesTopNumTxSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopNumTxSent {
@@ -228,7 +229,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	/* SORT BY VALUE_RECEIVED */
 	fmt.Println("")
-	fmt.Println("Top 10 addresses by value-received")
+	fmt.Printf("Top %d addresses by value-received\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueReceived.Cmp(_addresses[j].valueReceived) == 1 })
 	copy(result.AddressesTopValueReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopValueReceived {
@@ -237,7 +238,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	/* SORT BY VALUE_SENT */
 	fmt.Println("")
-	fmt.Println("Top 10 addresses by value-sent")
+	fmt.Printf("Top %d addresses by value-sent\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueSent.Cmp(_addresses[j].valueSent) == 1 })
 	copy(result.AddressesTopValueSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopValueSent {

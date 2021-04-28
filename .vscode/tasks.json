@@ -6,6 +6,9 @@
         {
             "label": "go run .",
             "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
             "command": "time go run .",
             "problemMatcher": [],
             "group": {

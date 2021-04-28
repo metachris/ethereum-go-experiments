@@ -32,6 +32,7 @@ func getTargetBlocknumber(utcTimestamp int64) int64 {
 	avgBlockSec := int64(13)
 
 	secDiff := referenceBlockTimestamp - utcTimestamp
+	// fmt.Println("secDiff", secDiff)
 	blocksDiff := secDiff / avgBlockSec
 	targetBlock := referenceBlockNumber - blocksDiff
 	return targetBlock
@@ -65,7 +66,7 @@ func weiToEth(wei *big.Int) (ethValue *big.Float) {
 }
 
 func printBlock(block *types.Block) {
-	t := time.Unix(int64(block.Header().Time), 0)
+	t := time.Unix(int64(block.Header().Time), 0).UTC()
 	fmt.Printf("%d \t %s \t %d \t tx=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()))
 }
 
