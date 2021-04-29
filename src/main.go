@@ -82,9 +82,9 @@ func main() {
 	// nodeAddr := "/server/geth.ipc"
 
 	// Start of analysis (UTC)
-	dayStr := "2021-04-29"
-	hour := 2
-	min := 0
+	dayStr := "2018-04-29"
+	hour := 3
+	min := 11
 	startTime := MakeTime(dayStr, hour, min)
 	startTimestamp := startTime.Unix()
 	// startTimestamp := time.Now().UTC().Unix() - 180*60
@@ -280,33 +280,45 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	if err != nil {
 		log.Fatal(err)
 	}
-	// err := ioutil.WriteFile("/tmp/dat1", d1, 0644)
+
 	_ = ioutil.WriteFile("test.json", j, 0644)
 	fmt.Println("Saved to test.json")
 	// fmt.Println(string(j))
-
 }
 
 // getBlockAtTimestamp searches for a block that is within 30 seconds of the target timestamp.
 // Guesses a block number, downloads it, and narrows down time gap if needed until block is found.
-//
-// TODO: After block found, check one block further, and use that if even better match
 func getBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types.Block {
 	currentBlockNumber := getTargetBlocknumber(targetTimestamp)
 	// TODO: check that blockNumber <= latestHeight
+	var isNarrowingDownFromBelow = false
 
 	for {
-		fmt.Println("Checking block:", currentBlockNumber)
+		// fmt.Println("Checking block:", currentBlockNumber)
 		blockNumber := big.NewInt(currentBlockNumber)
 		block, err := client.BlockByNumber(context.Background(), blockNumber)
 		if err != nil {
+			log.Println("Error fetching block at height", currentBlockNumber)
 			log.Fatal(err)
 		}
 
 		secDiff := int64(block.Time()) - targetTimestamp
-		fmt.Println("finding target block | height:", currentBlockNumber, "time:", block.Time(), "diff:", secDiff)
-		if Abs(secDiff) < 30 {
-			return block
+		fmt.Println("finding target block:", currentBlockNumber, "- time:", block.Time(), "- diff:", secDiff)
+		if Abs(secDiff) < 60 {
+			if secDiff < 0 {
+				// still before wanted startTime. Increase
+				currentBlockNumber += 1
+				isNarrowingDownFromBelow = true
+				continue
+			}
+
+			// Only return if coming block-by-block from below, making sure to take first block after target time
+			if isNarrowingDownFromBelow {
+				return block
+			} else {
+				currentBlockNumber -= 1
+				continue
+			}
 		}
 
 		// Not found. Check for better block
