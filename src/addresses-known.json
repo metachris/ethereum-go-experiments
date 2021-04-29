@@ -120,15 +120,20 @@
       "address": "0x876EabF441B2EE5B5b0554Fd502a8E0600950cFa"
     },
     {
+      "name": "BitMart",
+      "type": "Address",
+      "address": "0x68b22215FF74E3606BD5E6c1DE8c2D68180c85F7"
+    },
+    {
+      "name": "FTX",
+      "type": "Address",
+      "address": "0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2",
+      "label": "Exchange"
+    },
+    {
       "name": "OKEx",
       "type": "Address",
       "address": "0xA7EFAe728D2936e78BDA97dc267687568dD593f3"
-    },
-    {
-      "name": "?",
-      "type": "Contract",
-      "address": "0xb9bECa40F6E28d27b1B49FD98ad5b2a3bc1D9A6B",
-      "decimals": 18
     },
     {
       "name": "MetaMask Dex",
@@ -177,10 +182,11 @@
       "address": "0x27D71A464Da941118A4E056D0737274aA308a923"
     },
     {
-      "name": "1inch.exchange",
+      "name": "1inch",
       "type": "ERC20",
-      "symbol": "-",
-      "address": "0x11111112542d85b3ef69ae05771c2dccff4faa26"
+      "symbol": "1INCH",
+      "address": "0x111111111117dC0aa78b770fA6A738034120C302",
+      "decimals": 18
     },
     {
       "name": "Aave",
@@ -195,5 +201,110 @@
       "symbol": "STORJ",
       "address": "0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac",
       "decimals": 8
+    },
+    {
+      "name": "Compound",
+      "type": "ERC20",
+      "symbol": "COMP",
+      "address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+      "decimals": 18
+    },
+    {
+      "name": "Celsius",
+      "type": "ERC20",
+      "symbol": "CEL",
+      "address": "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+      "decimals": 4
+    },
+    {
+      "name": "Synthetix Network Token",
+      "type": "ERC20",
+      "symbol": "SNX",
+      "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+      "decimals": 18
+    },
+    {
+      "name": "Maker",
+      "type": "ERC20",
+      "symbol": "MKR",
+      "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+      "decimals": 18
+    },
+    {
+      "name": "Sushi",
+      "type": "ERC20",
+      "symbol": "SUSHI",
+      "address": "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2",
+      "decimals": 18
+    },
+    {
+      "name": "Overline Emblem",
+      "type": "ERC20",
+      "symbol": "EMB",
+      "address": "0xdb0aCC14396D108b3C5574483aCB817855C9dc8d",
+      "decimals": 8
+    },
+    {
+      "name": "The Crypto Prophecies",
+      "type": "ERC20",
+      "symbol": "TCP",
+      "address": "0x06576eB3B212d605B797dC15523d9Dc9F4F66DB4",
+      "decimals": 18
+    },
+    {
+      "name": "Chilliz",
+      "type": "ERC20",
+      "symbol": "CHZ",
+      "address": "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
+      "decimals": 18
+    },
+    {
+      "name": "Synthetix Network Token",
+      "type": "ERC20",
+      "symbol": "SNX",
+      "address": "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
+      "decimals": 18
+    },
+    {
+      "name": "Shiba Inu",
+      "type": "ERC20",
+      "symbol": "SHIB",
+      "address": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
+      "decimals": 18
+    },
+    {
+      "name": "TriumphX",
+      "type": "ERC20",
+      "symbol": "TRIX",
+      "address": "0x056354F3Ff20743aa4c0DA365603871c7000b081",
+      "decimals": 18
+    },
+    {
+      "name": "OMG Network",
+      "type": "ERC20",
+      "symbol": "OMG",
+      "address": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
+      "decimals": 18
+    },
+    {
+      "name": "Kyber Network",
+      "type": "ERC20",
+      "symbol": "KNC",
+      "address": "0xdd974D5C2e2928deA5F71b9825b8b646686BD200",
+      "decimals": 18
+    },
+    {
+      "name": "Wrapped Bitcoin",
+      "type": "ERC20",
+      "symbol": "WBTC",
+      "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "decimals": 8
+    },
+    {
+      "name": "Binance USD",
+      "type": "ERC20",
+      "symbol": "BUSD",
+      "address": "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+      "decimals": 18
     }
 ]
