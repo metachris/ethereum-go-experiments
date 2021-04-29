@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -44,8 +45,9 @@ func main() {
 	// 	}
 	// }
 
-	// txHex := "0x9e9d82e23fbab6161495cb068387e96ba67200676cbafea9a422b0450f59083b"
-	txHex := "0xf240459183000a8bc6cc1e3bfd3b05b76c7c594e72f896ae0b1b4eb442b7a298"
+	// txHex := "0xb36d6fdbda67ee6eb9316b4c269e103f1fcdd0d145599f90f9acdbd2a0665d95" // ERC20 transfer
+	// txHex := "0x08cc6cf2b6ad598458c1fc71026f4c55d9ffa1c91baf1354ee74204406205b8c" // ERC721 transfer
+	txHex := "0xc4bbf3633cd5fc760ebe3eab4b2d54cad4220125997bb696cf17f0e5e48466a9" // ERC721 transferFrom
 	txHash := common.HexToHash(txHex)
 	tx, _, err := client.TransactionByHash(context.Background(), txHash)
 	if err != nil {
@@ -54,10 +56,31 @@ func main() {
 
 	fmt.Println(tx.Hash().Hex()) // 0x5d49fcaa394c97ec8a9c3e7bd9e8388d420fb050a52083ca52ff24b3b65bc9c2
 	data := tx.Data()
-	if len(data) > 0 {
+	if len(data) > 4 {
+		// fmt.Println(len(data))
+		// fmt.Println("data", data)
 		methodId := hex.EncodeToString(data[:4])
-		fmt.Println(data)
-		fmt.Println(methodId)
+
+		var value string
+		var targetAddr string
+
+		switch methodId {
+		case "a9059cbb": // transfer
+			fmt.Println("transfer")
+			targetAddr = hex.EncodeToString(data[4:36])
+			value = hex.EncodeToString(data[36:])
+		case "23b872dd": // transferFrom
+			fmt.Println("transferFrom")
+			targetAddr = hex.EncodeToString(data[36:68])
+			value = hex.EncodeToString(data[68:])
+		}
+
+		fmt.Println("methodId  ", methodId)
+		fmt.Println("targetAddr", targetAddr)
+		fmt.Println("value     ", value)
+
+		n2 := new(big.Int)
+		n2.SetString(value, 16)
+		fmt.Println(n2.Text(10))
 	}
-	// fmt.Printf("%x", data[:4])
 }

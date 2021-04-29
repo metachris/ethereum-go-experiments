@@ -10,7 +10,6 @@ const (
 	AddressTypeErc20    string = "ERC20"
 	AddressTypeErc721   string = "ERC721"
 	AddressTypeAddress  string = "Address"
-	AddressTypeDex      string = "Dex"
 	AddressTypeContract string = "Contract"
 )
 

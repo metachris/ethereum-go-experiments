@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math/big"
+	"strconv"
 )
 
 func test1() {
@@ -71,7 +73,18 @@ func test2() {
 
 func main() {
 	// test2()
-	testTimestamp()
+	// testTimestamp()
+
+	val := "000000000000000000000000000000000000000000000000010bc88b70c96000"
+	n, err := strconv.ParseUint(val, 16, 64)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(n)
+
+	n2 := new(big.Int)
+	n2.SetString(val, 16)
+	fmt.Println(n2.Text(10))
 }
 
 func printSlice(s string, x []int) {

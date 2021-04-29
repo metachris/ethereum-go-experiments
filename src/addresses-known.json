@@ -59,6 +59,20 @@
       "decimals": 18
     },
     {
+      "name": "district0x",
+      "type": "ERC20",
+      "symbol": "DNT",
+      "address": "0x0AbdAce70D3790235af448C88547603b945604ea",
+      "decimals": 18
+    },
+    {
+      "name": "Civic",
+      "type": "ERC20",
+      "symbol": "CVC",
+      "address": "0x41e5560054824eA6B0732E656E3Ad64E20e94E45",
+      "decimals": 8
+    },
+    {
       "name": "Matic Token",
       "type": "ERC20",
       "symbol": "MATIC",
@@ -82,7 +96,8 @@
     {
       "name": "Binance",
       "type": "Address",
-      "address": "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE"
+      "address": "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+      "addresses": ""
     },
     {
       "name": "Binance",
@@ -165,9 +180,20 @@
       "name": "1inch.exchange",
       "type": "ERC20",
       "symbol": "-",
-      "address": "0x11111112542d85b3ef69ae05771c2dccff4faa26",
-      "links": [
-        "https://etherscan.io/accounts/label/1inch-exchange"
-      ]
+      "address": "0x11111112542d85b3ef69ae05771c2dccff4faa26"
+    },
+    {
+      "name": "Aave",
+      "type": "ERC20",
+      "symbol": "AAVE",
+      "address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+      "decimals": 18
+    },
+    {
+      "name": "Storj",
+      "type": "ERC20",
+      "symbol": "STORJ",
+      "address": "0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac",
+      "decimals": 8
     }
 ]
