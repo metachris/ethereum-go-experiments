@@ -38,8 +38,10 @@ func NewAddressInfo(address string) *AddressInfo {
 }
 
 type AnalysisResult struct {
-	StartBlockNumber int64
-	EndBlockNumber   int64
+	StartBlockNumber    int64
+	StartBlockTimestamp uint64
+	EndBlockNumber      int64
+	EndBlockTimestamp   uint64
 
 	addresses     map[string]*AddressInfo
 	TxTypes       map[uint8]int
@@ -72,21 +74,24 @@ func NewResult() *AnalysisResult {
 	}
 }
 
+var AddressDetails = GetAddressDetailMap()
+
 func main() {
+
 	nodeAddr := "http://95.217.145.161:8545"
 	// nodeAddr := "/server/geth.ipc"
 
 	// Start of analysis (UTC)
-	// dayStr := "2021-04-27"
-	// hour := 17
-	// min := 49
-	// startTime := makeTime(dayStr, hour, min)
-	// startTimestamp := startTime.Unix()
-	startTimestamp := time.Now().UTC().Unix() - 60*60
+	dayStr := "2021-04-29"
+	hour := 2
+	min := 0
+	startTime := MakeTime(dayStr, hour, min)
+	startTimestamp := startTime.Unix()
+	// startTimestamp := time.Now().UTC().Unix() - 180*60
 	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
 	// End of analysis
-	endTimestamp := startTimestamp + 60*5
+	endTimestamp := startTimestamp + 3*60
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
 	fmt.Println("Connecting to Ethereum node at", nodeAddr)
@@ -97,8 +102,9 @@ func main() {
 
 	block := getBlockAtTimestamp(client, startTimestamp)
 	fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
-
 	analyzeBlocks(client, block.Number().Int64(), uint64(endTimestamp))
+
+	// analyzeBlocks(client, 12332609, uint64(endTimestamp))
 }
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
@@ -121,7 +127,13 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 		printBlock(currentBlock)
 
+		if result.StartBlockTimestamp == 0 {
+			result.StartBlockTimestamp = currentBlock.Time()
+		}
+
 		result.EndBlockNumber = currentBlockNumber.Int64()
+		result.EndBlockTimestamp = currentBlock.Time()
+
 		result.NumBlocks += 1
 		result.NumTransactions += len(currentBlock.Transactions())
 
@@ -143,13 +155,11 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 			if tx.To() != nil {
 				toAddrInfo, exists := result.addresses[tx.To().String()]
 				if !exists {
-					// toAddrInfo = &AddressInfo{address: tx.To().String()}
 					toAddrInfo = NewAddressInfo(tx.To().String())
 					result.addresses[tx.To().String()] = toAddrInfo
 				}
 
 				toAddrInfo.NumTxReceived += 1
-				// toAddrInfo.ValueReceived = new(BigInt).Add(toAddrInfo.ValueReceived, tx.Value())
 				toAddrInfo.valueReceived = new(big.Int).Add(toAddrInfo.valueReceived, tx.Value())
 				toAddrInfo.ValueReceivedEth = weiToEth(toAddrInfo.valueReceived).Text('f', 2)
 			}
@@ -160,7 +170,6 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 				// fmt.Println(fromHex)
 				fromAddrInfo, exists := result.addresses[fromHex]
 				if !exists {
-					// fromAddrInfo = &AddressInfo{address: fromHex}
 					fromAddrInfo = NewAddressInfo(fromHex)
 					result.addresses[fromHex] = fromAddrInfo
 				}
@@ -182,13 +191,14 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 					if methodId == "a9059cbb" || methodId == "23b872dd" {
 						result.NumTransactionsWithTokenTransfer += 1
 
-						toAddrInfo, exists := result.addresses[tx.To().String()]
-						if !exists {
-							// toAddrInfo = &AddressInfo{address: tx.To().String()}
-							toAddrInfo = NewAddressInfo(tx.To().String())
-							result.addresses[tx.To().String()] = toAddrInfo
+						if tx.To() != nil {
+							toAddrInfo, exists := result.addresses[tx.To().String()]
+							if !exists {
+								toAddrInfo = NewAddressInfo(tx.To().String())
+								result.addresses[tx.To().String()] = toAddrInfo
+							}
+							toAddrInfo.NumTokenTransfers += 1
 						}
-						toAddrInfo.NumTokenTransfers += 1
 					}
 				}
 			}
@@ -227,7 +237,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	copy(result.AddressesTopNumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopNumTxReceived {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%-60v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
 	}
 
 	/* SORT BY NUM_TX_SENT */
@@ -236,7 +246,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	copy(result.AddressesTopNumTxSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopNumTxSent {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%-60v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
 	}
 
 	/* SORT BY VALUE_RECEIVED */
@@ -245,7 +255,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueReceived.Cmp(_addresses[j].valueReceived) == 1 })
 	copy(result.AddressesTopValueReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopValueReceived {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
+		fmt.Printf("%-60v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, weiToEth(v.valueReceived).String())
 	}
 
 	/* SORT BY VALUE_SENT */
@@ -254,7 +264,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].valueSent.Cmp(_addresses[j].valueSent) == 1 })
 	copy(result.AddressesTopValueSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range result.AddressesTopValueSent {
-		fmt.Printf("%s \t %d \t %d \t %s\n", v.Address, v.NumTxReceived, v.NumTxSent, weiToEth(v.valueSent).String())
+		fmt.Printf("%-60v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, weiToEth(v.valueSent).String())
 	}
 
 	/* SORT BY TOKEN_TRANSFERS */
@@ -263,7 +273,7 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTokenTransfers > _addresses[j].NumTokenTransfers })
 	copy(result.AddressesTopTokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range result.AddressesTopTokenTransfers {
-		fmt.Printf("%s \t %d token transfers \t %d tx received\n", v.Address, v.NumTokenTransfers, v.NumTxReceived)
+		fmt.Printf("%-60v %4d token transfers \t %d tx received\n", AddressWithName(v.Address), v.NumTokenTransfers, v.NumTxReceived)
 	}
 
 	j, err := json.MarshalIndent(result, "", " ")
@@ -283,9 +293,10 @@ func analyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 // TODO: After block found, check one block further, and use that if even better match
 func getBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types.Block {
 	currentBlockNumber := getTargetBlocknumber(targetTimestamp)
+	// TODO: check that blockNumber <= latestHeight
 
 	for {
-		// fmt.Println("Checking block:", currentBlockNumber)
+		fmt.Println("Checking block:", currentBlockNumber)
 		blockNumber := big.NewInt(currentBlockNumber)
 		block, err := client.BlockByNumber(context.Background(), blockNumber)
 		if err != nil {
@@ -301,5 +312,14 @@ func getBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 		// Not found. Check for better block
 		blockDiff := secDiff / 13
 		currentBlockNumber -= blockDiff
+	}
+}
+
+func AddressWithName(address string) string {
+	detail, ok := AddressDetails[address]
+	if ok {
+		return fmt.Sprintf("%s (%s)", address, detail.Name)
+	} else {
+		return address
 	}
 }

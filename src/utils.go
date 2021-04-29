@@ -12,7 +12,7 @@ import (
 
 var one = big.NewInt(1)
 
-func makeTime(dayString string, hour int, min int) time.Time {
+func MakeTime(dayString string, hour int, min int) time.Time {
 	dateString := fmt.Sprintf("%sT%02d:%02d:00Z", dayString, hour, min)
 	// fmt.Println(ts)
 	t, err := time.Parse(time.RFC3339, dateString)
