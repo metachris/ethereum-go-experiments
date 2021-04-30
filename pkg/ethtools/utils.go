@@ -1,4 +1,4 @@
-package main
+package ethtools
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-var one = big.NewInt(1)
+var One = big.NewInt(1)
 
 func MakeTime(dayString string, hour int, min int) time.Time {
 	dateString := fmt.Sprintf("%sT%02d:%02d:00Z", dayString, hour, min)
@@ -56,7 +56,7 @@ func isBigIntZero(n *big.Int) bool {
 	return len(n.Bits()) == 0
 }
 
-func weiToEth(wei *big.Int) (ethValue *big.Float) {
+func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 	// wei / 10^18
 	fbalance := new(big.Float)
 	fbalance.SetString(wei.String())
