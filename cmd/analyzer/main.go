@@ -62,12 +62,12 @@ func main() {
 	block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
 	fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
-	printResult(result)
-
 	// analyzeBlocks(client, 12332609, -2)
+
+	printAndProcessResult(result)
 }
 
-func printResult(result *ethtools.AnalysisResult) {
+func printAndProcessResult(result *ethtools.AnalysisResult) {
 	// fmt.Println("total transactions:", numTransactions, "- zero value:", numTransactionsWithZeroValue)
 	fmt.Println("total blocks:", result.NumBlocks)
 	fmt.Println("total transactions:", result.NumTransactions, "/ types:", result.TxTypes)

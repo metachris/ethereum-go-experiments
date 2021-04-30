@@ -2,13 +2,11 @@ package ethtools
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 const (
@@ -26,8 +24,10 @@ type AddressDetail struct {
 	Decimals int    `json:"decimals"`
 }
 
+const FN_ADDRESS_JSON string = "data/addresses.json"
+
 func GetAddressDetailMap() map[string]AddressDetail {
-	fn, err := filepath.Abs("data/addresses-known.json")
+	fn, err := filepath.Abs(FN_ADDRESS_JSON)
 	file, err := os.Open(fn)
 	if err != nil {
 		log.Fatal(err)
@@ -35,6 +35,7 @@ func GetAddressDetailMap() map[string]AddressDetail {
 
 	defer file.Close()
 
+	// Load JSON
 	decoder := json.NewDecoder(file)
 	var AddressDetails []AddressDetail
 	err = decoder.Decode(&AddressDetails)
@@ -43,7 +44,7 @@ func GetAddressDetailMap() map[string]AddressDetail {
 	}
 	// fmt.Println(len(AddressDetails), AddressDetails[0].Name)
 
-	// Convert to a map
+	// Convert to map
 	AddressDetailMap := make(map[string]AddressDetail)
 	for _, v := range AddressDetails {
 		AddressDetailMap[v.Address] = v
@@ -53,41 +54,22 @@ func GetAddressDetailMap() map[string]AddressDetail {
 	return AddressDetailMap
 }
 
-type EthplorerTokenInfo struct {
-	Address  string `json:"address"`
-	Name     string `json:"name"`
-	Symbol   string `json:"symbol"`
-	Decimals string `json:"decimals"`
-}
+func AddAddressDetailToJson(address *AddressDetail) {
+	addressMap := GetAddressDetailMap()
+	addressMap[address.Address] = *address
 
-func GetTokenInfo(address string) (EthplorerTokenInfo, error) {
-	target := EthplorerTokenInfo{}
-
-	url := fmt.Sprintf("https://api.ethplorer.io/getTokenInfo/%s?apiKey=freekey", address)
-	fmt.Println(url)
-
-	var myClient = &http.Client{Timeout: 10 * time.Second}
-	r, err := myClient.Get(url)
-	if err != nil {
-		return target, err
+	// Convert map to JSON
+	addressList := make([]AddressDetail, 0, len(addressMap))
+	for _, address := range addressMap {
+		addressList = append(addressList, address)
 	}
 
-	defer r.Body.Close()
-	if r.StatusCode != 200 {
-		return target, errors.New("Error status " + r.Status)
-	}
+	b, err := json.MarshalIndent(addressList, "", "  ")
+	Check(err)
+	// fmt.Println(b)
 
-	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&target)
-	return target, err
+	err = ioutil.WriteFile(FN_ADDRESS_JSON, b, 0644)
+	Check(err)
+
+	fmt.Println("Updated", FN_ADDRESS_JSON)
 }
-
-// func main() {
-// 	// AddressDetails := GetAddressDetailMap()
-// 	// fmt.Println(AddressDetails["xxx"])
-// 	info, err := GetTokenInfo("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	fmt.Println(info)
-// }

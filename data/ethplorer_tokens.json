@@ -1,0 +1,22 @@
+[
+  {
+    "address": "0x8a2279d4a90b6fe1c4b30fa660cc9f926797baa2",
+    "name": "Chromia",
+    "decimals": "6",
+    "symbol": "CHR",
+    "totalSupply": "561369439326204",
+    "owner": "0x",
+    "transfersCount": 45644,
+    "lastUpdated": 1619810346,
+    "issuancesCount": 0,
+    "holdersCount": 7226,
+    "description": "",
+    "website": "https://chromia.com",
+    "image": "/images/CHR8a2279d4.png",
+    "coingecko": "chromaway",
+    "ethTransfersCount": 0,
+    "publicTags": null,
+    "countOps": 45644,
+    "DownloadedAt": 1619811564
+  }
+]

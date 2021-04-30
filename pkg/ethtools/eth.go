@@ -183,7 +183,6 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		}
 	}
 
-	// fmt.Println(string(j))
 	return result
 }
 

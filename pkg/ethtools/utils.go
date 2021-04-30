@@ -69,8 +69,8 @@ func printBlock(block *types.Block) {
 	fmt.Printf("%d \t %s \t %d \t tx=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()))
 }
 
-func check(e error) {
-	if e != nil {
-		log.Fatal(e)
+func Check(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
