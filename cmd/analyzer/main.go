@@ -3,19 +3,26 @@ package main
 import (
 	"encoding/json"
 	"ethtools"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const TOP_ADDRESS_COUNT = 20
-const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 50
+const NODE_URI = "http://95.217.145.161:8545"
 
-var AddressDetails = ethtools.GetAddressDetailMap()
+// const NODE = "/server/geth.ipc"
+
+const TOP_ADDRESS_COUNT = 30
+const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
+
+var AddressDetails = ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
 
 type ResultCondensed struct {
 	AddressesTopNumTxReceived  []*ethtools.AddressInfo
@@ -36,25 +43,49 @@ func NewResultCondensed() *ResultCondensed {
 }
 
 func main() {
-	nodeAddr := "http://95.217.145.161:8545"
-	// nodeAddr := "/server/geth.ipc"
+	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
+	hourPtr := flag.Int("hour", 0, "hour (UTC)")
+	minPtr := flag.Int("min", 0, "hour (UTC)")
+	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
+	flag.Parse()
+
+	if len(*datePtr) == 0 {
+		log.Fatal("Date missing, add with -date <yyyy-mm-dd>")
+	}
+
+	if len(*timespanPtr) == 0 {
+		log.Fatal("Timespan missing, -len")
+	}
+
+	timespanSec := 0
+	switch {
+	case strings.HasSuffix(*timespanPtr, "s"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "s"))
+	case strings.HasSuffix(*timespanPtr, "m"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "m"))
+		timespanSec *= 60
+	case strings.HasSuffix(*timespanPtr, "h"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "h"))
+		timespanSec *= 60 * 60
+	}
 
 	// Start of analysis (UTC)
-	dayStr := "2021-04-29"
-	hour := 8
-	min := 0
-	startTime := ethtools.MakeTime(dayStr, hour, min)
+	// dayStr := "2021-04-29"
+	// hour := 16
+	// min := 0
+	startTime := ethtools.MakeTime(*datePtr, *hourPtr, *minPtr)
 	startTimestamp := startTime.Unix()
 	// startTimestamp := time.Now().UTC().Unix() - 180*60
 	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
 	// End of analysis
 	// var oneHourInSec int64 = 60 * 60
-	endTimestamp := startTimestamp + 4*60
+	// endTimestamp := startTimestamp + 60*5
+	endTimestamp := startTimestamp + int64(timespanSec)
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
-	fmt.Println("Connecting to Ethereum node at", nodeAddr)
-	client, err := ethclient.Dial(nodeAddr)
+	fmt.Println("Connecting to Ethereum node at", NODE_URI)
+	client, err := ethclient.Dial(NODE_URI)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,9 +181,9 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 }
 
 func AddressWithName(address string) string {
-	detail, ok := AddressDetails[address]
+	detail, ok := AddressDetails[strings.ToLower(address)]
 	if ok {
-		return fmt.Sprintf("%s (%s)", address, detail.Name)
+		return fmt.Sprintf("%s %s", address, detail.Name)
 	} else {
 		return address
 	}

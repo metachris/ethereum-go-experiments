@@ -9,10 +9,16 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
-const FN_ADDRESS_JSON_ETHPLORER string = "data/ethplorer_tokens.json"
+const (
+	FN_ADDRESS_JSON_ETHPLORER string        = "data/ethplorer_tokens.json"
+	ETHPLORER_API_KEY         string        = "EK-eTp4w-dZq2YNw-fs9hU"
+	ETHPLORER_TIMEOUT         time.Duration = 1 * time.Second
+	// ETHPLORER_API_KEY string = "freekey"
+)
 
 type EthplorerTokenInfo struct {
 	Address           string   `json:"address"`
@@ -47,14 +53,14 @@ func (tokenInfo InternalEthplorerTokenInfo) ToAddressDetail() *AddressDetail {
 		Name:     tokenInfo.Name,
 		Symbol:   tokenInfo.Symbol,
 		Decimals: decimals,
-		Type:     "ERC20/721",
+		Type:     "TOKEN",
 	}
 }
 
 func FetchTokenInfo(address string) (InternalEthplorerTokenInfo, error) {
 	target := InternalEthplorerTokenInfo{}
 
-	url := fmt.Sprintf("https://api.ethplorer.io/getTokenInfo/%s?apiKey=freekey", address)
+	url := fmt.Sprintf("https://api.ethplorer.io/getTokenInfo/%s?apiKey="+ETHPLORER_API_KEY, address)
 	fmt.Println(url)
 
 	var myClient = &http.Client{Timeout: 10 * time.Second}
@@ -89,7 +95,7 @@ func GetEthplorerTokenInfolMap() map[string]InternalEthplorerTokenInfo {
 	// Convert to map
 	tokenInfoMap := make(map[string]InternalEthplorerTokenInfo)
 	for _, v := range InternalEthplorerTokenInfos {
-		tokenInfoMap[v.Address] = v
+		tokenInfoMap[strings.ToLower(v.Address)] = v
 	}
 
 	// fmt.Println(EthplorerTokenInfoMap["0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"])

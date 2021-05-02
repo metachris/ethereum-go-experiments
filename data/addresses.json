@@ -1,310 +1,64 @@
 [
     {
-      "name": "Uniswap V2",
-      "type": "Contract",
-      "address": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+        "name": "Uniswap V2",
+        "type": "Contract",
+        "address": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
     },
     {
-      "name": "Uniswap: Token Distributor",
-      "type": "Contract",
-      "address": "0x090d4613473dee047c3f2706764f49e0821d256e"
+        "name": "Uniswap: Token Distributor",
+        "type": "Contract",
+        "address": "0x090d4613473dee047c3f2706764f49e0821d256e"
     },
     {
-      "name": "Uniswap Token",
-      "type": "ERC20",
-      "symbol": "UNI",
-      "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-      "decimals": 18
+        "name": "Binance",
+        "type": "Address",
+        "address": "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+        "addresses": ""
     },
     {
-      "name": "Wrapped Ether",
-      "type": "ERC20",
-      "symbol": "WETH",
-      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      "decimals": 18
+        "name": "Binance",
+        "type": "Address",
+        "address": "0xD551234Ae421e3BCBA99A0Da6d736074f22192FF"
     },
     {
-      "name": "Dai Stablecoin",
-      "type": "ERC20",
-      "symbol": "DAI",
-      "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-      "decimals": 18
+        "name": "Kraken",
+        "type": "Address",
+        "address": "0xFa52274DD61E1643d2205169732f29114BC240b3"
     },
     {
-      "name": "Force DAO",
-      "type": "ERC20",
-      "symbol": "FORCE",
-      "address": "0x2C31b10ca416b82Cec4c5E93c615ca851213d48D",
-      "decimals": 18
+        "name": "Kraken",
+        "type": "Address",
+        "address": "0x267be1C1D684F78cb4F6a176C4911b741E4Ffdc0"
     },
     {
-      "name": "KOK Coin",
-      "type": "ERC20",
-      "symbol": "KOK",
-      "address": "0x9B9647431632AF44be02ddd22477Ed94d14AacAa",
-      "decimals": 18
+        "name": "Bitfinex",
+        "type": "Address",
+        "address": "0x876EabF441B2EE5B5b0554Fd502a8E0600950cFa"
     },
     {
-      "name": "Small Love Potion",
-      "type": "ERC20",
-      "symbol": "SLP",
-      "address": "0x37236CD05b34Cc79d3715AF2383E96dd7443dCF1",
-      "decimals": 18
+        "name": "BitMart",
+        "type": "Address",
+        "address": "0x68b22215FF74E3606BD5E6c1DE8c2D68180c85F7"
     },
     {
-      "name": "EnjinCoin",
-      "type": "ERC20",
-      "symbol": "ENJ",
-      "address": "0xF629cBd94d3791C9250152BD8dfBDF380E2a3B9c",
-      "decimals": 18
+        "name": "FTX",
+        "type": "Address",
+        "address": "0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2"
     },
     {
-      "name": "district0x",
-      "type": "ERC20",
-      "symbol": "DNT",
-      "address": "0x0AbdAce70D3790235af448C88547603b945604ea",
-      "decimals": 18
+        "name": "OKEx",
+        "type": "Address",
+        "address": "0xA7EFAe728D2936e78BDA97dc267687568dD593f3"
     },
     {
-      "name": "Civic",
-      "type": "ERC20",
-      "symbol": "CVC",
-      "address": "0x41e5560054824eA6B0732E656E3Ad64E20e94E45",
-      "decimals": 8
+        "name": "MetaMask Dex",
+        "type": "Dex",
+        "address": "0x881D40237659C251811CEC9c364ef91dC08D300C",
+        "decimals": 18
     },
     {
-      "name": "Matic Token",
-      "type": "ERC20",
-      "symbol": "MATIC",
-      "address": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
-      "decimals": 18
-    },
-    {
-      "name": "Swipe.io",
-      "type": "ERC20",
-      "symbol": "SXP",
-      "address": "0x8CE9137d39326AD0cD6491fb5CC0CbA0e089b6A9",
-      "decimals": 18
-    },
-    {
-      "name": "SushiSwap",
-      "type": "ERC20",
-      "symbol": "SUSHI",
-      "address": "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F",
-      "decimals": 18
-    },
-    {
-      "name": "Binance",
-      "type": "Address",
-      "address": "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
-      "addresses": ""
-    },
-    {
-      "name": "Binance",
-      "type": "Address",
-      "address": "0xD551234Ae421e3BCBA99A0Da6d736074f22192FF"
-    },
-    {
-      "name": "Kraken",
-      "type": "Address",
-      "address": "0xFa52274DD61E1643d2205169732f29114BC240b3"
-    },
-    {
-      "name": "Kraken",
-      "type": "Address",
-      "address": "0x267be1C1D684F78cb4F6a176C4911b741E4Ffdc0"
-    },
-    {
-      "name": "Bitfinex",
-      "type": "Address",
-      "address": "0x876EabF441B2EE5B5b0554Fd502a8E0600950cFa"
-    },
-    {
-      "name": "BitMart",
-      "type": "Address",
-      "address": "0x68b22215FF74E3606BD5E6c1DE8c2D68180c85F7"
-    },
-    {
-      "name": "FTX",
-      "type": "Address",
-      "address": "0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2",
-      "label": "Exchange"
-    },
-    {
-      "name": "OKEx",
-      "type": "Address",
-      "address": "0xA7EFAe728D2936e78BDA97dc267687568dD593f3"
-    },
-    {
-      "name": "MetaMask Dex",
-      "type": "Dex",
-      "address": "0x881D40237659C251811CEC9c364ef91dC08D300C",
-      "decimals": 18
-    },
-    {
-      "name": "Smart Trade Coin",
-      "type": "ERC20",
-      "symbol": "TRADE",
-      "address": "0x40E45890dff79e7D533797d964E64a2C0121F49a",
-      "decimals": 7
-    },
-    {
-      "name": "Tether USD",
-      "type": "ERC20",
-      "symbol": "USDT",
-      "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-      "decimals": 6
-    },
-    {
-      "name": "USD Coin",
-      "type": "ERC20",
-      "symbol": "USDC",
-      "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      "decimals": 6
-    },
-    {
-      "name": "Decentraland",
-      "type": "ERC20",
-      "symbol": "MANA",
-      "address": "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942",
-      "decimals": 6
-    },
-    {
-      "name": "ChainLink Token",
-      "type": "ERC20",
-      "symbol": "LINK",
-      "address": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
-      "decimals": 18
-    },
-    {
-      "name": "Eth2 Depositor",
-      "type": "Contract",
-      "address": "0x27D71A464Da941118A4E056D0737274aA308a923"
-    },
-    {
-      "name": "1inch",
-      "type": "ERC20",
-      "symbol": "1INCH",
-      "address": "0x111111111117dC0aa78b770fA6A738034120C302",
-      "decimals": 18
-    },
-    {
-      "name": "Aave",
-      "type": "ERC20",
-      "symbol": "AAVE",
-      "address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
-      "decimals": 18
-    },
-    {
-      "name": "Storj",
-      "type": "ERC20",
-      "symbol": "STORJ",
-      "address": "0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac",
-      "decimals": 8
-    },
-    {
-      "name": "Compound",
-      "type": "ERC20",
-      "symbol": "COMP",
-      "address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
-      "decimals": 18
-    },
-    {
-      "name": "Celsius",
-      "type": "ERC20",
-      "symbol": "CEL",
-      "address": "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
-      "decimals": 4
-    },
-    {
-      "name": "Synthetix Network Token",
-      "type": "ERC20",
-      "symbol": "SNX",
-      "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
-      "decimals": 18
-    },
-    {
-      "name": "Maker",
-      "type": "ERC20",
-      "symbol": "MKR",
-      "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-      "decimals": 18
-    },
-    {
-      "name": "Sushi",
-      "type": "ERC20",
-      "symbol": "SUSHI",
-      "address": "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2",
-      "decimals": 18
-    },
-    {
-      "name": "Overline Emblem",
-      "type": "ERC20",
-      "symbol": "EMB",
-      "address": "0xdb0aCC14396D108b3C5574483aCB817855C9dc8d",
-      "decimals": 8
-    },
-    {
-      "name": "The Crypto Prophecies",
-      "type": "ERC20",
-      "symbol": "TCP",
-      "address": "0x06576eB3B212d605B797dC15523d9Dc9F4F66DB4",
-      "decimals": 18
-    },
-    {
-      "name": "Chilliz",
-      "type": "ERC20",
-      "symbol": "CHZ",
-      "address": "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
-      "decimals": 18
-    },
-    {
-      "name": "Synthetix Network Token",
-      "type": "ERC20",
-      "symbol": "SNX",
-      "address": "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
-      "decimals": 18
-    },
-    {
-      "name": "Shiba Inu",
-      "type": "ERC20",
-      "symbol": "SHIB",
-      "address": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
-      "decimals": 18
-    },
-    {
-      "name": "TriumphX",
-      "type": "ERC20",
-      "symbol": "TRIX",
-      "address": "0x056354F3Ff20743aa4c0DA365603871c7000b081",
-      "decimals": 18
-    },
-    {
-      "name": "OMG Network",
-      "type": "ERC20",
-      "symbol": "OMG",
-      "address": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
-      "decimals": 18
-    },
-    {
-      "name": "Kyber Network",
-      "type": "ERC20",
-      "symbol": "KNC",
-      "address": "0xdd974D5C2e2928deA5F71b9825b8b646686BD200",
-      "decimals": 18
-    },
-    {
-      "name": "Wrapped Bitcoin",
-      "type": "ERC20",
-      "symbol": "WBTC",
-      "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-      "decimals": 8
-    },
-    {
-      "name": "Binance USD",
-      "type": "ERC20",
-      "symbol": "BUSD",
-      "address": "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
-      "decimals": 18
+        "name": "Eth2 Depositor",
+        "type": "Contract",
+        "address": "0x27D71A464Da941118A4E056D0737274aA308a923"
     }
 ]
