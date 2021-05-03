@@ -16,9 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const NODE_URI = "http://95.217.145.161:8545"
-
-// const NODE = "/server/geth.ipc"
+// const NODE_URI = "http://95.217.145.161:8545"
+const NODE_URI = "/server/geth.ipc"
 
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
@@ -68,6 +67,9 @@ func main() {
 	case strings.HasSuffix(*timespanPtr, "h"):
 		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "h"))
 		timespanSec *= 60 * 60
+	case strings.HasSuffix(*timespanPtr, "d"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "d"))
+		timespanSec *= 60 * 60 * 24
 	}
 
 	// Start of analysis (UTC)
@@ -132,7 +134,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	copy(resultCondensed.AddressesTopNumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range resultCondensed.AddressesTopNumTxReceived {
-		fmt.Printf("%-64v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
 	/* SORT BY NUM_TX_SENT */
@@ -141,7 +143,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	copy(resultCondensed.AddressesTopNumTxSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range resultCondensed.AddressesTopNumTxSent {
-		fmt.Printf("%-64v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
 	/* SORT BY VALUE_RECEIVED */
@@ -150,7 +152,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceived.Cmp(_addresses[j].ValueReceived) == 1 })
 	copy(resultCondensed.AddressesTopValueReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range resultCondensed.AddressesTopValueReceived {
-		fmt.Printf("%-64v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
 	/* SORT BY VALUE_SENT */
@@ -159,7 +161,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSent.Cmp(_addresses[j].ValueSent) == 1 })
 	copy(resultCondensed.AddressesTopValueSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range resultCondensed.AddressesTopValueSent {
-		fmt.Printf("%-64v %4d \t %4d \t %s\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSent).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSent).Text('f', 2))
 	}
 
 	/* SORT BY TOKEN_TRANSFERS */
@@ -168,7 +170,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	copy(resultCondensed.AddressesTopTokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range resultCondensed.AddressesTopTokenTransfers {
-		fmt.Printf("%-66v %4d token transfers \t %4d tx received \t %s \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
+		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
 	}
 
 	j, err := json.MarshalIndent(resultCondensed, "", " ")
@@ -199,8 +201,8 @@ func NumTokensWithDecimals(numTokens uint64, address string) string {
 		if decimals > 0 {
 			divider = math.Pow(10, float64(decimals))
 		}
-		return fmt.Sprintf("%.2f %s", float64(numTokens)/divider, detail.Symbol)
+		return fmt.Sprintf("%.2f %-4v", float64(numTokens)/divider, detail.Symbol)
 	} else {
-		return fmt.Sprintf("%d ?", numTokens)
+		return fmt.Sprintf("%d ?   ", numTokens)
 	}
 }

@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	AddressTypeErc20    string = "ERC20"
-	AddressTypeErc721   string = "ERC721"
+	// AddressTypeErc20    string = "ERC20"
+	// AddressTypeErc721   string = "ERC721"
+	AddressTypeToken    string = "ERC_Token"
 	AddressTypeAddress  string = "Address"
 	AddressTypeContract string = "Contract"
 )
@@ -35,7 +36,7 @@ const FN_JSON_TOKENS string = "data/tokens.json"
 const FN_JSON_ADDRESSES string = "data/addresses.json"
 
 func getDatasetFromJson(filename string) []AddressDetail {
-	fn, err := filepath.Abs(filename)
+	fn, _ := filepath.Abs(filename)
 	file, err := os.Open(fn)
 	if err != nil {
 		log.Fatal(err)

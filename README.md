@@ -1,3 +1,8 @@
+
+    go run cmd/analyzer/main.go -date 2021-05-01 -len 10m | tee log
+
+---
+
 Resources:
 
 * https://goethereumbook.org/en/transaction-query/

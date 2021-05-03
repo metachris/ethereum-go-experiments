@@ -53,7 +53,7 @@ func (tokenInfo InternalEthplorerTokenInfo) ToAddressDetail() *AddressDetail {
 		Name:     tokenInfo.Name,
 		Symbol:   tokenInfo.Symbol,
 		Decimals: decimals,
-		Type:     "TOKEN",
+		Type:     "ERC_Token",
 	}
 }
 
