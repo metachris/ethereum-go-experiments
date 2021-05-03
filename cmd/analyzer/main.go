@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -167,7 +168,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	copy(resultCondensed.AddressesTopTokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range resultCondensed.AddressesTopTokenTransfers {
-		fmt.Printf("%-64v %4d token transfers \t %4d tx received \t %d \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, v.TokensTransferred)
+		fmt.Printf("%-66v %4d token transfers \t %4d tx received \t %s \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
 	}
 
 	j, err := json.MarshalIndent(resultCondensed, "", " ")
@@ -186,5 +187,20 @@ func AddressWithName(address string) string {
 		return fmt.Sprintf("%s %s", address, detail.Name)
 	} else {
 		return address
+	}
+}
+
+func NumTokensWithDecimals(numTokens uint64, address string) string {
+	// fmt.Println(address)
+	detail, ok := AddressDetails[strings.ToLower(address)]
+	if ok {
+		decimals := uint64(detail.Decimals)
+		divider := float64(1)
+		if decimals > 0 {
+			divider = math.Pow(10, float64(decimals))
+		}
+		return fmt.Sprintf("%.2f %s", float64(numTokens)/divider, detail.Symbol)
+	} else {
+		return fmt.Sprintf("%d ?", numTokens)
 	}
 }
