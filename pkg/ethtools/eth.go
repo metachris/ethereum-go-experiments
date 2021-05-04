@@ -77,7 +77,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		printBlock(currentBlock)
 
 		if endTimestamp > -1 && currentBlock.Time() > uint64(endTimestamp) {
-			fmt.Println("- 👆 block after end time, skipping and done")
+			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", numBlocksProcessed, currentBlockNumber.Text(10))
 			break
 		}
 
@@ -192,7 +192,7 @@ func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 	currentBlockNumber := getTargetBlocknumber(targetTimestamp)
 	// TODO: check that blockNumber <= latestHeight
 	var isNarrowingDownFromBelow = false
-
+	fmt.Println("Finding start block:")
 	for {
 		// fmt.Println("Checking block:", currentBlockNumber)
 		blockNumber := big.NewInt(currentBlockNumber)
@@ -203,7 +203,7 @@ func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 		}
 
 		secDiff := int64(block.Time()) - targetTimestamp
-		fmt.Println("finding target block:", currentBlockNumber, "- time:", block.Time(), "- diff:", secDiff)
+		fmt.Printf("%d \t blockTime: %d \t secDiff: %5d\n", currentBlockNumber, block.Time(), secDiff)
 		if Abs(secDiff) < 60 {
 			if secDiff < 0 {
 				// still before wanted startTime. Increase by 1 from here...

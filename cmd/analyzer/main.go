@@ -16,9 +16,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const NODE_URI = "http://95.217.145.161:8545"
+// const NODE_URI = "http://95.217.145.161:8545"
 
-// const NODE_URI = "/server/geth.ipc"
+const NODE_URI = "/server/geth.ipc"
 
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
@@ -102,13 +102,14 @@ func main() {
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
 	fmt.Println("Connecting to Ethereum node at", NODE_URI)
+	fmt.Println("")
 	client, err := ethclient.Dial(NODE_URI)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
-	fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
+	fmt.Println("\nStarting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
 	// analyzeBlocks(client, 12332609, -2)
 
@@ -129,8 +130,8 @@ func main() {
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
 func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
-	fmt.Println("total blocks:", result.NumBlocks)
-	fmt.Println("total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
+	fmt.Println("Total blocks:", result.NumBlocks)
+	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
 	fmt.Println("- with value:", result.NumTransactions-result.NumTransactionsWithZeroValue)
 	fmt.Println("- zero value:", result.NumTransactionsWithZeroValue)
 	fmt.Println("- with data: ", result.NumTransactionsWithData)
@@ -141,10 +142,10 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	result.ValueTotalEth = ethValue.Text('f', 2)
 	// check(err)
 
-	fmt.Println("total value transferred:", ethValue.Text('f', 2), "ETH")
+	fmt.Println("Total value transferred:", ethValue.Text('f', 2), "ETH")
 
 	// Address details
-	fmt.Println("total addresses:", len(result.Addresses))
+	fmt.Println("Total addresses:", len(result.Addresses))
 
 	// Create addresses array for sorting
 	_addresses := make([]*ethtools.AddressInfo, 0, len(result.Addresses))

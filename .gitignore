@@ -1,2 +1,4 @@
 data/raw.txt
 data/out
+/log
+/tmp*.json
