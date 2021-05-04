@@ -26,31 +26,31 @@ const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
 var AddressDetails = ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
 
 type TopAddressData struct {
-	NumTxReceived  []*ethtools.AddressInfo
-	NumTxSent      []*ethtools.AddressInfo
-	ValueReceived  []*ethtools.AddressInfo
-	ValueSent      []*ethtools.AddressInfo
-	TokenTransfers []*ethtools.AddressInfo // of a contract address, how many times a transfer/transferFrom method was called
+	NumTxReceived  []ethtools.AddressInfo
+	NumTxSent      []ethtools.AddressInfo
+	ValueReceived  []ethtools.AddressInfo
+	ValueSent      []ethtools.AddressInfo
+	TokenTransfers []ethtools.AddressInfo // of a contract address, how many times a transfer/transferFrom method was called
 }
 
 // Raw AnalysisResult extended with a few interesting fields
 type ExportData struct {
-	Data *ethtools.AnalysisResult
+	Data ethtools.AnalysisResult
 
 	TopAddressData TopAddressData
 }
 
 func NewExportData(result ethtools.AnalysisResult) *ExportData {
 	topAddressData := TopAddressData{
-		NumTxReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		NumTxSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		ValueReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		ValueSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		TokenTransfers: make([]*ethtools.AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+		NumTxReceived:  make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		NumTxSent:      make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		ValueReceived:  make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		ValueSent:      make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		TokenTransfers: make([]ethtools.AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
 	}
 
 	return &ExportData{
-		Data:           &result,
+		Data:           result,
 		TopAddressData: topAddressData,
 	}
 }
@@ -87,17 +87,11 @@ func main() {
 	}
 
 	// Start of analysis (UTC)
-	// dayStr := "2021-04-29"
-	// hour := 16
-	// min := 0
 	startTime := ethtools.MakeTime(*datePtr, *hourPtr, *minPtr)
 	startTimestamp := startTime.Unix()
-	// startTimestamp := time.Now().UTC().Unix() - 180*60
 	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
 	// End of analysis
-	// var oneHourInSec int64 = 60 * 60
-	// endTimestamp := startTimestamp + 60*5
 	endTimestamp := startTimestamp + int64(timespanSec)
 	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
 
@@ -148,9 +142,9 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	fmt.Println("Total addresses:", len(result.Addresses))
 
 	// Create addresses array for sorting
-	_addresses := make([]*ethtools.AddressInfo, 0, len(result.Addresses))
+	_addresses := make([]ethtools.AddressInfo, 0, len(result.Addresses))
 	for _, k := range result.Addresses {
-		_addresses = append(_addresses, k)
+		_addresses = append(_addresses, *k)
 	}
 
 	exportData := NewExportData(*result)
