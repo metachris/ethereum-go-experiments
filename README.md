@@ -2,9 +2,14 @@
 ```bash
 # Run analyzer
 go run cmd/analyzer/main.go -date 2021-05-01 -len 10m | tee log
+go run cmd/analyzer/main.go -date 2021-05-03 -len 1d -outjson data/out/2021-05-03.json | tee data/out/2021-05-03.txt
 
 # Run addresstool
+
+# Download data from server
+scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
 ```
+
 
 ---
 

@@ -47,6 +47,7 @@ func main() {
 	hourPtr := flag.Int("hour", 0, "hour (UTC)")
 	minPtr := flag.Int("min", 0, "hour (UTC)")
 	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
+	outJsonPtr := flag.String("outjson", "", "filename to store JSON output")
 	flag.Parse()
 
 	if len(*datePtr) == 0 {
@@ -98,10 +99,22 @@ func main() {
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
 	// analyzeBlocks(client, 12332609, -2)
 
-	printAndProcessResult(result)
+	resultCondensed := printAndProcessResult(result)
+
+	if len(*outJsonPtr) > 0 {
+		j, err := json.MarshalIndent(resultCondensed, "", " ")
+		if err != nil {
+			panic(err)
+		}
+
+		// outFn := "/tmp/test.json"
+		outFn := *outJsonPtr
+		_ = ioutil.WriteFile(outFn, j, 0644)
+		fmt.Println("Saved to " + *outJsonPtr)
+	}
 }
 
-func printAndProcessResult(result *ethtools.AnalysisResult) {
+func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 	// fmt.Println("total transactions:", numTransactions, "- zero value:", numTransactionsWithZeroValue)
 	fmt.Println("total blocks:", result.NumBlocks)
 	fmt.Println("total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
@@ -173,14 +186,7 @@ func printAndProcessResult(result *ethtools.AnalysisResult) {
 		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
 	}
 
-	j, err := json.MarshalIndent(resultCondensed, "", " ")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	outFn := "/tmp/test.json"
-	_ = ioutil.WriteFile(outFn, j, 0644)
-	fmt.Println("Saved to " + outFn)
+	return resultCondensed
 }
 
 func AddressWithName(address string) string {
