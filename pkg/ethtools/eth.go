@@ -39,7 +39,7 @@ type AnalysisResult struct {
 	EndBlockNumber      int64
 	EndBlockTimestamp   uint64
 
-	Addresses     map[string]*AddressInfo
+	Addresses     map[string]*AddressInfo `json:"-"`
 	TxTypes       map[uint8]int
 	ValueTotalWei *big.Int
 	ValueTotalEth string

@@ -16,29 +16,42 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// const NODE_URI = "http://95.217.145.161:8545"
-const NODE_URI = "/server/geth.ipc"
+const NODE_URI = "http://95.217.145.161:8545"
+
+// const NODE_URI = "/server/geth.ipc"
 
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
 
 var AddressDetails = ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
 
-type ResultCondensed struct {
-	AddressesTopNumTxReceived  []*ethtools.AddressInfo
-	AddressesTopNumTxSent      []*ethtools.AddressInfo
-	AddressesTopValueReceived  []*ethtools.AddressInfo
-	AddressesTopValueSent      []*ethtools.AddressInfo
-	AddressesTopTokenTransfers []*ethtools.AddressInfo // of a contract address, how many times a transfer/transferFrom method was called
+type TopAddressData struct {
+	NumTxReceived  []*ethtools.AddressInfo
+	NumTxSent      []*ethtools.AddressInfo
+	ValueReceived  []*ethtools.AddressInfo
+	ValueSent      []*ethtools.AddressInfo
+	TokenTransfers []*ethtools.AddressInfo // of a contract address, how many times a transfer/transferFrom method was called
 }
 
-func NewResultCondensed() *ResultCondensed {
-	return &ResultCondensed{
-		AddressesTopNumTxReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopNumTxSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopValueReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopValueSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		AddressesTopTokenTransfers: make([]*ethtools.AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+// Raw AnalysisResult extended with a few interesting fields
+type ExportData struct {
+	Data *ethtools.AnalysisResult
+
+	TopAddressData TopAddressData
+}
+
+func NewExportData(result ethtools.AnalysisResult) *ExportData {
+	topAddressData := TopAddressData{
+		NumTxReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		NumTxSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		ValueReceived:  make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		ValueSent:      make([]*ethtools.AddressInfo, TOP_ADDRESS_COUNT),
+		TokenTransfers: make([]*ethtools.AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+	}
+
+	return &ExportData{
+		Data:           &result,
+		TopAddressData: topAddressData,
 	}
 }
 
@@ -47,7 +60,7 @@ func main() {
 	hourPtr := flag.Int("hour", 0, "hour (UTC)")
 	minPtr := flag.Int("min", 0, "hour (UTC)")
 	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
-	outJsonPtr := flag.String("outjson", "", "filename to store JSON output")
+	outJsonPtr := flag.String("out", "", "filename to store JSON output")
 	flag.Parse()
 
 	if len(*datePtr) == 0 {
@@ -99,10 +112,10 @@ func main() {
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
 	// analyzeBlocks(client, 12332609, -2)
 
-	resultCondensed := printAndProcessResult(result)
+	exportData := processResultAndPrint(result)
 
 	if len(*outJsonPtr) > 0 {
-		j, err := json.MarshalIndent(resultCondensed, "", " ")
+		j, err := json.MarshalIndent(exportData, "", " ")
 		if err != nil {
 			panic(err)
 		}
@@ -114,8 +127,8 @@ func main() {
 	}
 }
 
-func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
-	// fmt.Println("total transactions:", numTransactions, "- zero value:", numTransactionsWithZeroValue)
+// Processes a raw result into the export data structure, and prints the stats to stdout
+func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	fmt.Println("total blocks:", result.NumBlocks)
 	fmt.Println("total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
 	fmt.Println("- with value:", result.NumTransactions-result.NumTransactionsWithZeroValue)
@@ -139,14 +152,14 @@ func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 		_addresses = append(_addresses, k)
 	}
 
-	resultCondensed := NewResultCondensed()
+	exportData := NewExportData(*result)
 
 	/* SORT BY NUM_TX_RECEIVED */
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by num-tx-received\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	copy(resultCondensed.AddressesTopNumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range resultCondensed.AddressesTopNumTxReceived {
+	copy(exportData.TopAddressData.NumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
+	for _, v := range exportData.TopAddressData.NumTxReceived {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
@@ -154,8 +167,8 @@ func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by num-tx-sent\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
-	copy(resultCondensed.AddressesTopNumTxSent, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range resultCondensed.AddressesTopNumTxSent {
+	copy(exportData.TopAddressData.NumTxSent, _addresses[:TOP_ADDRESS_COUNT])
+	for _, v := range exportData.TopAddressData.NumTxSent {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
@@ -163,8 +176,8 @@ func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-received\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceived.Cmp(_addresses[j].ValueReceived) == 1 })
-	copy(resultCondensed.AddressesTopValueReceived, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range resultCondensed.AddressesTopValueReceived {
+	copy(exportData.TopAddressData.ValueReceived, _addresses[:TOP_ADDRESS_COUNT])
+	for _, v := range exportData.TopAddressData.ValueReceived {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
 	}
 
@@ -172,8 +185,8 @@ func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-sent\n", TOP_ADDRESS_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSent.Cmp(_addresses[j].ValueSent) == 1 })
-	copy(resultCondensed.AddressesTopValueSent, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range resultCondensed.AddressesTopValueSent {
+	copy(exportData.TopAddressData.ValueSent, _addresses[:TOP_ADDRESS_COUNT])
+	for _, v := range exportData.TopAddressData.ValueSent {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSent).Text('f', 2))
 	}
 
@@ -181,12 +194,12 @@ func printAndProcessResult(result *ethtools.AnalysisResult) *ResultCondensed {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by token-transfers\n", TOP_ADDRESS_TOKEN_TRANSFER_COUNT)
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
-	copy(resultCondensed.AddressesTopTokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
-	for _, v := range resultCondensed.AddressesTopTokenTransfers {
+	copy(exportData.TopAddressData.TokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
+	for _, v := range exportData.TopAddressData.TokenTransfers {
 		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
 	}
 
-	return resultCondensed
+	return exportData
 }
 
 func AddressWithName(address string) string {
