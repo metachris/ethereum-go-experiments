@@ -2,3 +2,4 @@ data/raw.txt
 data/out
 /log
 /tmp*.json
+/old_todelete
