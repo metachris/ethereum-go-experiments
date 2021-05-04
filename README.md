@@ -1,11 +1,22 @@
 
-    go run cmd/analyzer/main.go -date 2021-05-01 -len 10m | tee log
+```bash
+# Run analyzer
+go run cmd/analyzer/main.go -date 2021-05-01 -len 10m | tee log
+
+# Run addresstool
+```
 
 ---
 
 Resources:
 
+* https://bitinfocharts.com/ethereum/ - inspiration
 * https://goethereumbook.org/en/transaction-query/
+
+To do:
+
+* Finding blocks: don't fail if >latest-height
+* Gas fees
 
 ---
 
