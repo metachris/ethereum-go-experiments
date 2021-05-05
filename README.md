@@ -1,7 +1,7 @@
 
 ```bash
 # Run analyzer
-go run cmd/analyzer/main.go -date 2021-05-01 -len 10m | tee log
+go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-03 -len 1d -out data/out/2021-05-03.json | tee data/out/2021-05-03.txt
 
 # Run addresstool

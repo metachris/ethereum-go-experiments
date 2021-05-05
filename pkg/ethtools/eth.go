@@ -20,8 +20,7 @@ type AddressInfo struct {
 	ValueSentEth       string
 	ValueReceived      *big.Int
 	ValueReceivedEth   string
-	tokensTransferred  *big.Int
-	TokensTransferred  uint64
+	TokensTransferred  *big.Int
 }
 
 func NewAddressInfo(address string) *AddressInfo {
@@ -29,7 +28,7 @@ func NewAddressInfo(address string) *AddressInfo {
 		Address:           address,
 		ValueSent:         new(big.Int),
 		ValueReceived:     new(big.Int),
-		tokensTransferred: new(big.Int),
+		TokensTransferred: new(big.Int),
 	}
 }
 
@@ -165,10 +164,9 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 							}
 							valBigInt := new(big.Int)
 							valBigInt.SetString(value, 16)
-							toAddrInfo.tokensTransferred = new(big.Int).Add(toAddrInfo.tokensTransferred, valBigInt)
-							toAddrInfo.TokensTransferred = toAddrInfo.tokensTransferred.Uint64()
-							// if toAddrInfo.Address == "0xdAC17F958D2ee523a2206206994597C13D831ec7" {
-							// 	fmt.Println("tt", valBigInt.String(), toAddrInfo.tokensTransferred.String(), a)
+							toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
+							// if toAddrInfo.Address == "0x514910771AF9Ca656af840dff83E8264EcF986CA" {
+							// 	fmt.Printf("LINK %v \t %s \t %s \n", valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
 							// }
 						}
 					}

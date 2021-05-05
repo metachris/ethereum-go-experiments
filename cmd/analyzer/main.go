@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"math/big"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,9 +17,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// const NODE_URI = "http://95.217.145.161:8545"
+const NODE_URI = "http://95.217.145.161:8545"
 
-const NODE_URI = "/server/geth.ipc"
+// const NODE_URI = "/server/geth.ipc"
 
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
@@ -106,7 +107,7 @@ func main() {
 	fmt.Println("\nStarting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
 	// analyzeBlocks(client, 12332609, -2)
-
+	// return
 	exportData := processResultAndPrint(result)
 
 	if len(*outJsonPtr) > 0 {
@@ -191,7 +192,7 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	copy(exportData.TopAddressData.TokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range exportData.TopAddressData.TokenTransfers {
-		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v \n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
+		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
 	}
 
 	return exportData
@@ -206,16 +207,18 @@ func AddressWithName(address string) string {
 	}
 }
 
-func NumTokensWithDecimals(numTokens uint64, address string) string {
+func NumTokensWithDecimals(numTokens *big.Int, address string) string {
 	// fmt.Println(address)
 	detail, ok := AddressDetails[strings.ToLower(address)]
 	if ok {
 		decimals := uint64(detail.Decimals)
 		divider := float64(1)
 		if decimals > 0 {
-			divider = math.Pow(10, float64(decimals))
+			divider = float64(math.Pow(10, float64(decimals)))
 		}
-		return fmt.Sprintf("%.2f %-4v", float64(numTokens)/divider, detail.Symbol)
+		res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
+		return fmt.Sprintf("%s %-5v", res.Text('f', 2), detail.Symbol)
+		// return fmt.Sprintf("n=%v div=%f res=%v", numTokens, divider, res)
 	} else {
 		return fmt.Sprintf("%d ?   ", numTokens)
 	}
