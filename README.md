@@ -1,8 +1,14 @@
 
 ```bash
-# Run analyzer
+# Run analyzer for certain timespan
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-03 -len 1d -out data/out/2021-05-03.json | tee data/out/2021-05-03.txt
+
+# Run analyzer for specific block
+go run cmd/analyzer/main.go -block 12381372
+
+# Run analyzer starting at specific block, for certain number of blocks (in this case, 10 blocks total)
+go run cmd/analyzer/main.go -block 12381372 -len 10
 
 # Run addresstool
 go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074

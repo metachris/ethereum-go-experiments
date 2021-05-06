@@ -62,13 +62,14 @@ func main() {
 	minPtr := flag.Int("min", 0, "hour (UTC)")
 	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
 	outJsonPtr := flag.String("out", "", "filename to store JSON output")
+	blockNumPtr := flag.Int("block", 0, "specific block to check")
 	flag.Parse()
 
-	if len(*datePtr) == 0 {
-		log.Fatal("Date missing, add with -date <yyyy-mm-dd>")
+	if len(*datePtr) == 0 && *blockNumPtr == 0 {
+		log.Fatal("Date or block missing, add with -date <yyyy-mm-dd> or -block <blockNum>")
 	}
 
-	if len(*timespanPtr) == 0 {
+	if *blockNumPtr == 0 && len(*timespanPtr) == 0 {
 		log.Fatal("Timespan missing, -len")
 	}
 
@@ -85,29 +86,47 @@ func main() {
 	case strings.HasSuffix(*timespanPtr, "d"):
 		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "d"))
 		timespanSec *= 60 * 60 * 24
+	default:
+		timespanSec, _ = strconv.Atoi(*timespanPtr)
+
+		// If we analyze by starting at a specific block, timespanSec is used for the number of blocks
+		if *blockNumPtr > 0 {
+			if timespanSec == 0 {
+				timespanSec = -1
+			} else if timespanSec > 0 {
+				timespanSec *= -1
+			}
+		}
 	}
 
-	// Start of analysis (UTC)
-	startTime := ethtools.MakeTime(*datePtr, *hourPtr, *minPtr)
-	startTimestamp := startTime.Unix()
-	fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
-
-	// End of analysis
-	endTimestamp := startTimestamp + int64(timespanSec)
-	fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
-
-	fmt.Println("Connecting to Ethereum node at", NODE_URI)
-	fmt.Println("")
+	// fmt.Println("Connecting to Ethereum node at", NODE_URI)
+	// fmt.Println("")
 	client, err := ethclient.Dial(NODE_URI)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
-	fmt.Println("\nStarting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
-	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
-	// result := ethtools.AnalyzeBlocks(client, 12351458, -1)
-	// return
+	var result *ethtools.AnalysisResult
+	if *blockNumPtr > 0 {
+		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec))
+	} else {
+		// Start of analysis (UTC)
+		startTime := ethtools.MakeTime(*datePtr, *hourPtr, *minPtr)
+		startTimestamp := startTime.Unix()
+		fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
+
+		// End of analysis
+		endTimestamp := startTimestamp + int64(timespanSec)
+		fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
+
+		fmt.Println("")
+		block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
+		fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
+		fmt.Println("")
+		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
+	}
+
+	fmt.Println("")
 	exportData := processResultAndPrint(result)
 
 	if len(*outJsonPtr) > 0 {
