@@ -1,14 +1,13 @@
 startTime: 1620172800 / 2021-05-05 00:00:00 +0000 UTC
 endTime:   1620259200 / 2021-05-06 00:00:00 +0000 UTC
-Connecting to Ethereum node at /server/geth.ipc
 
 Finding start block:
 12372124 	 blockTime: 1620189447 	 secDiff: 16647
 12370844 	 blockTime: 1620172555 	 secDiff:  -245
 12370862 	 blockTime: 1620172790 	 secDiff:   -10
 12370863 	 blockTime: 1620172805 	 secDiff:     5
-
 Starting block found: 12370863 - time: 1620172805 / 2021-05-05 00:00:05 +0000 UTC
+
 12370863 	 2021-05-05 00:00:05 +0000 UTC 	 1620172805 	 tx=171
 12370864 	 2021-05-05 00:00:12 +0000 UTC 	 1620172812 	 tx=399
 12370865 	 2021-05-05 00:00:50 +0000 UTC 	 1620172850 	 tx=327
@@ -6530,6 +6529,7 @@ Starting block found: 12370863 - time: 1620172805 / 2021-05-05 00:00:05 +0000 UT
 12377381 	 2021-05-06 00:00:25 +0000 UTC 	 1620259225 	 tx=272
 - 6518 blocks processed. Skipped last block 12377381 because it happened after endTime.
 
+
 Total blocks: 6518
 Total transactions: 1518877 / types: map[0:1516474 1:2403]
 - with value: 758562
@@ -6697,9 +6697,9 @@ Top 100 addresses by token-transfers
 0xD533a949740bb3306d119CC777fa900bA034cd52 Curve DAO Token              988 token transfers 	     1210 tx 	                9,622,738 CRV  
 0xaaAEBE6Fe48E54f431b0C390CfaF0b017d09D42d Celsius Network              983 token transfers 	     1078 tx 	                3,774,523 CEL  
 0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 Origin Protocol              955 token transfers 	     1026 tx 	               49,567,802 OGN  
-0x491604c0FDF08347Dd1fa4Ee062a822A5DD06B5D                              912 token transfers 	      982 tx 	 59919346075207536178698566 ?    
+0x491604c0FDF08347Dd1fa4Ee062a822A5DD06B5D Cartesi                      912 token transfers 	      982 tx 	               59,919,346 CTSI 
 0x4E15361FD6b4BB609Fa63C81A2be19d873717870 Fantom                       910 token transfers 	     1383 tx 	               69,938,542 FTM  
-0x40E45890dff79e7D533797d964E64a2C0121F49a                              910 token transfers 	      910 tx 	          113169421075402 ?    
+0x40E45890dff79e7D533797d964E64a2C0121F49a Smart Trade Coin             910 token transfers 	      910 tx 	               11,316,942 TRADE
 0x3597bfD533a99c9aa083587B074434E61Eb0A258 Dent                         891 token transfers 	      956 tx 	            2,598,986,239 DENT 
 0x0000000000085d4780B73119b644AE5ecd22b376 TrueUSD                      883 token transfers 	      951 tx 	               56,640,376 TUSD 
 0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e yearn.finance                867 token transfers 	      960 tx 	                    2,626 YFI  
@@ -6707,10 +6707,10 @@ Top 100 addresses by token-transfers
 0x8E870D67F660D95d5be530380D0eC0bd388289E1 Paxos Standard               812 token transfers 	      823 tx 	               40,833,297 PAX  
 0x9B9647431632AF44be02ddd22477Ed94d14AacAa KOK Coin                     789 token transfers 	      789 tx 	                  235,304 KOK  
 0x653430560bE843C4a3D143d0110e896c2Ab8ac0D Molecular Future             785 token transfers 	      786 tx 	                6,154,486 MOF  
-0x2352858080A45D776609b5449A1B8Dcb1AE549c8                              755 token transfers 	      755 tx 	 3276542580000000000000000 ?    
+0x2352858080A45D776609b5449A1B8Dcb1AE549c8 True Life Coin               755 token transfers 	      755 tx 	                3,276,543 TLC  
 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 Wrapped Bitcoin              750 token transfers 	     1273 tx 	                    3,296 WBTC 
 0x408e41876cCCDC0F92210600ef50372656052a38 REN                          750 token transfers 	      844 tx 	               16,906,025 REN  
-0x607F4C5BB672230e8672085532f7e901544a7375                              700 token transfers 	      760 tx 	         6535365239821162 ?    
+0x607F4C5BB672230e8672085532f7e901544a7375 iExec RLC                    700 token transfers 	      760 tx 	                6,535,365 RLC  
 0x77FbA179C79De5B7653F68b5039Af940AdA60ce0 Ampleforth Governance        689 token transfers 	      879 tx 	                  764,153 FORTH
 0x41e5560054824eA6B0732E656E3Ad64E20e94E45 Civic                        682 token transfers 	      698 tx 	               30,258,016 CVC  
 0xB64ef51C888972c908CFacf59B47C1AfBC0Ab8aC Storj                        681 token transfers 	      700 tx 	               11,087,454 STORJ
@@ -6721,7 +6721,7 @@ Top 100 addresses by token-transfers
 0xe53EC727dbDEB9E2d5456c3be40cFF031AB40A55 SuperFarm                    589 token transfers 	      695 tx 	                6,217,255 SUPER
 0xB62132e35a6c13ee1EE0f84dC5d40bad8d815206 NEXO                         589 token transfers 	      631 tx 	                1,301,968 NEXO 
 0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C Bancor Network Token         586 token transfers 	      757 tx 	                6,559,427 BNT  
-0x9b00e6E8D787b13756eb919786c9745054DB64f9                              577 token transfers 	     1623 tx 	 317590810853239435133593 ?    
+0x9b00e6E8D787b13756eb919786c9745054DB64f9 Sienna (ERC20)               577 token transfers 	     1623 tx 	                317,591 wSIENNA
 0x744d70FDBE2Ba4CF95131626614a1763DF805B9E Status                       571 token transfers 	      600 tx 	              257,767,113 SNT  
 0x6f259637dcD74C767781E37Bc6133cd6A68aa161 Huobi Token                  563 token transfers 	      589 tx 	                  522,117 HT   
 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 WETH                         551 token transfers 	     6524 tx 	                    5,367 WETH 
@@ -6729,43 +6729,43 @@ Top 100 addresses by token-transfers
 0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd Gemini Dollar                547 token transfers 	      589 tx 	                7,334,860 GUSD 
 0xBA11D00c5f74255f56a5E366F4F77f5A186d7f55 Band Protocol                533 token transfers 	      579 tx 	                  728,749 BAND 
 0xdc9Ac3C20D1ed0B540dF9b1feDC10039Df13F99c UTRUST                       528 token transfers 	      600 tx 	               17,243,896 UTK  
-0x3DB6Ba6ab6F95efed1a6E794caD492fAAabF294D                              520 token transfers 	      533 tx 	          351586326430874 ?    
+0x3DB6Ba6ab6F95efed1a6E794caD492fAAabF294D LTO Network                  520 token transfers 	      533 tx 	                3,515,863 LTO  
 0x0FD10b9899882a6f2fcb5c371E17e70FdEe00C38 Pundi X Token                520 token transfers 	      599 tx 	               6,711,563 PUNDIX
 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9 FTX Token                    517 token transfers 	      667 tx 	                  338,237 FTT  
-0x09a3EcAFa817268f77BE1283176B946C4ff2E608                              493 token transfers 	      611 tx 	 1987707737971040642610557 ?    
+0x09a3EcAFa817268f77BE1283176B946C4ff2E608 Mirror Protocol              493 token transfers 	      611 tx 	                1,987,708 MIR  
 0x8eB24319393716668D768dCEC29356ae9CfFe285 SingularityNET               493 token transfers 	      576 tx 	               10,588,515 AGI  
 0xdd974D5C2e2928deA5F71b9825b8b646686BD200 Kyber Network                489 token transfers 	      558 tx 	                5,791,010 KNC  
 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39 HEX                          479 token transfers 	     1391 tx 	               44,280,118 HEX  
 0x476c5E26a75bd202a9683ffD34359C0CC15be0fF Serum                        471 token transfers 	      554 tx 	                4,657,660 SRM  
-0xd87cC98DE50Cd7391a8Fa1A415dEf9FF65FF9718                              456 token transfers 	      456 tx 	 8834510022670000000000000 ?    
+0xd87cC98DE50Cd7391a8Fa1A415dEf9FF65FF9718 Ebaycoin                     456 token transfers 	      456 tx 	                8,834,510 EBC  
 0x3845badAde8e6dFF049820680d1F14bD3903a5d0 SAND                         455 token transfers 	      519 tx 	               35,779,353 SAND 
 0x4575f41308EC1483f3d399aa9a2826d74Da13Deb Orchid Protocol              454 token transfers 	      475 tx 	                9,226,767 OXT  
 0xbE9375C6a420D2eEB258962efB95551A5b722803 StormX                       439 token transfers 	      605 tx 	              509,535,656 STMX 
 0x83e6f1E41cdd28eAcEB20Cb649155049Fac3D5Aa Polkastarter                 438 token transfers 	      637 tx 	                  931,703 POLS 
 0x58b6A8A3302369DAEc383334672404Ee733aB239 Livepeer                     417 token transfers 	      657 tx 	                  109,921 LPT  
 0x8762db106B2c2A0bccB3A80d1Ed41273552616E8 Reserve Rights Token         407 token transfers 	      500 tx 	               65,966,649 RSR  
-0xf2ddae89449b7D26309a5D54614B1FC99C608AF5                              401 token transfers 	      401 tx 	 110584830818332720003295232 ?    
+0xf2ddae89449b7D26309a5D54614B1FC99C608AF5 ASTA                         401 token transfers 	      401 tx 	              110,584,831 ASTA 
 0x3301Ee63Fb29F863f2333Bd4466acb46CD8323E6 Akita Inu                    394 token transfers 	      640 tx 	        2,678,213,056,409 AKITA
 0x419D0d8BdD9aF5e606Ae2232ed285Aff190E711b FunFair                      376 token transfers 	      390 tx 	               43,067,025 FUN  
 0x0AbdAce70D3790235af448C88547603b945604ea district0x                   368 token transfers 	      383 tx 	               26,382,206 DNT  
-0x55652ce84D686177c8946E8c78078c0d6CfA4b30                              356 token transfers 	      356 tx 	  93656844598870000000000 ?    
+0x55652ce84D686177c8946E8c78078c0d6CfA4b30 AQUANITE                     356 token transfers 	      356 tx 	                   93,657 AQN  
 0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828 UMA                          352 token transfers 	      376 tx 	                  267,717 UMA  
 0x0f51bb10119727a7e5eA3538074fb341F56B09Ad DAO Maker                    350 token transfers 	      496 tx 	                2,135,132 DAO  
 0xA9598333B99d14D90Bc81CAd8Af82C4C70625e75 Metis                        348 token transfers 	      348 tx 	                  542,346 MTS  
-0x761D38e5ddf6ccf6Cf7c55759d5210750B5D60F3                              342 token transfers 	     1003 tx 	 15043103970468801994324092530702 ?    
-0x358AA737e033F34df7c54306960a38d09AaBd523                              330 token transfers 	      455 tx 	 8415835107030589787612583 ?    
-0xfAd45E47083e4607302aa43c65fB3106F1cd7607                              326 token transfers 	      646 tx 	      6155902846373529727 ?    
+0x761D38e5ddf6ccf6Cf7c55759d5210750B5D60F3 Dogelon Mars                 342 token transfers 	     1003 tx 	       15,043,103,970,469 ELON 
+0x358AA737e033F34df7c54306960a38d09AaBd523 Ares Protocol                330 token transfers 	      455 tx 	                8,415,835 ARES 
+0xfAd45E47083e4607302aa43c65fB3106F1cd7607 Hoge Finance                 326 token transfers 	      646 tx 	            6,155,902,846 HOGE 
 0x00c83aeCC790e8a4453e5dD3B0B4b3680501a7A7 SKALE                        326 token transfers 	      355 tx 	               26,359,648 SKL  
 0x6149C26Cd2f7b5CCdb32029aF817123F6E37Df5B Launchpool                   309 token transfers 	      784 tx 	                  249,081 LPOOL
-0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF                              304 token transfers 	      475 tx 	  67568660312929821030928 ?    
+0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF Rarible                      304 token transfers 	      475 tx 	                   67,569 RARI 
 0x967da4048cD07aB37855c090aAF366e4ce1b9F48 Ocean Protocol               301 token transfers 	      387 tx 	                8,430,433 OCEAN
-0x9275e8386A5BDdA160c0e621e9A6067b8fd88ea2                              277 token transfers 	      300 tx 	 3626195890821517669713061 ?    
+0x9275e8386A5BDdA160c0e621e9A6067b8fd88ea2 NOBUNAGA                     277 token transfers 	      300 tx 	                3,626,196 NBNG 
 0x056354F3Ff20743aa4c0DA365603871c7000b081 TriumphX                     276 token transfers 	      276 tx 	               13,724,783 TRIX 
-0x67B6D479c7bB412C54e03dCA8E1Bc6740ce6b99C                              275 token transfers 	      451 tx 	 22238916235912282413052945 ?    
-0x84cA8bc7997272c7CfB4D0Cd3D55cd942B3c9419                              275 token transfers 	      335 tx 	 5212465486722607769203527 ?    
+0x67B6D479c7bB412C54e03dCA8E1Bc6740ce6b99C Kylin Network                275 token transfers 	      451 tx 	               22,238,916 KYL  
+0x84cA8bc7997272c7CfB4D0Cd3D55cd942B3c9419 DIA                          275 token transfers 	      335 tx 	                5,212,465 DIA  
 0xe0438add89129061b62b881938EFBe27609e9134 NMax Gas Token               264 token transfers 	      264 tx 	                  465,492 WPNT 
 0x252b9F56359901a0BDE52d0675b1f1130d86F471 PANDO                        262 token transfers 	      265 tx 	                6,553,279 PANDO
-0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD                              258 token transfers 	      336 tx 	 3036952853147040639672242 ?    
+0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD pNetwork                     258 token transfers 	      336 tx 	                3,036,953 PNT  
 0xf65B5C5104c4faFD4b709d9D60a185eAE063276c Truebit                      256 token transfers 	     1229 tx 	                6,104,285 TRU  
-0x0488401c3F535193Fa8Df029d9fFe615A06E74E6                              255 token transfers 	      352 tx 	 1063744090285833282763745519 ?    
+0x0488401c3F535193Fa8Df029d9fFe615A06E74E6 SparkPoint                   255 token transfers 	      352 tx 	            1,063,744,090 SRK  
 Saved to output/2021-05-05.json
