@@ -157,16 +157,18 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 							switch methodId {
 							case "a9059cbb": // transfer
 								// targetAddr = hex.EncodeToString(data[4:36])
-								value = hex.EncodeToString(data[36:])
+								value = hex.EncodeToString(data[36:68])
 							case "23b872dd": // transferFrom
 								// targetAddr = hex.EncodeToString(data[36:68])
-								value = hex.EncodeToString(data[68:])
+								value = hex.EncodeToString(data[68:100])
 							}
 							valBigInt := new(big.Int)
 							valBigInt.SetString(value, 16)
 							toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
-							// if toAddrInfo.Address == "0x514910771AF9Ca656af840dff83E8264EcF986CA" {
-							// 	fmt.Printf("LINK %v \t %s \t %s \n", valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+
+							// Debug helper
+							// if toAddrInfo.Address == "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" {
+							// 	fmt.Printf("USDC %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
 							// }
 						}
 					}

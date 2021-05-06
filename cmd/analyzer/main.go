@@ -106,7 +106,7 @@ func main() {
 	block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
 	fmt.Println("\nStarting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 	result := ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
-	// analyzeBlocks(client, 12332609, -2)
+	// result := ethtools.AnalyzeBlocks(client, 12351458, -1)
 	// return
 	exportData := processResultAndPrint(result)
 
@@ -192,7 +192,9 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	copy(exportData.TopAddressData.TokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range exportData.TopAddressData.TokenTransfers {
-		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, NumTokensWithDecimals(v.TokensTransferred, v.Address))
+		if numTokens, _ := NumTokensWithDecimals(v.TokensTransferred, v.Address); true {
+			fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, numTokens)
+		}
 	}
 
 	return exportData
@@ -207,7 +209,7 @@ func AddressWithName(address string) string {
 	}
 }
 
-func NumTokensWithDecimals(numTokens *big.Int, address string) string {
+func NumTokensWithDecimals(numTokens *big.Int, address string) (string, bool) {
 	// fmt.Println(address)
 	detail, ok := AddressDetails[strings.ToLower(address)]
 	if ok {
@@ -217,21 +219,23 @@ func NumTokensWithDecimals(numTokens *big.Int, address string) string {
 			divider = float64(math.Pow(10, float64(decimals)))
 		}
 
-		// res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
+		res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
+		formatted := formatInt(res)
 		// return fmt.Sprintf("%s %-5v", res.Text('f', 2), detail.Symbol)
+		return fmt.Sprintf("%s %-5v", formatted, detail.Symbol), true
 
-		resInt := new(big.Int).Div(numTokens, big.NewInt(int64(divider)))
-		formatted := formatInt(int(resInt.Uint64()))
-		return fmt.Sprintf("%s %-5v", formatted, detail.Symbol)
+		// resInt := new(big.Int).Div(numTokens, big.NewInt(int64(divider)))
+		// formatted := formatInt(int(resInt.Uint64()))
+		// return fmt.Sprintf("%s %-5v", formatted, detail.Symbol), true
 	} else {
-		return fmt.Sprintf("%d ?    ", numTokens)
+		return fmt.Sprintf("%d ?    ", numTokens), false
 	}
 }
 
-func formatInt(number int) string {
-	output := strconv.Itoa(number)
+func formatInt(number *big.Float) string {
+	output := number.Text('f', 0)
 	startOffset := 3
-	if number < 0 {
+	if number.Cmp(big.NewFloat(0)) == -1 { // negative number, starts with -
 		startOffset++
 	}
 	for outputIndex := len(output); outputIndex > startOffset; {
