@@ -5,6 +5,7 @@ go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-03 -len 1d -out data/out/2021-05-03.json | tee data/out/2021-05-03.txt
 
 # Run addresstool
+go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 
 # Download data from server
 scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .

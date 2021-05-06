@@ -216,10 +216,27 @@ func NumTokensWithDecimals(numTokens *big.Int, address string) string {
 		if decimals > 0 {
 			divider = float64(math.Pow(10, float64(decimals)))
 		}
-		res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
-		return fmt.Sprintf("%s %-5v", res.Text('f', 2), detail.Symbol)
-		// return fmt.Sprintf("n=%v div=%f res=%v", numTokens, divider, res)
+
+		// res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
+		// return fmt.Sprintf("%s %-5v", res.Text('f', 2), detail.Symbol)
+
+		resInt := new(big.Int).Div(numTokens, big.NewInt(int64(divider)))
+		formatted := formatInt(int(resInt.Uint64()))
+		return fmt.Sprintf("%s %-5v", formatted, detail.Symbol)
 	} else {
-		return fmt.Sprintf("%d ?   ", numTokens)
+		return fmt.Sprintf("%d ?    ", numTokens)
 	}
+}
+
+func formatInt(number int) string {
+	output := strconv.Itoa(number)
+	startOffset := 3
+	if number < 0 {
+		startOffset++
+	}
+	for outputIndex := len(output); outputIndex > startOffset; {
+		outputIndex -= 3
+		output = output[:outputIndex] + "," + output[outputIndex:]
+	}
+	return output
 }
