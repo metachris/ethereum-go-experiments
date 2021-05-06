@@ -175,7 +175,7 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	copy(exportData.TopAddressData.NumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range exportData.TopAddressData.NumTxReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	/* SORT BY NUM_TX_SENT */
@@ -184,25 +184,25 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	copy(exportData.TopAddressData.NumTxSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range exportData.TopAddressData.NumTxSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	/* SORT BY VALUE_RECEIVED */
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-received\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceived.Cmp(_addresses[j].ValueReceived) == 1 })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
 	copy(exportData.TopAddressData.ValueReceived, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range exportData.TopAddressData.ValueReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceived).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	/* SORT BY VALUE_SENT */
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-sent\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSent.Cmp(_addresses[j].ValueSent) == 1 })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
 	copy(exportData.TopAddressData.ValueSent, _addresses[:TOP_ADDRESS_COUNT])
 	for _, v := range exportData.TopAddressData.ValueSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSent).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
 	}
 
 	/* SORT BY TOKEN_TRANSFERS */

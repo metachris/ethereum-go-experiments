@@ -16,9 +16,9 @@ type AddressInfo struct {
 	NumTxSent          int
 	NumTxReceived      int
 	NumTxTokenTransfer int
-	ValueSent          *big.Int
+	ValueSentWei       *big.Int
 	ValueSentEth       string
-	ValueReceived      *big.Int
+	ValueReceivedWei   *big.Int
 	ValueReceivedEth   string
 	TokensTransferred  *big.Int
 }
@@ -26,8 +26,8 @@ type AddressInfo struct {
 func NewAddressInfo(address string) *AddressInfo {
 	return &AddressInfo{
 		Address:           address,
-		ValueSent:         new(big.Int),
-		ValueReceived:     new(big.Int),
+		ValueSentWei:      new(big.Int),
+		ValueReceivedWei:  new(big.Int),
 		TokensTransferred: new(big.Int),
 	}
 }
@@ -113,8 +113,8 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 				}
 
 				toAddrInfo.NumTxReceived += 1
-				toAddrInfo.ValueReceived = new(big.Int).Add(toAddrInfo.ValueReceived, tx.Value())
-				toAddrInfo.ValueReceivedEth = WeiToEth(toAddrInfo.ValueReceived).Text('f', 2)
+				toAddrInfo.ValueReceivedWei = new(big.Int).Add(toAddrInfo.ValueReceivedWei, tx.Value())
+				toAddrInfo.ValueReceivedEth = WeiToEth(toAddrInfo.ValueReceivedWei).Text('f', 2)
 			}
 
 			// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
@@ -128,8 +128,8 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 				}
 
 				fromAddrInfo.NumTxSent += 1
-				fromAddrInfo.ValueSent = big.NewInt(0).Add(fromAddrInfo.ValueSent, tx.Value())
-				fromAddrInfo.ValueSentEth = WeiToEth(fromAddrInfo.ValueSent).Text('f', 2)
+				fromAddrInfo.ValueSentWei = big.NewInt(0).Add(fromAddrInfo.ValueSentWei, tx.Value())
+				fromAddrInfo.ValueSentEth = WeiToEth(fromAddrInfo.ValueSentWei).Text('f', 2)
 			}
 
 			// Check for token transfer

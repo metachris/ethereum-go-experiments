@@ -1,3 +1,8 @@
+Iterate over blocks and all contained transactions on the Ethereum blockchain, and build statistics based on the data.
+
+Requires an Ethereum Node to connect to (eg. geth, Infura).
+
+## Geting started
 
 ```bash
 # Run analyzer for certain timespan
@@ -17,45 +22,26 @@ go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE62
 scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
 ```
 
-
 ---
 
-Resources:
+## To do
 
-* https://bitinfocharts.com/ethereum/ - inspiration
-* https://goethereumbook.org/en/transaction-query/
-
-To do:
-
-* Finding blocks: don't fail if >latest-height
 * Gas fees
+* Tokens transferred: save in JSON the converted amount, symbol, name, decimals
+* Finding blocks: don't fail if >latest-height
+
+## Resources
+
+* https://goethereumbook.org/en/transaction-query/
+* https://bitinfocharts.com/ethereum/ - inspiration
 
 ---
 
-Goals:
+# Notes
 
-* Over given timespan, check all blocks
-* Count
-  * Transactions
-  * Sender
-  * Receiver
+## Token transfer SC calls
 
-
-TX can be ETH transfer or SC invocation
-
-TX types:
-
-* Eth transfer
-* SC invocation
-  * Generic
-  * ERC-20
-  * ERC-721
-
----
-
-## ERC 20 + ERC 721
-
-### transfer
+### `transfer`
 
 ```
 Function: transfer(address _to, uint256 _value)
@@ -75,9 +61,9 @@ ERC 20:
 ERC 721:
 
 * https://etherscan.io/tx/0x08cc6cf2b6ad598458c1fc71026f4c55d9ffa1c91baf1354ee74204406205b8c (CryptoKitties)
-*
 
-### transferFrom
+
+### `transferFrom`
 
 ```
 Function: transferFrom(address from, address to, uint256 tokenId)
@@ -88,18 +74,13 @@ MethodID: 0x23b872dd
 [2]:  0000000000000000000000000000000000000000000000000000000000055516
 ```
 
+ERC 20:
+
+* https://etherscan.io/tx/0x0d86cfde5a6e2a1d86f8e9d0d1c30ac8edcdc415235689cdf81260cdd45ad25c (Uniswap)
+
 ERC 721:
 
 * https://etherscan.io/tx/0xc4bbf3633cd5fc760ebe3eab4b2d54cad4220125997bb696cf17f0e5e48466a9 (rarible)
 * https://etherscan.io/tx/0x18bd3184549fc2456f2968d3565f620413336ab556613440eea803b153f62fc3 (rarible)
 * https://etherscan.io/tx/0x2909d76a36a5daf8c9b998841b516461b27961dd4edbc009338f9e87fef2b44d (Hashmasks)
 
-
----
-
-Reference block: 1619546404
-
-* https://etherscan.io/block/12323940
-* Timestamp (sec): 1619546404
-* UTC: Tue Apr 27 2021 18:00:04 GMT+0000
-* VIE: 2021-04-27 20:00:04 +0200 CEST
