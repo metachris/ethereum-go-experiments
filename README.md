@@ -22,6 +22,14 @@ go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE62
 scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
 ```
 
+## Working with DB
+
+```bash
+docker-compose up
+```
+
+Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&db=ethstats&ns=public
+
 ---
 
 ## To do
