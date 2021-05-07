@@ -166,10 +166,17 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 							valBigInt.SetString(value, 16)
 							toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
 
-							// Debug helper
-							// if toAddrInfo.Address == "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" {
-							// 	fmt.Printf("USDC %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+							errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
+							// if valBigInt.Cmp(errVal) == 1 {
+							// 	fmt.Printf("- value too large? tx %s \t addr %s \t val %s \n", tx.Hash(), tx.To(), value)
 							// }
+
+							// Debug helper
+							if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
+								if valBigInt.Cmp(errVal) == 1 {
+									fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+								}
+							}
 						}
 					}
 				}
@@ -186,12 +193,37 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	return result
 }
 
+// Functionality for getting the first block after a certain timestamp
+type Int64RingBuffer []int64
+
+func (list Int64RingBuffer) Has(a int64) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (list *Int64RingBuffer) Add(a int64) {
+	// fmt.Println("len", len(*list), "cap", cap(*list))
+	// if len(*list) == cap(*list) {
+	if len(*list) == 6 {
+		*list = (*list)[1:]
+	}
+	*list = append(*list, a)
+}
+
 // GetBlockAtTimestamp searches for a block that is within 30 seconds of the target timestamp.
 // Guesses a block number, downloads it, and narrows down time gap if needed until block is found.
 func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types.Block {
 	currentBlockNumber := getTargetBlocknumber(targetTimestamp)
 	// TODO: check that blockNumber <= latestHeight
 	var isNarrowingDownFromBelow = false
+
+	divideSec := int64(13)                      // average block time is 13 sec
+	lastSecDiffs := make(Int64RingBuffer, 0, 6) // if secDiffs keep repeating, need to adjust the divider
+
 	fmt.Println("Finding start block:")
 	for {
 		// fmt.Println("Checking block:", currentBlockNumber)
@@ -203,6 +235,14 @@ func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 		}
 
 		secDiff := int64(block.Time()) - targetTimestamp
+
+		if lastSecDiffs.Has(secDiff) {
+			divideSec += 1
+			// fmt.Println("already contains time diff. adjusting divider", divideSec)
+		}
+		lastSecDiffs.Add(secDiff)
+		// fmt.Println(lastSecDiffs)
+
 		fmt.Printf("%d \t blockTime: %d \t secDiff: %5d\n", currentBlockNumber, block.Time(), secDiff)
 		if Abs(secDiff) < 60 {
 			if secDiff < 0 {
@@ -222,7 +262,7 @@ func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 		}
 
 		// Try for better block in big steps
-		blockDiff := secDiff / 13 // average block time is 13 sec
+		blockDiff := secDiff / divideSec
 		currentBlockNumber -= blockDiff
 	}
 }
