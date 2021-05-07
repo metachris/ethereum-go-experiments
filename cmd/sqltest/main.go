@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	ethtools.AddAddressesToDatabase()
+	db := ethtools.GetDatabase()
+	ethtools.AddAddressesToDatabase(db)
 }

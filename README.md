@@ -41,7 +41,12 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 ## Resources
 
 * https://goethereumbook.org/en/transaction-query/
-* https://bitinfocharts.com/ethereum/ - inspiration
+* https://github.com/jmoiron/sqlx
+
+Inspiration & Ideas
+
+* https://bitinfocharts.com/ethereum/
+* https://github.com/ardanlabs/service/blob/master/foundation/database/database.go
 
 ---
 

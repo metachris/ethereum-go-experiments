@@ -64,6 +64,7 @@ func main() {
 	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
 	outJsonPtr := flag.String("out", "", "filename to store JSON output")
 	blockNumPtr := flag.Int("block", 0, "specific block to check")
+	addToDbPtr := flag.Bool("addDb", false, "add to database")
 	flag.Parse()
 
 	if len(*datePtr) == 0 && *blockNumPtr == 0 {
@@ -108,11 +109,23 @@ func main() {
 	}
 
 	var result *ethtools.AnalysisResult
+	date := *datePtr
+	hour := *hourPtr
+	min := *minPtr
+	sec := 0
+
 	if *blockNumPtr > 0 {
 		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec))
+		t1 := time.Unix(int64(result.StartBlockTimestamp), 0).UTC()
+		date = t1.Format("2006-01-02")
+		hour = t1.Hour()
+		min = t1.Minute()
+		sec = t1.Second()
+		timespanSec = int(result.EndBlockTimestamp - result.StartBlockTimestamp)
+
 	} else {
 		// Start of analysis (UTC)
-		startTime := ethtools.MakeTime(*datePtr, *hourPtr, *minPtr)
+		startTime := ethtools.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
 		fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
 
@@ -140,6 +153,12 @@ func main() {
 		outFn := *outJsonPtr
 		_ = ioutil.WriteFile(outFn, j, 0644)
 		fmt.Println("Saved to " + *outJsonPtr)
+	}
+
+	if *addToDbPtr {
+		db := ethtools.GetDatabase()
+		ethtools.AddAnalysisResultToDatabase(db, date, hour, min, sec, timespanSec, result)
+		fmt.Println("Saved to database")
 	}
 }
 
