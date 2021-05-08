@@ -2,6 +2,8 @@ package ethtools
 
 import (
 	"fmt"
+	"net/url"
+	"os"
 	"sort"
 	"strings"
 
@@ -60,8 +62,53 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
 );
 `
 
-func GetDatabase() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=user1 password=password dbname=ethstats sslmode=disable")
+type Config struct {
+	User       string
+	Password   string
+	Host       string
+	Name       string
+	DisableTLS bool
+}
+
+func GetDevDbConfig() Config {
+	return Config{
+		User:       "user1",
+		Password:   "password",
+		Host:       "localhost:5432",
+		Name:       "ethstats",
+		DisableTLS: true,
+	}
+}
+
+func GetProdDbConfig() Config {
+	return Config{
+		User:       os.Getenv("DB_USER"),
+		Password:   os.Getenv("DB_PASS"),
+		Host:       os.Getenv("DB_HOST"),
+		Name:       os.Getenv("DB_NAME"),
+		DisableTLS: len(os.Getenv("DB_DISABLE_TLS")) > 0,
+	}
+}
+
+func OpenDatabase(cfg Config) *sqlx.DB {
+	sslMode := "require"
+	if cfg.DisableTLS {
+		sslMode = "disable"
+	}
+
+	q := make(url.Values)
+	q.Set("sslmode", sslMode)
+	q.Set("timezone", "utc")
+
+	u := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.User, cfg.Password),
+		Host:     cfg.Host,
+		Path:     cfg.Name,
+		RawQuery: q.Encode(),
+	}
+
+	db, err := sqlx.Connect("postgres", u.String())
 	if err != nil {
 		panic(err)
 	}

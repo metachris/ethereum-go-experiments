@@ -153,7 +153,7 @@ func main() {
 	}
 
 	if *addToDbPtr {
-		db := ethtools.GetDatabase()
+		db := ethtools.OpenDatabase(ethtools.GetDevDbConfig())
 		ethtools.AddAnalysisResultToDatabase(db, date, hour, min, sec, timespanSec, result)
 		fmt.Println("Saved to database")
 	}

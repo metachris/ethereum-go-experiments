@@ -3,3 +3,4 @@ data/out
 /log
 /tmp*.json
 /old_todelete
+.env

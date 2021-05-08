@@ -34,9 +34,11 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 
 ## To do
 
+* search for TODO
 * Gas fees
 * Tokens transferred: save in JSON the converted amount, symbol, name, decimals
 * Finding blocks: don't fail if >latest-height
+* Cleanup stats: address infos could be added after analysis. then before unkown units would be known and token amounts can be converted
 
 ## Resources
 
