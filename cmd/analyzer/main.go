@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"math/big"
 	"sort"
 	"strconv"
@@ -24,8 +23,6 @@ const NODE_URI = "http://95.217.145.161:8545"
 
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
-
-var AddressDetails = ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
 
 type TopAddressData struct {
 	NumTxReceived  []ethtools.AddressInfo
@@ -231,43 +228,26 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	copy(exportData.TopAddressData.TokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
 	for _, v := range exportData.TopAddressData.TokenTransfers {
-		if numTokens, _ := NumTokensWithDecimals(v.TokensTransferred, v.Address); true {
-			fmt.Printf("%-66v %8d token transfers \t %8d tx \t %30v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, numTokens)
+		if v.NumTxReceived == 0 {
+			continue
 		}
+		tokensTransferredInUnit, tokenSymbol, found := ethtools.TokenAmountToUnit(v.TokensTransferred, v.Address)
+		tokenAmount := fmt.Sprintf("%s %-5v", formatInt(tokensTransferredInUnit), tokenSymbol)
+		if !found {
+			tokenAmount = fmt.Sprintf("%s ?    ", tokensTransferredInUnit.Text('f', 0))
+		}
+		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %32v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, tokenAmount)
 	}
 
 	return exportData
 }
 
 func AddressWithName(address string) string {
-	detail, ok := AddressDetails[strings.ToLower(address)]
+	detail, ok := ethtools.AllAddressesFromJson[strings.ToLower(address)]
 	if ok {
 		return fmt.Sprintf("%s %s", address, detail.Name)
 	} else {
 		return address
-	}
-}
-
-func NumTokensWithDecimals(numTokens *big.Int, address string) (string, bool) {
-	// fmt.Println(address)
-	detail, ok := AddressDetails[strings.ToLower(address)]
-	if ok {
-		decimals := uint64(detail.Decimals)
-		divider := float64(1)
-		if decimals > 0 {
-			divider = float64(math.Pow(10, float64(decimals)))
-		}
-
-		res := new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
-		formatted := formatInt(res)
-		// return fmt.Sprintf("%s %-5v", res.Text('f', 2), detail.Symbol)
-		return fmt.Sprintf("%s %-5v", formatted, detail.Symbol), true
-
-		// resInt := new(big.Int).Div(numTokens, big.NewInt(int64(divider)))
-		// formatted := formatInt(int(resInt.Uint64()))
-		// return fmt.Sprintf("%s %-5v", formatted, detail.Symbol), true
-	} else {
-		return fmt.Sprintf("%d ?    ", numTokens), false
 	}
 }
 

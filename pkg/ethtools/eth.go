@@ -21,6 +21,7 @@ type AddressInfo struct {
 	ValueReceivedWei   *big.Int
 	ValueReceivedEth   string
 	TokensTransferred  *big.Int
+	// TODO: split method count: transfer and transferFrom
 }
 
 func NewAddressInfo(address string) *AddressInfo {

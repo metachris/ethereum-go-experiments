@@ -35,6 +35,8 @@ const ( // iota is reset to 0
 const FN_JSON_TOKENS string = "data/tokens.json"
 const FN_JSON_ADDRESSES string = "data/addresses.json"
 
+var AllAddressesFromJson = GetAddressDetailMap(DATASET_BOTH)
+
 func getDatasetFromJson(filename string) []AddressDetail {
 	fn, _ := filepath.Abs(filename)
 	file, err := os.Open(fn)

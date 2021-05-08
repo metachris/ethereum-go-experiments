@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -72,5 +73,29 @@ func printBlock(block *types.Block) {
 func Check(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+// Takes a token amount, looks up the contract and returns it as float with correct decimals
+// eg. USDC has 6 decimals. 12345678 -> 12.345678
+func TokenAmountToUnit(numTokens *big.Int, address string) (res *big.Float, symbol string, success bool) {
+	// fmt.Println(address)
+	detail, ok := AllAddressesFromJson[strings.ToLower(address)]
+	if ok {
+		decimals := uint64(detail.Decimals)
+		divider := float64(1)
+		if decimals > 0 {
+			divider = float64(math.Pow(10, float64(decimals)))
+		}
+
+		res = new(big.Float).Quo(new(big.Float).SetInt(numTokens), big.NewFloat(divider))
+		return res, detail.Symbol, true
+
+		// resInt := new(big.Int).Div(numTokens, big.NewInt(int64(divider)))
+		// formatted := formatInt(int(resInt.Uint64()))
+		// return fmt.Sprintf("%s %-5v", formatted, detail.Symbol), true
+	} else {
+		res = new(big.Float).SetInt(numTokens)
+		return res, "", false
 	}
 }
