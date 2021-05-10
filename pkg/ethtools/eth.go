@@ -78,13 +78,14 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		}
 
 		printBlock(currentBlock)
-		if db != nil {
-			AddBlockToDatabase(db, currentBlock)
-		}
 
 		if endTimestamp > -1 && currentBlock.Time() > uint64(endTimestamp) {
 			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", numBlocksProcessed, currentBlockNumber.Text(10))
 			break
+		}
+
+		if db != nil {
+			AddBlockToDatabase(db, currentBlock)
 		}
 
 		if result.StartBlockTimestamp == 0 {

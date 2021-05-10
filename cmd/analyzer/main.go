@@ -105,8 +105,8 @@ func main() {
 		db = ethtools.OpenDatabase(ethtools.GetDbConfig())
 	}
 
-	// fmt.Println("Connecting to Ethereum node at", NODE_URI)
-	// fmt.Println("")
+	fmt.Println("Connecting to Ethereum node at", NODE_URI)
+	fmt.Println("")
 	client, err := ethclient.Dial(NODE_URI)
 	if err != nil {
 		log.Fatal(err)
