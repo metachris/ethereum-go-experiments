@@ -64,6 +64,12 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
 );
 `
 
+type AnalysisAddressStat struct {
+	Id          int
+	Analysis_id int
+	Address     string
+}
+
 type Config struct {
 	User       string
 	Password   string
@@ -149,7 +155,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	analysisId := 0
 	db.QueryRow("INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumTransactions, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id",
 		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumTransactions, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
-	fmt.Println("Added analysis to db. ID:", analysisId)
+	fmt.Println("Added analysis to database with ID", analysisId)
 
 	// Create addresses array for sorting
 	_addresses := make([]AddressInfo, 0, len(result.Addresses))
@@ -158,51 +164,66 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	}
 
 	addAddressAndStats := func(addr AddressInfo) {
-		// TODO: If already in DB, but more infos in JSON then update in DB
 		fmt.Println("+ stats:", addr)
-		_, foundInDb := GetAddressFromDatabase(db, addr.Address)
-		if !foundInDb {
+		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
+		if !foundInDb { // Not in DB, add now
 			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
 			if !foundInJson {
 				detail = AddressDetail{Address: addr.Address}
 			}
-			// insert with full details
 			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+
+		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
+			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
+			if foundInJson {
+				db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+			}
 		}
 
-		// fmt.Println("x", addr.Address)
+		// Avoid adding one address multiple times per analysis
+		var count int
+		db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, strings.ToLower(addr.Address)).Scan(&count)
+		if count > 0 {
+			return
+		}
+
+		// Add address-stats entry now
 		valRecEth := WeiToEth(addr.ValueReceivedWei).Text('f', 2)
 		valSentEth := WeiToEth(addr.ValueSentWei).Text('f', 2)
 		tokensTransferredInUnit, tokenSymbol, _ := TokenAmountToUnit(addr.TokensTransferred, addr.Address)
-
 		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumTxTokenTransfer, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumTxTokenTransfer, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
 	}
 
-	// addAddresses := func(addresses []AddressInfo, n int) {
-	// 	for i := 0; i < n; i++ {
-	// 		addr := addresses[i]
-	// 		if addr.NumTxReceived > 0 {
-	// 			addAddressAndStats(addr)
-	// 		}
-	// 	}
-	// }
-
-	// Sort by num-tx-received
-	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	// addAddresses(_addresses, 10)
-
-	// Sort by token-transfers
-	numAddressesTokenTransfers := 100
+	fmt.Println("Token transfers")
+	numAddressesTokenTransfers := 5
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	for i := 0; i < len(_addresses) && i < numAddressesTokenTransfers; i++ {
+		if _addresses[i].NumTxTokenTransfer > 0 {
+			addAddressAndStats(_addresses[i])
+		}
+	}
+
+	fmt.Println("Num tx received")
+	numAddressesTxReceived := 5
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
+	for i := 0; i < len(_addresses) && i < numAddressesTxReceived; i++ {
 		if _addresses[i].NumTxReceived > 0 {
 			addAddressAndStats(_addresses[i])
 		}
 	}
 
-	// Sort by value-received
-	numAddressesValueReceived := 25
+	fmt.Println("Num tx sent")
+	numAddressesTxSent := 5
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
+	for i := 0; i < len(_addresses) && i < numAddressesTxSent; i++ {
+		if _addresses[i].NumTxSent > 0 {
+			addAddressAndStats(_addresses[i])
+		}
+	}
+
+	fmt.Println("Value received")
+	numAddressesValueReceived := 5
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueReceived; i++ {
 		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
@@ -210,8 +231,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		}
 	}
 
-	// Sort by value-sent
-	numAddressesValueSent := 25
+	fmt.Println("Value sent")
+	numAddressesValueSent := 5
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueSent; i++ {
 		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
