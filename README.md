@@ -36,9 +36,6 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 
 * search for TODO
 * Gas fees
-* Tokens transferred: save in JSON the converted amount, symbol, name, decimals
-* Finding blocks: don't fail if >latest-height
-* Cleanup stats: address infos could be added after analysis. then before unkown units would be known and token amounts can be converted
 
 ## Resources
 
@@ -48,6 +45,8 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 Inspiration & Ideas
 
 * https://bitinfocharts.com/ethereum/
+* https://etherscan.io/charts
+* https://ycharts.com/indicators/ethereum_transactions_per_day
 * https://github.com/ardanlabs/service/blob/master/foundation/database/database.go
 
 ---

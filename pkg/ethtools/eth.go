@@ -12,16 +12,18 @@ import (
 )
 
 type AddressInfo struct {
-	Address            string
-	NumTxSent          int
-	NumTxReceived      int
-	NumTxTokenTransfer int
-	ValueSentWei       *big.Int
-	ValueSentEth       string
-	ValueReceivedWei   *big.Int
-	ValueReceivedEth   string
-	TokensTransferred  *big.Int
-	// TODO: split method count: transfer and transferFrom
+	Address                      string
+	NumTxSent                    int
+	NumTxReceived                int
+	NumTxWithData                int
+	NumTxTokenTransfer           int
+	NumTxTokenMethodTransfer     int
+	NumTxTokenMethodTransferFrom int
+	ValueSentWei                 *big.Int
+	ValueSentEth                 string
+	ValueReceivedWei             *big.Int
+	ValueReceivedEth             string
+	TokensTransferred            *big.Int
 }
 
 func NewAddressInfo(address string) *AddressInfo {
@@ -104,19 +106,22 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 			// Count tx types
 			result.TxTypes[tx.Type()] += 1
 
-			// Count sender addresses
-			// println(tx.To().String())
+			// Count receiver stats
+			recAddr := "-"
 			if tx.To() != nil {
-				toAddrInfo, exists := result.Addresses[tx.To().String()]
-				if !exists {
-					toAddrInfo = NewAddressInfo(tx.To().String())
-					result.Addresses[tx.To().String()] = toAddrInfo
-				}
-
-				toAddrInfo.NumTxReceived += 1
-				toAddrInfo.ValueReceivedWei = new(big.Int).Add(toAddrInfo.ValueReceivedWei, tx.Value())
-				toAddrInfo.ValueReceivedEth = WeiToEth(toAddrInfo.ValueReceivedWei).Text('f', 2)
+				recAddr = tx.To().String()
 			}
+			toAddrInfo, exists := result.Addresses[recAddr]
+			if !exists {
+				toAddrInfo = NewAddressInfo(recAddr)
+				if tx.To() != nil { // only keep around if it has a receiver
+					result.Addresses[recAddr] = toAddrInfo
+				}
+			}
+
+			toAddrInfo.NumTxReceived += 1
+			toAddrInfo.ValueReceivedWei = new(big.Int).Add(toAddrInfo.ValueReceivedWei, tx.Value())
+			toAddrInfo.ValueReceivedEth = WeiToEth(toAddrInfo.ValueReceivedWei).Text('f', 2)
 
 			// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
 			if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
@@ -135,50 +140,40 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 			// Check for token transfer
 			data := tx.Data()
-			// fmt.Println(data)
 			if len(data) > 0 {
 				result.NumTransactionsWithData += 1
+				toAddrInfo.NumTxWithData += 1
 
 				if len(data) > 4 {
 					methodId := hex.EncodeToString(data[:4])
 					// fmt.Println(methodId)
 					if methodId == "a9059cbb" || methodId == "23b872dd" {
 						result.NumTransactionsWithTokenTransfer += 1
+						toAddrInfo.NumTxTokenTransfer += 1
 
-						if tx.To() != nil {
-							toAddrInfo, exists := result.Addresses[tx.To().String()]
-							if !exists {
-								toAddrInfo = NewAddressInfo(tx.To().String())
-								result.Addresses[tx.To().String()] = toAddrInfo
-							}
-							toAddrInfo.NumTxTokenTransfer += 1
-
-							// Calculate and store the number of tokens transferred
-							var value string
-							switch methodId {
-							case "a9059cbb": // transfer
-								// targetAddr = hex.EncodeToString(data[4:36])
-								value = hex.EncodeToString(data[36:68])
-							case "23b872dd": // transferFrom
-								// targetAddr = hex.EncodeToString(data[36:68])
-								value = hex.EncodeToString(data[68:100])
-							}
-							valBigInt := new(big.Int)
-							valBigInt.SetString(value, 16)
-							toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
-
-							errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
-							// if valBigInt.Cmp(errVal) == 1 {
-							// 	fmt.Printf("- value too large? tx %s \t addr %s \t val %s \n", tx.Hash(), tx.To(), value)
-							// }
-
-							// Debug helper
-							if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
-								if valBigInt.Cmp(errVal) == 1 {
-									fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
-								}
-							}
+						// Calculate and store the number of tokens transferred
+						var value string
+						switch methodId {
+						case "a9059cbb": // transfer
+							// targetAddr = hex.EncodeToString(data[4:36])
+							value = hex.EncodeToString(data[36:68])
+							toAddrInfo.NumTxTokenMethodTransfer += 1
+						case "23b872dd": // transferFrom
+							// targetAddr = hex.EncodeToString(data[36:68])
+							value = hex.EncodeToString(data[68:100])
+							toAddrInfo.NumTxTokenMethodTransferFrom += 1
 						}
+						valBigInt := new(big.Int)
+						valBigInt.SetString(value, 16)
+						toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
+
+						// // Debug helper
+						// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
+						// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
+						// 	if valBigInt.Cmp(errVal) == 1 {
+						// 		fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+						// 	}
+						// }
 					}
 				}
 			}

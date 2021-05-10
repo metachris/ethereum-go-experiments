@@ -52,9 +52,13 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
     Analysis_id int REFERENCES analysis (id) NOT NULL,
     Address     text REFERENCES address (address) NOT NULL,
 
-	NumTxSent          int NOT NULL,
-	NumTxReceived      int NOT NULL,
-	NumTxTokenTransfer int NOT NULL,
+	NumTxSent                    int NOT NULL,
+	NumTxReceived                int NOT NULL,
+	NumTxWithData                int NOT NULL,
+	NumTxTokenTransfer           int NOT NULL,
+	NumTxTokenMethodTransfer     int NOT NULL,
+	NumTxTokenMethodTransferFrom int NOT NULL,
+
 	ValueSentEth       NUMERIC(24, 8) NOT NULL,
 	ValueReceivedEth   NUMERIC(24, 8) NOT NULL,
 	TokensTransferred  NUMERIC(32, 0) NOT NULL,
@@ -170,6 +174,9 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
 			if !foundInJson {
 				detail = AddressDetail{Address: addr.Address}
+				if addr.NumTxTokenTransfer > 0 {
+					detail.Type = AddressTypeToken
+				}
 			}
 			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 
@@ -191,8 +198,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		valRecEth := WeiToEth(addr.ValueReceivedWei).Text('f', 2)
 		valSentEth := WeiToEth(addr.ValueSentWei).Text('f', 2)
 		tokensTransferredInUnit, tokenSymbol, _ := TokenAmountToUnit(addr.TokensTransferred, addr.Address)
-		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumTxTokenTransfer, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumTxTokenTransfer, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
+		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
 	}
 
 	fmt.Println("Token transfers")
