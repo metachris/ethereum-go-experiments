@@ -63,19 +63,19 @@ func NewResult() *AnalysisResult {
 	}
 }
 
-func (result *AnalysisResult) AddBlock(currentBlock *types.Block) {
+func (result *AnalysisResult) AddBlock(block *types.Block) {
 	if result.StartBlockTimestamp == 0 {
-		result.StartBlockTimestamp = currentBlock.Time()
+		result.StartBlockTimestamp = block.Time()
 	}
 
-	result.EndBlockNumber = currentBlock.Number().Int64()
-	result.EndBlockTimestamp = currentBlock.Time()
+	result.EndBlockNumber = block.Number().Int64()
+	result.EndBlockTimestamp = block.Time()
 
 	result.NumBlocks += 1
-	result.NumTransactions += len(currentBlock.Transactions())
+	result.NumTransactions += len(block.Transactions())
 
 	// Iterate over all transactions
-	for _, tx := range currentBlock.Transactions() {
+	for _, tx := range block.Transactions() {
 		// Count total value
 		result.ValueTotalWei = result.ValueTotalWei.Add(result.ValueTotalWei, tx.Value())
 
@@ -161,9 +161,7 @@ func (result *AnalysisResult) AddBlock(currentBlock *types.Block) {
 	}
 }
 
-// Queue for blocks to be added to DB
-var wg sync.WaitGroup
-
+// Worker to add blocks to DB
 func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
 	defer wg.Done()
 
@@ -171,6 +169,8 @@ func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
 		AddBlockToDatabase(db, block)
 	}
 }
+
+var wg sync.WaitGroup // for waiting until all blocks are written into DB
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
 func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestamp int64, db *sqlx.DB) *AnalysisResult {
@@ -182,8 +182,11 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	blocksForDbQueue := make(chan *types.Block, 100)
 	if db != nil {
-		wg.Add(1)
-		go addBlockToDbWorker(db, blocksForDbQueue)
+		// Create a bunch of DB workers
+		for w := 1; w <= 5; w++ {
+			wg.Add(1)
+			go addBlockToDbWorker(db, blocksForDbQueue)
+		}
 	}
 
 	for {
@@ -218,6 +221,9 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	// Close DB-add-block channel and wait for all to be saved
 	close(blocksForDbQueue)
+	if db != nil {
+		fmt.Println("Waiting for db-workers to finish...")
+	}
 	wg.Wait()
 	return result
 }

@@ -17,9 +17,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const NODE_URI = "http://95.217.145.161:8545"
+// const NODE_URI = "http://95.217.145.161:8545"
 
-// const NODE_URI = "/server/geth.ipc"
+const NODE_URI = "/server/geth.ipc"
 
 // const NODE_URI = "https://mainnet.infura.io/v3/e03fe41147d548a8a8f55ecad18378fb"
 

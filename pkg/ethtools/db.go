@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jmoiron/sqlx"
@@ -186,7 +187,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	}
 
 	addAddressAndStats := func(addr AddressInfo) {
-		fmt.Println("+ stats:", addr)
+		// fmt.Println("+ stats:", addr)
 		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
 		if !foundInDb { // Not in DB, add now
 			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
@@ -220,22 +221,38 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
 	}
 
+	var wg sync.WaitGroup // for waiting until all blocks are written into DB
+	addressInfoQueue := make(chan AddressInfo, 50)
+	saveAddrStatToDbWorker := func() {
+		defer wg.Done()
+		for addr := range addressInfoQueue {
+			addAddressAndStats(addr)
+		}
+	}
+
+	for w := 1; w <= 5; w++ {
+		wg.Add(1)
+		go saveAddrStatToDbWorker()
+	}
+
+	fmt.Println("Adding address stats to DB...")
 	fmt.Println("Token transfers")
-	numAddressesTokenTransfers := 2
+	numAddressesTokenTransfers := 100
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	for i := 0; i < len(_addresses) && i < numAddressesTokenTransfers; i++ {
 		if _addresses[i].NumTxTokenTransfer > 0 {
-			addAddressAndStats(_addresses[i])
+			addressInfoQueue <- _addresses[i]
+			// addAddressAndStats(_addresses[i])
 		}
 	}
-	return
 
 	fmt.Println("Num tx received")
 	numAddressesTxReceived := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	for i := 0; i < len(_addresses) && i < numAddressesTxReceived; i++ {
 		if _addresses[i].NumTxReceived > 0 {
-			addAddressAndStats(_addresses[i])
+			addressInfoQueue <- _addresses[i]
+			// addAddressAndStats(_addresses[i])
 		}
 	}
 
@@ -244,7 +261,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	for i := 0; i < len(_addresses) && i < numAddressesTxSent; i++ {
 		if _addresses[i].NumTxSent > 0 {
-			addAddressAndStats(_addresses[i])
+			addressInfoQueue <- _addresses[i]
+			// addAddressAndStats(_addresses[i])
 		}
 	}
 
@@ -253,7 +271,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueReceived; i++ {
 		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
-			addAddressAndStats(_addresses[i])
+			addressInfoQueue <- _addresses[i]
+			// addAddressAndStats(_addresses[i])
 		}
 	}
 
@@ -262,7 +281,11 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueSent; i++ {
 		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
-			addAddressAndStats(_addresses[i])
+			addressInfoQueue <- _addresses[i]
+			// addAddressAndStats(_addresses[i])
 		}
 	}
+
+	close(addressInfoQueue)
+	wg.Wait()
 }
