@@ -173,7 +173,7 @@ func AddAddressesFromJsonToDatabase(db *sqlx.DB) {
 func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 	// Check count
 	var count int
-	db.QueryRow("SELECT COUNT(*) FROM block WHERE Number = $1", block.Header().Number).Scan(&count)
+	db.QueryRow("SELECT COUNT(*) FROM block WHERE number = $1", block.Header().Number.Int64()).Scan(&count)
 	if count > 0 {
 		return
 	}
