@@ -7,7 +7,8 @@ Requires an Ethereum Node to connect to (eg. geth, Infura).
 ```bash
 # Run analyzer for certain timespan
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
-go run cmd/analyzer/main.go -date 2021-05-03 -len 1d -out data/out/2021-05-03.json | tee data/out/2021-05-03.txt
+go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
+go run cmd/analyzer/main.go -date 2021-05-09 -len 1d -addDb -out output/2021-05-09.json | tee output/2021-05-09.txt
 
 # Run analyzer for specific block
 go run cmd/analyzer/main.go -block 12381372
@@ -36,6 +37,7 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 
 * search for TODO
 * Gas fees
+* Save block stats?
 
 ## Resources
 

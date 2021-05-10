@@ -14,11 +14,13 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/jmoiron/sqlx"
 )
 
-const NODE_URI = "http://95.217.145.161:8545"
+// const NODE_URI = "http://95.217.145.161:8545"
 
-// const NODE_URI = "/server/geth.ipc"
+const NODE_URI = "/server/geth.ipc"
+
 // const NODE_URI = "https://mainnet.infura.io/v3/e03fe41147d548a8a8f55ecad18378fb"
 
 const TOP_ADDRESS_COUNT = 30
@@ -98,6 +100,11 @@ func main() {
 		}
 	}
 
+	var db *sqlx.DB
+	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
+		db = ethtools.OpenDatabase(ethtools.GetDbConfig())
+	}
+
 	// fmt.Println("Connecting to Ethereum node at", NODE_URI)
 	// fmt.Println("")
 	client, err := ethclient.Dial(NODE_URI)
@@ -112,7 +119,7 @@ func main() {
 	sec := 0
 
 	if *blockNumPtr > 0 {
-		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec))
+		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec), db)
 		t1 := time.Unix(int64(result.StartBlockTimestamp), 0).UTC()
 		date = t1.Format("2006-01-02")
 		hour = t1.Hour()
@@ -134,7 +141,7 @@ func main() {
 		block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
 		fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
 		fmt.Println("")
-		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp)
+		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp, db)
 	}
 
 	fmt.Println("")
@@ -153,7 +160,6 @@ func main() {
 	}
 
 	if *addToDbPtr {
-		db := ethtools.OpenDatabase(ethtools.GetDevDbConfig())
 		ethtools.AddAnalysisResultToDatabase(db, date, hour, min, sec, timespanSec, result)
 		fmt.Println("Saved to database")
 	}

@@ -8,6 +8,6 @@ replace ethtools => ./pkg/ethtools
 
 require (
 	github.com/ethereum/go-ethereum v1.10.2
-	github.com/jmoiron/sqlx v1.3.3 // indirect
+	github.com/jmoiron/sqlx v1.3.3
 	github.com/lib/pq v1.10.1 // indirect
 )

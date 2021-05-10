@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/jmoiron/sqlx"
 )
 
 type AddressInfo struct {
@@ -62,7 +63,7 @@ func NewResult() *AnalysisResult {
 }
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
-func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestamp int64) *AnalysisResult {
+func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestamp int64, db *sqlx.DB) *AnalysisResult {
 	result := NewResult()
 	result.StartBlockNumber = startBlockNumber
 
@@ -77,6 +78,9 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		}
 
 		printBlock(currentBlock)
+		if db != nil {
+			AddBlockToDatabase(db, currentBlock)
+		}
 
 		if endTimestamp > -1 && currentBlock.Time() > uint64(endTimestamp) {
 			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", numBlocksProcessed, currentBlockNumber.Text(10))
