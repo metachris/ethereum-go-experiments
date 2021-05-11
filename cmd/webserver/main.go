@@ -10,10 +10,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// func rootHandler(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
-// }
-
 func getAnalysis(c echo.Context) (err error) {
 	// Grab 'id' URL parameter
 	idStr := c.Param("id")
@@ -51,7 +47,12 @@ func main() {
 	e := echo.New()
 
 	// Middleware
-	e.Use(middleware.Logger())
+	// e.Use(middleware.Logger()) // JSON logging
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status} t=${latency} in=${bytes_in}, out=${bytes_out}\n",
+	}))
+
+	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
 
 	// Routes

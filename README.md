@@ -24,7 +24,7 @@ scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
 
 # Webserver
 go run cmd/webserver/main.go
-curl localhost:8090/analysis?id=1
+curl localhost:8090/analysis/1
 ```
 
 ## Working with DB
