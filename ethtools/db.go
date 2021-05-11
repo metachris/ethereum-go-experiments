@@ -79,6 +79,26 @@ CREATE TABLE IF NOT EXISTS block (
 )
 `
 
+type AnalysisEntry struct {
+	Id                               int
+	Date                             string
+	Hour                             int
+	Minute                           int
+	Sec                              int
+	DurationSec                      int
+	StartBlockNumber                 int
+	StartBlockTimestamp              int
+	EndBlockNumber                   int
+	EndBlockTimestamp                int
+	ValueTotalEth                    string
+	NumBlocks                        int
+	NumTransactions                  int
+	NumTransactionsWithZeroValue     int
+	NumTransactionsWithData          int
+	NumTransactionsWithTokenTransfer int
+	TotalAddresses                   int
+}
+
 // NewDatabaseConnection creates a new sqlx.DB database connection
 func NewDatabaseConnection(cfg Config) *sqlx.DB {
 	sslMode := "require"
@@ -261,4 +281,20 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 
 	close(addressInfoQueue)
 	wg.Wait()
+}
+
+func DbGetAnalysisById(db *sqlx.DB, analysisId int) (entry AnalysisEntry, found bool) {
+	err := db.Get(&entry, "SELECT * FROM analysis WHERE id=$1", analysisId)
+	if err != nil {
+		return entry, false
+	}
+	return entry, true
+}
+
+func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, found bool) {
+	err := db.Select(&analyses, "SELECT * FROM analysis WHERE date=$1", date)
+	if err != nil {
+		return analyses, false
+	}
+	return analyses, true
 }

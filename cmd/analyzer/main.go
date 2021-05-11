@@ -102,7 +102,7 @@ func main() {
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethtools.NewDatabaseConnection(ethtools.GetDbConfig())
+		db = ethtools.NewDatabaseConnection(ethtools.GetConfig())
 	}
 
 	fmt.Println("Connecting to Ethereum node at", NODE_URI)
