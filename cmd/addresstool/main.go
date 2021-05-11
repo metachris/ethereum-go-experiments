@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"ethtools"
+	"ethstats/ethtools"
 	"flag"
 	"fmt"
 	"log"

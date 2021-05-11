@@ -1,8 +1,6 @@
 package main
 
-import (
-	"ethtools"
-)
+import "ethstats/ethtools"
 
 func main() {
 	db := ethtools.OpenDatabase(ethtools.GetDbConfig())
