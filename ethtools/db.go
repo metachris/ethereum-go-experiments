@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/url"
-	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -80,37 +79,11 @@ CREATE TABLE IF NOT EXISTS block (
 )
 `
 
-type Config struct {
-	User       string
-	Password   string
-	Host       string
-	Name       string
-	DisableTLS bool
-}
-
-// func GetDevDbConfig() Config {
-// 	return Config{
-// 		User:       "user1",
-// 		Password:   "password",
-// 		Host:       "localhost:5432",
-// 		Name:       "ethstats",
-// 		DisableTLS: true,
-// 	}
-// }
-
-func GetDbConfig() Config {
-	return Config{
-		User:       os.Getenv("DB_USER"),
-		Password:   os.Getenv("DB_PASS"),
-		Host:       os.Getenv("DB_HOST"),
-		Name:       os.Getenv("DB_NAME"),
-		DisableTLS: len(os.Getenv("DB_DISABLE_TLS")) > 0,
-	}
-}
-
-func OpenDatabase(cfg Config) *sqlx.DB {
+// NewDatabaseConnection creates a new sqlx.DB database connection
+func NewDatabaseConnection(cfg Config) *sqlx.DB {
 	sslMode := "require"
-	if cfg.DisableTLS {
+	dbConfig := cfg.Database
+	if dbConfig.DisableTLS {
 		sslMode = "disable"
 	}
 
@@ -120,9 +93,9 @@ func OpenDatabase(cfg Config) *sqlx.DB {
 
 	u := url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(cfg.User, cfg.Password),
-		Host:     cfg.Host,
-		Path:     cfg.Name,
+		User:     url.UserPassword(dbConfig.User, dbConfig.Password),
+		Host:     dbConfig.Host,
+		Path:     dbConfig.Name,
 		RawQuery: q.Encode(),
 	}
 

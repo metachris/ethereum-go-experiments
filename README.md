@@ -35,6 +35,7 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 
 ## To do
 
+* Save results for 1h in addition to 1d
 * search for TODO
 * Gas fees
 * Add blocks in own goroutine (not in main routine and not one per block)
