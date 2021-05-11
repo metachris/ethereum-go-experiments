@@ -46,6 +46,7 @@ Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&
 
 ## Resources
 
+* https://echo.labstack.com/guide/request/
 * https://goethereumbook.org/en/transaction-query/
 * https://github.com/jmoiron/sqlx
 
