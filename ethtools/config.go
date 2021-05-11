@@ -10,6 +10,8 @@ import (
 type Config struct {
 	Database PostgresConfig
 
+	EthplorerApiKey string
+
 	NumAddressesByValueSent      int
 	NumAddressesByValueReceived  int
 	NumAddressesByNumTxSent      int
@@ -62,6 +64,8 @@ func GetConfig() Config {
 
 	return Config{
 		Database: dbConfig,
+
+		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
 		NumAddressesByValueSent:      getEnvInt("NUM_ADDR_VALUE_SENT", 25),
 		NumAddressesByValueReceived:  getEnvInt("NUM_ADDR_VALUE_RECEIVED", 25),

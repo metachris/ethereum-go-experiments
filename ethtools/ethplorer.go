@@ -15,9 +15,7 @@ import (
 
 const (
 	FN_ADDRESS_JSON_ETHPLORER string        = "data/ethplorer_tokens.json"
-	ETHPLORER_API_KEY         string        = "EK-eTp4w-dZq2YNw-fs9hU"
 	ETHPLORER_TIMEOUT         time.Duration = 1 * time.Second
-	// ETHPLORER_API_KEY string = "freekey"
 )
 
 type EthplorerTokenInfo struct {
@@ -60,7 +58,7 @@ func (tokenInfo InternalEthplorerTokenInfo) ToAddressDetail() *AddressDetail {
 func FetchTokenInfo(address string) (InternalEthplorerTokenInfo, error) {
 	target := InternalEthplorerTokenInfo{}
 
-	url := fmt.Sprintf("https://api.ethplorer.io/getTokenInfo/%s?apiKey="+ETHPLORER_API_KEY, address)
+	url := fmt.Sprintf("https://api.ethplorer.io/getTokenInfo/%s?apiKey="+GetConfig().EthplorerApiKey, address)
 	fmt.Println(url)
 
 	var myClient = &http.Client{Timeout: 10 * time.Second}
