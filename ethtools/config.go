@@ -11,6 +11,7 @@ type Config struct {
 	Database PostgresConfig
 
 	EthplorerApiKey string
+	WebserverHost   string
 	WebserverPort   int
 
 	NumAddressesByValueSent      int
@@ -66,8 +67,10 @@ func GetConfig() Config {
 	return Config{
 		Database: dbConfig,
 
+		WebserverHost: getEnvStr("WEBSERVER_HOST", "localhost"),
+		WebserverPort: getEnvInt("WEBSERVER_PORT", 8090),
+
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
-		WebserverPort:   getEnvInt("WEBSERVER_PORT", 8090),
 
 		NumAddressesByValueSent:      getEnvInt("NUM_ADDR_VALUE_SENT", 25),
 		NumAddressesByValueReceived:  getEnvInt("NUM_ADDR_VALUE_RECEIVED", 25),

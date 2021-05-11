@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -13,14 +15,33 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAnalysis(w http.ResponseWriter, r *http.Request) {
-	db := ethtools.NewDatabaseConnection(ethtools.GetConfig())
-	entry, found := ethtools.DbGetAnalysisById(db, 1)
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
+	// fmt.Println(r.URL.Path, r.URL.Query())
+	ids, ok := r.URL.Query()["id"]
+	if !ok || len(ids[0]) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	id, err := strconv.Atoi(ids[0])
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	db := ethtools.NewDatabaseConnection(ethtools.GetConfig())
+	entry, found := ethtools.DbGetAnalysisById(db, id)
+	if !found {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
 	fmt.Println(entry)
-	json.NewEncoder(w).Encode(entry)
+	err = json.NewEncoder(w).Encode(entry)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 }
 
 func main() {
@@ -29,9 +50,10 @@ func main() {
 	http.HandleFunc("/analysis", getAnalysis)
 
 	// Start webserver
-	port := ethtools.GetConfig().WebserverPort
-	fmt.Println("Webserver listening on port", port)
-	listenAt := fmt.Sprintf(":%d", port)
-	log.Fatal(http.ListenAndServe(listenAt, nil))
+	config := ethtools.GetConfig()
+	listenAddr := fmt.Sprintf("%s:%d", config.WebserverHost, config.WebserverPort)
 
+	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
+	logger.Println("Server is starting on", listenAddr)
+	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }

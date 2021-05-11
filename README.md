@@ -21,6 +21,10 @@ go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE62
 
 # Download data from server
 scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
+
+# Webserver
+go run cmd/webserver/main.go
+curl localhost:8090/analysis?id=1
 ```
 
 ## Working with DB
