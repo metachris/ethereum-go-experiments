@@ -5,6 +5,9 @@ Requires an Ethereum Node to connect to (eg. geth, Infura).
 ## Geting started
 
 ```bash
+# Start DB
+docker-compose up
+
 # Run analyzer for certain timespan
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
@@ -12,11 +15,9 @@ go run cmd/analyzer/main.go -date 2021-05-09 -len 1d -addDb -out output/2021-05-
 
 # Run analyzer for specific block
 go run cmd/analyzer/main.go -block 12381372
-
-# Run analyzer starting at specific block, for certain number of blocks (in this case, 10 blocks total)
 go run cmd/analyzer/main.go -block 12381372 -len 10
 
-# Run addresstool
+# Run addresstool - check ethplorer
 go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 
 # Download data from server
@@ -27,13 +28,9 @@ go run cmd/webserver/main.go
 curl localhost:8090/analysis/1
 ```
 
-## Working with DB
+Notes:
 
-```bash
-docker-compose up
-```
-
-Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&db=ethstats&ns=public
+*Access the adminer DB interface: http://localhost:8080/?pgsql=db&username=user1&db=ethstats&ns=public
 
 ---
 
