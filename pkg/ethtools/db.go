@@ -236,7 +236,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	}
 
 	fmt.Println("Adding address stats to DB...")
-	fmt.Println("Token transfers")
+	fmt.Println("- Tokens transferred")
 	numAddressesTokenTransfers := 100
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	for i := 0; i < len(_addresses) && i < numAddressesTokenTransfers; i++ {
@@ -246,7 +246,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		}
 	}
 
-	fmt.Println("Num tx received")
+	fmt.Println("- Num tx received")
 	numAddressesTxReceived := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	for i := 0; i < len(_addresses) && i < numAddressesTxReceived; i++ {
@@ -256,7 +256,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		}
 	}
 
-	fmt.Println("Num tx sent")
+	fmt.Println("- Num tx sent")
 	numAddressesTxSent := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	for i := 0; i < len(_addresses) && i < numAddressesTxSent; i++ {
@@ -266,7 +266,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		}
 	}
 
-	fmt.Println("Value received")
+	fmt.Println("- Value received")
 	numAddressesValueReceived := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueReceived; i++ {
@@ -276,7 +276,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		}
 	}
 
-	fmt.Println("Value sent")
+	fmt.Println("- Value sent")
 	numAddressesValueSent := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
 	for i := 0; i < len(_addresses) && i < numAddressesValueSent; i++ {
