@@ -71,7 +71,7 @@ func GetConfig() Config {
 	return Config{
 		Database: dbConfig,
 
-		WebserverHost: getEnvStr("WEBSERVER_HOST", "localhost"),
+		WebserverHost: getEnvStr("WEBSERVER_HOST", ""),
 		WebserverPort: getEnvInt("WEBSERVER_PORT", 8090),
 
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
