@@ -60,11 +60,11 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
 	NumTxTokenMethodTransfer     int NOT NULL,
 	NumTxTokenMethodTransferFrom int NOT NULL,
 
-	ValueSentEth       NUMERIC(24, 8) NOT NULL,
-	ValueReceivedEth   NUMERIC(24, 8) NOT NULL,
-	TokensTransferred  NUMERIC(32, 0) NOT NULL,
+	ValueSentEth       NUMERIC(32, 8) NOT NULL,
+	ValueReceivedEth   NUMERIC(32, 8) NOT NULL,
+	TokensTransferred  NUMERIC(48, 0) NOT NULL,
 
-    TokensTransferredInUnit  NUMERIC(48, 8) NOT NULL,
+    TokensTransferredInUnit  NUMERIC(64, 8) NOT NULL,
     TokensTransferredSymbol  text NOT NULL
 );
 
@@ -221,6 +221,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
 	}
 
+	// Setup worker pool
 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
 	addressInfoQueue := make(chan AddressInfo, 50)
 	saveAddrStatToDbWorker := func() {

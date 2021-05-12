@@ -61,14 +61,4 @@ func main() {
 
 	// Start server
 	e.Logger.Fatal(e.Start(listenAddr))
-
-	// // Register routes
-	// http.HandleFunc("/", rootHandler)
-	// http.HandleFunc("/analysis", getAnalysis)
-
-	// // Start webserver
-
-	// logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	// logger.Println("Server is starting on", listenAddr)
-	// log.Fatal(http.ListenAndServe(listenAddr, nil))
 }

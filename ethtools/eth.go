@@ -180,10 +180,11 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	currentBlockNumber := big.NewInt(startBlockNumber)
 	numBlocksProcessed := 0
 
+	// Setup database worker pool, for saving blocks to database
+	numDbWorkers := 5
 	blocksForDbQueue := make(chan *types.Block, 100)
 	if db != nil {
-		// Create a bunch of DB workers
-		for w := 1; w <= 5; w++ {
+		for w := 1; w <= numDbWorkers; w++ {
 			wg.Add(1)
 			go addBlockToDbWorker(db, blocksForDbQueue)
 		}

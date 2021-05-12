@@ -64,6 +64,10 @@ func GetConfig() Config {
 		DisableTLS: len(getEnvStr("DB_DISABLE_TLS", "")) > 0,
 	}
 
+	if len(dbConfig.Host) == 0 {
+		panic("Error: no DB_HOST environment variable set! Please check if you've set all environment variables.")
+	}
+
 	return Config{
 		Database: dbConfig,
 
