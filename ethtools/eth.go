@@ -149,6 +149,9 @@ func (result *AnalysisResult) AddBlock(block *types.Block) {
 					toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
 
 					// // Debug helper
+					if len(valBigInt.String()) > 40 {
+						fmt.Printf("Possible issue with very large value! tx: %s \t val: %s \t valBigInt: %v / %s \t total: %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+					}
 					// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
 					// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
 					// 	if valBigInt.Cmp(errVal) == 1 {
