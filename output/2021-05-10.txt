@@ -1,0 +1,269 @@
+Connecting to Ethereum node at /server/geth.ipc
+
+startTime: 1620604800 / 2021-05-10 00:00:00 +0000 UTC
+endTime:   1620691200 / 2021-05-11 00:00:00 +0000 UTC
+
+Finding start block:
+12405355 	 blockTime: 1620632093 	 secDiff: 27293
+12403256 	 blockTime: 1620604752 	 secDiff:   -48
+12403257 	 blockTime: 1620604785 	 secDiff:   -15
+12403258 	 blockTime: 1620604836 	 secDiff:    36
+Starting block found: 12403258 - time: 1620604836 / 2021-05-10 00:00:36 +0000 UTC
+
+12403258 	 2021-05-10 00:00:36 +0000 UTC 	 1620604836 	 tx=279 	 14988122
+12403259 	 2021-05-10 00:00:41 +0000 UTC 	 1620604841 	 tx=240 	 14990822
+12403260 	 2021-05-10 00:00:51 +0000 UTC 	 1620604851 	 tx=220 	 14977538
+12403261 	 2021-05-10 00:00:56 +0000 UTC 	 1620604856 	 tx=237 	 14999177
+...
+12409770 	 2021-05-10 23:58:50 +0000 UTC 	 1620691130 	 tx=238 	 14997383
+12409771 	 2021-05-10 23:58:51 +0000 UTC 	 1620691131 	 tx=354 	 14997840
+12409772 	 2021-05-10 23:59:10 +0000 UTC 	 1620691150 	 tx=304 	 14981278
+12409773 	 2021-05-10 23:59:23 +0000 UTC 	 1620691163 	 tx=339 	 14828934
+12409774 	 2021-05-10 23:59:36 +0000 UTC 	 1620691176 	 tx=343 	 14996061
+12409775 	 2021-05-11 00:00:04 +0000 UTC 	 1620691204 	 tx=260 	 14997542
+- 6517 blocks processed. Skipped last block 12409775 because it happened after endTime.
+
+Waiting for db-workers to finish...
+
+Total blocks: 6517
+Total transactions: 1716489 / types: map[0:1714941 1:1548]
+- with value: 974690
+- zero value: 741799
+- with data:  925594
+- with token transfer: 414558 (24.15%)
+Total value transferred: 4984451.42 ETH
+Total addresses: 763597
+
+Top 30 addresses by num-tx-received
+0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D Uniswap V2               204745       0	 193191.37 ETH
+0xdAC17F958D2ee523a2206206994597C13D831ec7 Tether USD               180084       0	      0.03 ETH
+0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE Shiba Inu                 73434       0	      3.90 ETH
+0xA090e606E30bD747d4E6245a1517EbE430F0057e                           50301     277	   4589.38 ETH
+0xE592427A0AEce92De3Edee1F18E0157C05861564                           47114       0	  41668.31 ETH
+0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 USD Coin                  40041       0	      0.00 ETH
+0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE Binance                   13891   14966	 252340.03 ETH
+0x881D40237659C251811CEC9c364ef91dC08D300C MetaMask Dex              13426       0	   8855.37 ETH
+0x514910771AF9Ca656af840dff83E8264EcF986CA Chainlink                 11111       0	      0.34 ETH
+0x607F4C5BB672230e8672085532f7e901544a7375 iExec RLC                  8974       0	      0.00 ETH
+0x11111112542D85B3EF69AE05771c2dCCff4fAa26                            8112       0	  61383.36 ETH
+0x0000000000007F150Bd6f54c40A34d7C3d5e9f56                            7447       0	      0.00 ETH
+0x8dF6084e3b84a65Ab9Dd2325b5422e5dEBD8944a                            6853       0	   3982.37 ETH
+0x6B175474E89094C44Da98b954EedeAC495271d0F Dai                        6208       0	      0.00 ETH
+0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0 Matic Network              6134       0	      0.00 ETH
+0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 Uniswap                    5483       0	      0.00 ETH
+0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 WETH                       4435       0	  19752.96 ETH
+0x3301Ee63Fb29F863f2333Bd4466acb46CD8323E6 Akita Inu                  4327       0	      0.92 ETH
+0xA2b4C0Af19cC16a6CfAcCe81F192B024d625817D Kishu Inu                  4274       0	     15.45 ETH
+0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F                            4207       0	  12349.99 ETH
+0xa57Bd00134B2850B2a1c55860c9e9ea100fDd6CF                            3835       0	     40.18 ETH
+0x6f259637dcD74C767781E37Bc6133cd6A68aa161 Huobi Token                3768       0	      0.00 ETH
+0x3FDA25F27211a138ADF211F4C060f2149674Be6D                            3682       0	  13521.47 ETH
+0x5f65f7b609678448494De4C87521CdF6cEf1e932                            3606       0	      0.00 ETH
+0xa1D8d972560C2f8144AF871Db508F0B0B10a3fBf                            3556   14924	   4855.01 ETH
+0xFa52274DD61E1643d2205169732f29114BC240b3 Kraken                     3454       0	  63272.86 ETH
+0x0000006daea1723962647b7e189d311d757Fb793                            3427       0	  12950.88 ETH
+0x4Fabb145d64652a948d72533023f6E7A623C7C53 Binance USD                3309       0	      0.00 ETH
+0xf0d54349aDdcf704F77AE15b96510dEA15cb7952                            2768       0	      0.00 ETH
+0x0D8775F648430679A709E98d2b0Cb6250d2887EF Basic Attention Token      2749       0	      0.00 ETH
+
+Top 30 addresses by num-tx-sent
+0x3cD751E6b0078Be393132286c442345e5DC49699                            1014   73287	  51641.31 ETH
+0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511                            1775   54112	  83253.96 ETH
+0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf                            1077   53800	  79503.85 ETH
+0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8                              23   35069	    139.22 ETH
+0x46340b20830761efd32832A74d7169B29FEB9758                              12   19542	      0.35 ETH
+0xE93381fB4c4F14bDa253907b18faD305D799241a                               1   15944	    500.00 ETH
+0x564286362092D8e7936f0549571a803B203aAceD                               5   15625	  40273.07 ETH
+0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE Binance                   13891   14966	 252340.03 ETH
+0xa1D8d972560C2f8144AF871Db508F0B0B10a3fBf                            3556   14924	   4855.01 ETH
+0x0D0707963952f2fBA59dD06f2b425ace40b492Fe                             103   14801	   4086.83 ETH
+0x75e89d5979E4f6Fba9F97c104c2F0AFB3F1dcB88                             138   13265	   1839.64 ETH
+0xE0F0CfDe7Ee664943906f17F7f14342E76A5CeC7                               5   13223	  42730.10 ETH
+0x85b931A32a0725Be14285B66f1a22178c672d69B                               4   13054	  58303.02 ETH
+0x708396f17127c42383E3b9014072679b2F60B82f                               6   12775	  55870.16 ETH
+0xD551234Ae421e3BCBA99A0Da6d736074f22192FF Binance                       3   12520	  23371.02 ETH
+0xf60c2Ea62EDBfE808163751DD0d8693DCb30019c                             530   10988	   9105.52 ETH
+0x0681d8Db095565FE8A346fA0277bFfdE9C0eDBBF                              75   10845	  36462.13 ETH
+0x8F22F2063D253846B53609231eD80FA571Bc0C8F                               6    9682	  55244.11 ETH
+0x00192Fb10dF37c9FB26829eb2CC623cd1BF599E8                               0    9602	      0.00 ETH
+0x8fD00f170FDf3772C5ebdCD90bF257316c69BA45                              49    8625	   9538.61 ETH
+0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836                               0    8144	      0.00 ETH
+0xd24400ae8BfEBb18cA49Be86258a3C749cf46853                               5    7900	    684.24 ETH
+0x52bc44d5378309EE2abF1539BF71dE1b7d7bE3b5                               0    7702	      0.00 ETH
+0x829BD824B016326A401d083B33D092293333A830                               0    7546	      0.00 ETH
+0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2 FTX                         991    7182	    266.83 ETH
+0x503828976D22510aad0201ac7EC88293211D23Da                              31    7094	    138.92 ETH
+0x89e51fA8CA5D66cd220bAed62ED01e8951aa7c40                               0    6926	      0.00 ETH
+0x59a5208B32e627891C389EbafC644145224006E8                              46    6202	   4697.70 ETH
+0x267be1C1D684F78cb4F6a176C4911b741E4Ffdc0 Kraken                        1    6190	      0.02 ETH
+0x99C85bb64564D9eF9A99621301f22C9993Cb89E3                               0    5891	      0.00 ETH
+
+Top 30 addresses by value-received
+0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE Binance                   13891   14966	 252340.03 ETH
+0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D Uniswap V2               204745       0	 193191.37 ETH
+0xa469a49cc566CF377D50C398ddc083E252B56f40                               2       0	 146461.57 ETH
+0x0548F59fEE79f8832C299e01dCA5c76F034F558e                              12      15	 139386.67 ETH
+0x742d35Cc6634C0532925a3b844Bc454e4438f44e                               7       6	 134886.32 ETH
+0x7801597900BE824Cc26AE107B652418c2a331a9D                               1       4	 110000.00 ETH
+0xeA3ec2A08fEE18Ff4798c2d4725deD433d94151d                               6       0	  95177.81 ETH
+0x00af1da3634155354879F2c31D5DA54b409B69aC                               1       0	  94454.00 ETH
+0x876EabF441B2EE5B5b0554Fd502a8E0600950cFa Bitfinex                    452    1214	  87438.07 ETH
+0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511                            1775   54112	  83253.96 ETH
+0x84D34f4f83a87596Cd3FB6887cFf8F17Bf5A7B83                              18      19	  82717.66 ETH
+0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf                            1077   53800	  79503.85 ETH
+0xDb31651967684A40A05c4aB8Ec56FC32f060998d                               6       4	  78047.00 ETH
+0xFa52274DD61E1643d2205169732f29114BC240b3 Kraken                     3454       0	  63272.86 ETH
+0x11111112542D85B3EF69AE05771c2dCCff4fAa26                            8112       0	  61383.36 ETH
+0xC098B2a3Aa256D2140208C3de6543aAEf5cd3A94                            1409    2077	  58655.36 ETH
+0x85b931A32a0725Be14285B66f1a22178c672d69B                               4   13054	  58303.02 ETH
+0x708396f17127c42383E3b9014072679b2F60B82f                               6   12775	  55870.16 ETH
+0x8F22F2063D253846B53609231eD80FA571Bc0C8F                               6    9682	  55244.11 ETH
+0x3cD751E6b0078Be393132286c442345e5DC49699                            1014   73287	  51641.31 ETH
+0xb90E50f2b083bb236c9c5d31997eD4e9f9e1dACD                               2       3	  49400.00 ETH
+0xf584F8728B874a6a5c7A8d4d387C9aae9172D621                              28      55	  48193.71 ETH
+0xE0F0CfDe7Ee664943906f17F7f14342E76A5CeC7                               5   13223	  42730.10 ETH
+0xE592427A0AEce92De3Edee1F18E0157C05861564                           47114       0	  41668.31 ETH
+0xb928Bb72C9B5ebC6De4d7f288Df85fed3958C9ee                              17       0	  40369.58 ETH
+0x564286362092D8e7936f0549571a803B203aAceD                               5   15625	  40273.07 ETH
+0x0681d8Db095565FE8A346fA0277bFfdE9C0eDBBF                              75   10845	  36462.13 ETH
+0xA7EFAe728D2936e78BDA97dc267687568dD593f3 OKEx                        676     950	  35336.29 ETH
+0x65b0BF8Ee4947edD2A500D74E50a3d757DC79de0                               1       0	  35000.00 ETH
+0xB60C61DBb7456f024f9338c739B02Be68e3F545C                               2      10	  34999.90 ETH
+
+Top 30 addresses by value-sent
+0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE Binance                   13891   14966	 337775.75 ETH
+0x876EabF441B2EE5B5b0554Fd502a8E0600950cFa Bitfinex                    452    1214	 205954.51 ETH
+0xD38cF7BEE05359249A63442BBec4F2c301D62171                               0       2	 155061.54 ETH
+0x84D34f4f83a87596Cd3FB6887cFf8F17Bf5A7B83                              18      19	 110000.00 ETH
+0x7801597900BE824Cc26AE107B652418c2a331a9D                               1       4	 109999.90 ETH
+0x9A9D870472bEe65080E82Bf3591f7C91dE31a7cC                               2       2	  96454.00 ETH
+0xd24400ae8BfEBb18cA49Be86258a3C749cf46853                               5    7900	  94030.28 ETH
+0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511                            1775   54112	  83478.38 ETH
+0x267be1C1D684F78cb4F6a176C4911b741E4Ffdc0 Kraken                        1    6190	  81594.54 ETH
+0x742d35Cc6634C0532925a3b844Bc454e4438f44e                               7       6	  81000.00 ETH
+0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf                            1077   53800	  77206.92 ETH
+0xf584F8728B874a6a5c7A8d4d387C9aae9172D621                              28      55	  61817.76 ETH
+0x3cD751E6b0078Be393132286c442345e5DC49699                            1014   73287	  57257.21 ETH
+0xf66852bC122fD40bFECc63CD48217E88bda12109                             298    1431	  50614.53 ETH
+0x85b931A32a0725Be14285B66f1a22178c672d69B                               4   13054	  50025.33 ETH
+0xb90E50f2b083bb236c9c5d31997eD4e9f9e1dACD                               2       3	  49400.00 ETH
+0x767Ecb395def19Ab8d1b2FCc89B3DDfBeD28fD6b                               1      21	  49400.00 ETH
+0x708396f17127c42383E3b9014072679b2F60B82f                               6   12775	  48293.17 ETH
+0x8F22F2063D253846B53609231eD80FA571Bc0C8F                               6    9682	  45473.44 ETH
+0xE0F0CfDe7Ee664943906f17F7f14342E76A5CeC7                               5   13223	  44819.82 ETH
+0x564286362092D8e7936f0549571a803B203aAceD                               5   15625	  43225.35 ETH
+0xC333E80eF2deC2805F239E3f1e810612D294F771                              39     198	  42634.83 ETH
+0xC098B2a3Aa256D2140208C3de6543aAEf5cd3A94                            1409    2077	  39627.44 ETH
+0x7375FFd5E5971A73D8Ceb4572699BaFe9CbFEc0a                               1      15	  38000.35 ETH
+0xB60C61DBb7456f024f9338c739B02Be68e3F545C                               2      10	  35750.00 ETH
+0x0000f079e68BbCC79AB9600ace786B0a4dB1c83c                              37     927	  34903.64 ETH
+0x0681d8Db095565FE8A346fA0277bFfdE9C0eDBBF                              75   10845	  31597.67 ETH
+0xD551234Ae421e3BCBA99A0Da6d736074f22192FF Binance                       3   12520	  29321.33 ETH
+0xA46a32636d1A336d8c53CB6Fe60c373ABd9e3569                               0       1	  24559.00 ETH
+0x27E9F4748a2eb776bE193a1F7dec2Bb6DAAfE9Cf                             320    1526	  23653.55 ETH
+
+Top 100 addresses by token-transfers
+0xdAC17F958D2ee523a2206206994597C13D831ec7 Tether USD                172781 token transfers 	   180084 tx 	              9,720,670,192 USDT 
+0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE Shiba Inu                  61694 token transfers 	    73434 tx 	        177,608,919,242,542 SHIB 
+0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 USD Coin                   36478 token transfers 	    40041 tx 	              3,386,968,968 USDC 
+0x514910771AF9Ca656af840dff83E8264EcF986CA Chainlink                  10572 token transfers 	    11111 tx 	                 11,661,290 LINK 
+0x607F4C5BB672230e8672085532f7e901544a7375 iExec RLC                   8740 token transfers 	     8974 tx 	                 52,662,130 RLC  
+0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0 Matic Network               5412 token transfers 	     6134 tx 	                213,417,312 MATIC
+0x6B175474E89094C44Da98b954EedeAC495271d0F Dai                         5179 token transfers 	     6208 tx 	                172,273,737 DAI  
+0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 Uniswap                     4674 token transfers 	     5483 tx 	                  4,288,342 UNI  
+0x6f259637dcD74C767781E37Bc6133cd6A68aa161 Huobi Token                 3731 token transfers 	     3768 tx 	                    823,336 HT   
+0x4Fabb145d64652a948d72533023f6E7A623C7C53 Binance USD                 3108 token transfers 	     3309 tx 	              1,495,145,276 BUSD 
+0x0D8775F648430679A709E98d2b0Cb6250d2887EF Basic Attention Token       2617 token transfers 	     2749 tx 	                 54,434,388 BAT  
+0x3301Ee63Fb29F863f2333Bd4466acb46CD8323E6 Akita Inu                   2463 token transfers 	     4327 tx 	          5,329,638,277,581 AKITA
+0x0F5D2fB29fb7d3CFeE444a200298f468908cC942 Decentraland                2214 token transfers 	     2408 tx 	                 78,790,318 MANA 
+0xf2ddae89449b7D26309a5D54614B1FC99C608AF5 ASTA                        2148 token transfers 	     2148 tx 	                278,115,096 ASTA 
+0xF629cBd94d3791C9250152BD8dfBDF380E2a3B9c Enjin Coin                  1850 token transfers 	     1995 tx 	                 15,592,461 ENJ  
+0x467Bccd9d29f223BcE8043b84E8C8B282827790F Telcoin                     1808 token transfers 	     2097 tx 	                841,559,651 TEL  
+0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9 Aave                        1733 token transfers 	     1920 tx 	                    364,009 AAVE 
+0xd26114cd6EE289AccF82350c8d8487fedB8A0C07 OMG Network                 1723 token transfers 	     1760 tx 	                  8,698,732 OMG  
+0x6c6EE5e31d828De241282B9606C8e98Ea48526E2 Holo                        1677 token transfers 	     1808 tx 	              1,933,764,441 HOT  
+0x3506424F91fD33084466F402d5D97f05F8e3b4AF Chiliz                      1660 token transfers 	     1725 tx 	                160,729,574 CHZ  
+0x6B3595068778DD592e39A122f4f5a5cF09C90fE2 Sushi                       1628 token transfers 	     1840 tx 	                 10,325,812 SUSHI
+0x111111111117dC0aa78b770fA6A738034120C302 1inch                       1430 token transfers 	     1798 tx 	                  8,289,380 1INCH
+0xc944E90C64B2c07662A292be6244BDf05Cda44a7 The Graph                   1255 token transfers 	     1396 tx 	                 25,194,441 GRT  
+0xF411903cbC70a74d22900a5DE66A2dda66507255 Verasity                    1246 token transfers 	     1373 tx 	                314,887,440 VRA  
+0xE41d2489571d322189246DaFA5ebDe1F4699F498 0x                          1196 token transfers 	     1277 tx 	                 11,108,666 ZRX  
+0xc00e94Cb662C3520282E6f5717214004A7f26888 Compound                    1185 token transfers 	     1283 tx 	                  1,609,512 COMP 
+0x8290333ceF9e6D528dD5618Fb97a76f268f3EDD4 Ankr                        1099 token transfers 	     1153 tx 	                244,202,935 ANKR 
+0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 Wrapped Bitcoin             1080 token transfers 	     1466 tx 	                      7,352 WBTC 
+0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F Synthetix Network Token     1060 token transfers 	     1194 tx 	                  2,158,474 SNX  
+0x491604c0FDF08347Dd1fa4Ee062a822A5DD06B5D Cartesi                     1022 token transfers 	     1063 tx 	                 35,460,188 CTSI 
+0xA2b4C0Af19cC16a6CfAcCe81F192B024d625817D Kishu Inu                    953 token transfers 	     4274 tx 	      1,693,173,102,995,273 KISHU
+0x8CE9137d39326AD0cD6491fb5CC0CbA0e089b6A9 Swipe                        932 token transfers 	      968 tx 	                  5,745,982 SXP  
+0x0000000000085d4780B73119b644AE5ecd22b376 TrueUSD                      917 token transfers 	      981 tx 	                 57,184,219 TUSD 
+0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2 Maker                        910 token transfers 	      965 tx 	                     17,817 MKR  
+0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e yearn.finance                898 token transfers 	      960 tx 	                      2,454 YFI  
+0xaaAEBE6Fe48E54f431b0C390CfaF0b017d09D42d Celsius Network              822 token transfers 	      930 tx 	                  2,012,693 CEL  
+0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b Crypto.com Coin              807 token transfers 	      847 tx 	                131,232,867 CRO  
+0xB64ef51C888972c908CFacf59B47C1AfBC0Ab8aC Storj                        716 token transfers 	      744 tx 	                 11,051,710 STORJ
+0xD533a949740bb3306d119CC777fa900bA034cd52 Curve DAO Token              681 token transfers 	      763 tx 	                 29,471,112 CRV  
+0x41e5560054824eA6B0732E656E3Ad64E20e94E45 Civic                        648 token transfers 	      684 tx 	                 37,445,912 CVC  
+0x58b6A8A3302369DAEc383334672404Ee733aB239 Livepeer                     647 token transfers 	      752 tx 	                    415,175 LPT  
+0xdF574c24545E5FfEcb9a659c229253D4111d87e1 HUSD                         599 token transfers 	      708 tx 	                276,423,221 HUSD 
+0x8E870D67F660D95d5be530380D0eC0bd388289E1 Paxos Standard               597 token transfers 	      607 tx 	                 71,147,257 PAX  
+0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828 UMA                          562 token transfers 	      592 tx 	                    968,416 UMA  
+0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0 Tellor                       542 token transfers 	      613 tx 	                    241,410 TRB  
+0x0f51bb10119727a7e5eA3538074fb341F56B09Ad DAO Maker                    518 token transfers 	      783 tx 	                  4,220,226 DAO  
+0x77FbA179C79De5B7653F68b5039Af940AdA60ce0 Ampleforth Governance        508 token transfers 	      634 tx 	                    394,655 FORTH
+0x744d70FDBE2Ba4CF95131626614a1763DF805B9E Status                       507 token transfers 	      525 tx 	                150,876,104 SNT  
+0xB62132e35a6c13ee1EE0f84dC5d40bad8d815206 NEXO                         499 token transfers 	      532 tx 	                  1,273,016 NEXO 
+0x0FD10b9899882a6f2fcb5c371E17e70FdEe00C38 Pundi X Token                497 token transfers 	      533 tx 	                 7,037,636 PUNDIX
+0xba100000625a3754423978a60c9317c58a424e3D Balancer                     497 token transfers 	      525 tx 	                    604,965 BAL  
+0x653430560bE843C4a3D143d0110e896c2Ab8ac0D Molecular Future             489 token transfers 	      489 tx 	                  6,037,518 MOF  
+0x8762db106B2c2A0bccB3A80d1Ed41273552616E8 Reserve Rights Token         487 token transfers 	      619 tx 	                204,919,856 RSR  
+0x4E15361FD6b4BB609Fa63C81A2be19d873717870 Fantom                       480 token transfers 	      635 tx 	                 27,586,648 FTM  
+0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD Loopring                     475 token transfers 	      521 tx 	                 17,601,151 LRC  
+0x408e41876cCCDC0F92210600ef50372656052a38 REN                          471 token transfers 	      550 tx 	                 13,027,430 REN  
+0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C Bancor Network Token         464 token transfers 	      553 tx 	                  3,394,543 BNT  
+0xa1d6Df714F91DeBF4e0802A542E13067f31b8262 RedFOX Labs                  462 token transfers 	      484 tx 	                 41,499,166 RFOX 
+0x4575f41308EC1483f3d399aa9a2826d74Da13Deb Orchid Protocol              459 token transfers 	      485 tx 	                 16,331,502 OXT  
+0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26 Origin Protocol              456 token transfers 	      504 tx 	                 13,168,428 OGN  
+0xdd974D5C2e2928deA5F71b9825b8b646686BD200 Kyber Network                454 token transfers 	      501 tx 	                  3,375,344 KNC  
+0x761D38e5ddf6ccf6Cf7c55759d5210750B5D60F3 Dogelon Mars                 436 token transfers 	     1486 tx 	          5,453,300,938,671 ELON 
+0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd Gemini Dollar                433 token transfers 	      447 tx 	                 13,292,380 GUSD 
+0x27C70Cd1946795B66be9d954418546998b546634                              432 token transfers 	     1903 tx 	     9662060781304369686108 ?    
+0x3597bfD533a99c9aa083587B074434E61Eb0A258 Dent                         423 token transfers 	      481 tx 	                901,014,139 DENT 
+0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9 FTX Token                    410 token transfers 	      525 tx 	                    580,534 FTT  
+0x43A96962254855F16b925556f9e97BE436A43448 HORD Token                   403 token transfers 	      507 tx 	                  6,059,552 HORD 
+0x09a3EcAFa817268f77BE1283176B946C4ff2E608 Mirror Protocol              400 token transfers 	      464 tx 	                  2,546,849 MIR  
+0x006699d34AA3013605d468d2755A2Fe59A16B12B Zild Finance Coin            379 token transfers 	      493 tx 	                      6,266 Zild 
+0x3845badAde8e6dFF049820680d1F14bD3903a5d0 SAND                         364 token transfers 	      398 tx 	                 12,563,131 SAND 
+0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39 HEX                          340 token transfers 	      971 tx 	                 83,827,954 HEX  
+0x0AbdAce70D3790235af448C88547603b945604ea district0x                   331 token transfers 	      366 tx 	                 98,844,615 DNT  
+0x01fF50f8b7f74E4f00580d9596cd3D0d6d6E326f                              330 token transfers 	      338 tx 	 26292747037729014928742772 ?    
+0x189F0C596064520A0eb45FE5a9EC50553B655861                              329 token transfers 	      329 tx 	                89673212170 ?    
+0xC40AF1E4fEcFA05Ce6BAb79DcD8B373d2E436c4E                              322 token transfers 	     1456 tx 	   649992356146301421530115 ?    
+0x476c5E26a75bd202a9683ffD34359C0CC15be0fF Serum                        311 token transfers 	      365 tx 	                  1,513,999 SRM  
+0xbE9375C6a420D2eEB258962efB95551A5b722803 StormX                       310 token transfers 	      427 tx 	                247,621,578 STMX 
+0x3242aEBCdCF8dE491004b1C98E6595e9827f6C17 Global Utility Smart Digital Token      305 token transfers 	      305 tx 	                    284,538 GUSDT
+0xBA11D00c5f74255f56a5E366F4F77f5A186d7f55 Band Protocol                285 token transfers 	      309 tx 	                    480,899 BAND 
+0x595832F8FC6BF59c85C527fEC3740A1b7a361269                              279 token transfers 	      283 tx 	            576148612952221 ?    
+0xFE3E6a25e6b192A42a44ecDDCd13796471735ACf                              278 token transfers 	      348 tx 	 115317011175196692768776403 ?    
+0x5d30aD9C6374Bf925D0A75454fa327AACf778492                              275 token transfers 	      499 tx 	  1046951189058988473270641 ?    
+0x0E69D0A2bbB30aBcB7e5CfEA0E4FDe19C00A8d47 Carlive Chain                274 token transfers 	      274 tx 	                  1,356,398 IOV  
+0x056354F3Ff20743aa4c0DA365603871c7000b081 TriumphX                     271 token transfers 	      272 tx 	                 15,788,860 TRIX 
+0x83e6f1E41cdd28eAcEB20Cb649155049Fac3D5Aa Polkastarter                 270 token transfers 	      450 tx 	                    774,690 POLS 
+0x00c83aeCC790e8a4453e5dD3B0B4b3680501a7A7 SKALE                        270 token transfers 	      287 tx 	                 10,382,758 SKL  
+0x5Cf04716BA20127F1E2297AdDCf4B5035000c9eb NKN                          269 token transfers 	      278 tx 	                 29,276,710 NKN  
+0x419D0d8BdD9aF5e606Ae2232ed285Aff190E711b FunFair                      266 token transfers 	      283 tx 	                 18,740,119 FUN  
+0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 WETH                         263 token transfers 	     4435 tx 	                      7,187 WETH 
+0xfAd45E47083e4607302aa43c65fB3106F1cd7607 Hoge Finance                 258 token transfers 	      582 tx 	              1,119,816,832 HOGE 
+0x668C50B1c7f46EFFBE3f242687071d7908AAB00A                              253 token transfers 	      813 tx 	    19078335319718753422408 ?    
+0x967da4048cD07aB37855c090aAF366e4ce1b9F48 Ocean Protocol               241 token transfers 	      311 tx 	                  6,111,986 OCEAN
+0x4fE83213D56308330EC302a8BD641f1d0113A4Cc NuCypher                     240 token transfers 	      279 tx 	                  9,025,411 NU   
+0x45804880De22913dAFE09f4980848ECE6EcbAf78                              229 token transfers 	      231 tx 	     4330389932398318562019 ?    
+0xFF75CEd57419bcaEBe5F05254983b013B0646eF5                              226 token transfers 	      262 tx 	 43631976417681061750115253 ?    
+0x9D86b1B2554ec410ecCFfBf111A6994910111340                              226 token transfers 	      226 tx 	          17435444215857208 ?    
+0xA9598333B99d14D90Bc81CAd8Af82C4C70625e75 Metis                        223 token transfers 	      223 tx 	                    257,211 MTS  
+0x9992eC3cF6A55b00978cdDF2b27BC6882d88D1eC Polymath Network             217 token transfers 	      230 tx 	                 13,937,498 POLY 
+0xF5B5eFc906513b4344EbAbCF47A04901f99F09f3                              213 token transfers 	      223 tx 	                  847401993 ?    
+0xf65B5C5104c4faFD4b709d9D60a185eAE063276c Truebit                      212 token transfers 	     1113 tx 	                  4,712,177 TRU  
+Saved to output/2021-05-10.json
+Added analysis to database with ID 2
+Adding address stats to DB...
+- Tokens transferred

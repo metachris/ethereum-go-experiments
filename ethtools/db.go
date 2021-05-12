@@ -99,6 +99,17 @@ type AnalysisEntry struct {
 	TotalAddresses                   int
 }
 
+var db *sqlx.DB
+
+// GetDatabase returns an already existing DB connection. If not exists then creates it
+func GetDatabase(cfg Config) *sqlx.DB {
+	if db != nil {
+		return db
+	}
+	db = NewDatabaseConnection(cfg)
+	return db
+}
+
 // NewDatabaseConnection creates a new sqlx.DB database connection
 func NewDatabaseConnection(cfg Config) *sqlx.DB {
 	sslMode := "require"
@@ -119,11 +130,7 @@ func NewDatabaseConnection(cfg Config) *sqlx.DB {
 		RawQuery: q.Encode(),
 	}
 
-	db, err := sqlx.Connect("postgres", u.String())
-	if err != nil {
-		panic(err)
-	}
-
+	db := sqlx.MustConnect("postgres", u.String())
 	db.MustExec(schema)
 	return db
 }

@@ -24,7 +24,7 @@ func getAnalysis(c echo.Context) (err error) {
 	}
 
 	// Get entry from DB
-	db := ethtools.NewDatabaseConnection(ethtools.GetConfig())
+	db := ethtools.GetDatabase(ethtools.GetConfig())
 	entry, found := ethtools.DbGetAnalysisById(db, id)
 	if !found {
 		return echo.NewHTTPError(http.StatusNotFound)
