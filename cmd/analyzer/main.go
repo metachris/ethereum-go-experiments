@@ -105,7 +105,7 @@ func main() {
 	fmt.Println("")
 	client, err := ethclient.Dial(config.EthNode)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	var result *ethtools.AnalysisResult

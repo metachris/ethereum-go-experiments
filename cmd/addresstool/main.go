@@ -9,6 +9,12 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	token "ethstats/ethtools/contracts/erc20" // for demo
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func getToken(address string, saveToJson bool) {
@@ -67,6 +73,7 @@ func main() {
 	listPtr := flag.Bool("list", false, "only list entries")
 	listEthplorerPtr := flag.Bool("listEthplorer", false, "only list entries")
 	addPtr := flag.Bool("add", false, "add to json")
+	fromEthPtr := flag.Bool("eth", false, "get address details from Ethereum node")
 	flag.Parse()
 
 	// List addresses
@@ -92,7 +99,33 @@ func main() {
 	if *filePtr != "" {
 		fmt.Println("from file", *filePtr)
 		loadAddressesFromRawFile(*filePtr, *addPtr, true)
+		return
+	}
+
+	if *fromEthPtr {
+		// TODO
+		fmt.Println("Getting addr info from ethereum node")
+
+		config := ethtools.GetConfig()
+		client, err := ethclient.Dial(config.EthNode)
+		if err != nil {
+			panic(err)
+		}
+
+		tokenAddress := common.HexToAddress("0xa74476443119A942dE498590Fe1f2454d7D4aC0d")
+		instance, err := token.NewErc20(tokenAddress, client)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		name, err := instance.Name(&bind.CallOpts{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(name)
+
 	} else {
+		// Get from ethplorer
 		getToken(*addressPtr, *addPtr)
 	}
 }
