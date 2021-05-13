@@ -10,9 +10,11 @@ import (
 type Config struct {
 	Database PostgresConfig
 
+	EthNode         string
 	EthplorerApiKey string
-	WebserverHost   string
-	WebserverPort   int
+
+	WebserverHost string
+	WebserverPort int
 
 	NumAddressesByValueSent      int
 	NumAddressesByValueReceived  int
@@ -22,7 +24,7 @@ type Config struct {
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d", c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByTokenTransfers)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByTokenTransfers)
 }
 
 type PostgresConfig struct {
@@ -74,6 +76,7 @@ func GetConfig() Config {
 		WebserverHost: getEnvStr("WEBSERVER_HOST", ""),
 		WebserverPort: getEnvInt("WEBSERVER_PORT", 8090),
 
+		EthNode:         getEnvStr("ETH_NODE", ""),
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
 		NumAddressesByValueSent:      getEnvInt("NUM_ADDR_VALUE_SENT", 25),

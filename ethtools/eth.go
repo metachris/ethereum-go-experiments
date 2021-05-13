@@ -146,12 +146,14 @@ func (result *AnalysisResult) AddBlock(block *types.Block) {
 					}
 					valBigInt := new(big.Int)
 					valBigInt.SetString(value, 16)
-					toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
 
-					// // Debug helper
+					// If number is too big, it is either an error or a erc-721 SC
 					if len(valBigInt.String()) > 40 {
-						fmt.Printf("Possible issue with very large value! tx: %s \t val: %s \t valBigInt: %v / %s \t total: %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+						fmt.Printf("warn: very large value! block: %d \t tx: %s \t val: %s \t valBigInt: %v \n", block.Number().Uint64(), tx.Hash(), value, valBigInt)
+					} else {
+						toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
 					}
+
 					// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
 					// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
 					// 	if valBigInt.Cmp(errVal) == 1 {

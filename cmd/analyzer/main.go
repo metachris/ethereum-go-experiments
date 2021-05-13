@@ -17,12 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const NODE_URI = "http://95.217.145.161:8545"
-
-// const NODE_URI = "/server/geth.ipc"
-
-// const NODE_URI = "https://mainnet.infura.io/v3/e03fe41147d548a8a8f55ecad18378fb"
-
 const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
 
@@ -100,14 +94,16 @@ func main() {
 		}
 	}
 
+	config := ethtools.GetConfig()
+
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethtools.NewDatabaseConnection(ethtools.GetConfig())
+		db = ethtools.NewDatabaseConnection(config)
 	}
 
-	fmt.Println("Connecting to Ethereum node at", NODE_URI)
+	fmt.Println("Connecting to Ethereum node at", config.EthNode)
 	fmt.Println("")
-	client, err := ethclient.Dial(NODE_URI)
+	client, err := ethclient.Dial(config.EthNode)
 	if err != nil {
 		log.Fatal(err)
 	}
