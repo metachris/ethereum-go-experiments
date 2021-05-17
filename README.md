@@ -80,6 +80,11 @@ Inspiration & Ideas
 * https://ycharts.com/indicators/ethereum_transactions_per_day
 * https://github.com/ardanlabs/service/blob/master/foundation/database/database.go
 
+Contracts:
+
+* ERC20: https://github.com/fxfactorial/defi-abigen
+* ERC721: https://github.com/0xcert/ethereum-erc721/blob/master/src/contracts/tokens/erc721.sol
+
 ---
 
 # Notes
