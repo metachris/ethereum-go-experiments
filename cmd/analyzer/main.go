@@ -21,11 +21,11 @@ const TOP_ADDRESS_COUNT = 30
 const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
 
 type TopAddressData struct {
-	NumTxReceived  []ethtools.AddressInfo
-	NumTxSent      []ethtools.AddressInfo
-	ValueReceived  []ethtools.AddressInfo
-	ValueSent      []ethtools.AddressInfo
-	TokenTransfers []ethtools.AddressInfo // of a contract address, how many times a transfer/transferFrom method was called
+	NumTxReceived  []ethtools.AddressStats
+	NumTxSent      []ethtools.AddressStats
+	ValueReceived  []ethtools.AddressStats
+	ValueSent      []ethtools.AddressStats
+	TokenTransfers []ethtools.AddressStats // of a contract address, how many times a transfer/transferFrom method was called
 }
 
 // Raw AnalysisResult extended with a few interesting fields
@@ -37,11 +37,11 @@ type ExportData struct {
 
 func NewExportData(result ethtools.AnalysisResult) *ExportData {
 	topAddressData := TopAddressData{
-		NumTxReceived:  make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		NumTxSent:      make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		ValueReceived:  make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		ValueSent:      make([]ethtools.AddressInfo, TOP_ADDRESS_COUNT),
-		TokenTransfers: make([]ethtools.AddressInfo, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+		NumTxReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+		NumTxSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+		ValueReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+		ValueSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+		TokenTransfers: make([]ethtools.AddressStats, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
 	}
 
 	return &ExportData{
@@ -181,7 +181,7 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	fmt.Println("Total addresses:", len(result.Addresses))
 
 	// Create addresses array for sorting
-	_addresses := make([]ethtools.AddressInfo, 0, len(result.Addresses))
+	_addresses := make([]ethtools.AddressStats, 0, len(result.Addresses))
 	for _, k := range result.Addresses {
 		_addresses = append(_addresses, *k)
 	}

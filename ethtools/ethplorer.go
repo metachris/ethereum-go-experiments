@@ -50,8 +50,8 @@ func (tokenInfo InternalEthplorerTokenInfo) ToAddressDetail() *AddressDetail {
 		Address:  tokenInfo.Address,
 		Name:     tokenInfo.Name,
 		Symbol:   tokenInfo.Symbol,
-		Decimals: decimals,
-		Type:     "ERC_Token",
+		Decimals: uint8(decimals),
+		Type:     AddressTypeErcToken,
 	}
 }
 
@@ -63,7 +63,7 @@ func FetchTokenInfo(address string) (InternalEthplorerTokenInfo, error) {
 
 	var myClient = &http.Client{Timeout: 10 * time.Second}
 	r, err := myClient.Get(url)
-	Check(err)
+	Perror(err)
 
 	defer r.Body.Close()
 	if r.StatusCode != 200 {
@@ -80,14 +80,14 @@ func FetchTokenInfo(address string) (InternalEthplorerTokenInfo, error) {
 func GetEthplorerTokenInfolMap() map[string]InternalEthplorerTokenInfo {
 	fn, err := filepath.Abs(FN_ADDRESS_JSON_ETHPLORER)
 	file, err := os.Open(fn)
-	Check(err)
+	Perror(err)
 	defer file.Close()
 
 	// Load JSON
 	decoder := json.NewDecoder(file)
 	var InternalEthplorerTokenInfos []InternalEthplorerTokenInfo
 	err = decoder.Decode(&InternalEthplorerTokenInfos)
-	Check(err)
+	Perror(err)
 	// fmt.Println(len(InternalEthplorerTokenInfos), InternalEthplorerTokenInfos[0].Name)
 
 	// Convert to map
@@ -111,11 +111,11 @@ func AddEthplorerokenToFullJson(tokenInfo *InternalEthplorerTokenInfo) {
 	}
 
 	b, err := json.MarshalIndent(tokenList, "", "  ")
-	Check(err)
+	Perror(err)
 	// fmt.Println(b)
 
 	err = ioutil.WriteFile(FN_ADDRESS_JSON_ETHPLORER, b, 0644)
-	Check(err)
+	Perror(err)
 
 	fmt.Println("Updated", FN_ADDRESS_JSON_ETHPLORER)
 }

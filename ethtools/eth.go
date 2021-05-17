@@ -13,7 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type AddressInfo struct {
+type AddressStats struct {
 	Address                      string
 	NumTxSent                    int
 	NumTxReceived                int
@@ -28,8 +28,8 @@ type AddressInfo struct {
 	TokensTransferred            *big.Int
 }
 
-func NewAddressInfo(address string) *AddressInfo {
-	return &AddressInfo{
+func NewAddressInfo(address string) *AddressStats {
+	return &AddressStats{
 		Address:           address,
 		ValueSentWei:      new(big.Int),
 		ValueReceivedWei:  new(big.Int),
@@ -43,7 +43,7 @@ type AnalysisResult struct {
 	EndBlockNumber      int64
 	EndBlockTimestamp   uint64
 
-	Addresses     map[string]*AddressInfo `json:"-"`
+	Addresses     map[string]*AddressStats `json:"-"`
 	TxTypes       map[uint8]int
 	ValueTotalWei *big.Int
 	ValueTotalEth string
@@ -58,7 +58,7 @@ type AnalysisResult struct {
 func NewResult() *AnalysisResult {
 	return &AnalysisResult{
 		ValueTotalWei: new(big.Int),
-		Addresses:     make(map[string]*AddressInfo),
+		Addresses:     make(map[string]*AddressStats),
 		TxTypes:       make(map[uint8]int),
 	}
 }

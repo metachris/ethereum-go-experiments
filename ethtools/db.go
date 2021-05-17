@@ -181,20 +181,20 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 	fmt.Println("Added analysis to database with ID", analysisId)
 
 	// Create addresses array for sorting
-	_addresses := make([]AddressInfo, 0, len(result.Addresses))
+	_addresses := make([]AddressStats, 0, len(result.Addresses))
 	for _, k := range result.Addresses {
 		_addresses = append(_addresses, *k)
 	}
 
-	addAddressAndStats := func(addr AddressInfo) {
+	addAddressAndStats := func(addr AddressStats) {
 		// fmt.Println("+ stats:", addr)
 		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
 		if !foundInDb { // Not in DB, add now
 			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
 			if !foundInJson {
-				detail = AddressDetail{Address: addr.Address}
+				detail = NewAddressDetail(addr.Address)
 				if addr.NumTxTokenTransfer > 0 {
-					detail.Type = AddressTypeToken
+					detail.Type = AddressTypeErcToken
 				}
 			}
 			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
@@ -223,7 +223,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 
 	// Setup worker pool
 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
-	addressInfoQueue := make(chan AddressInfo, 50)
+	addressInfoQueue := make(chan AddressStats, 50)
 	saveAddrStatToDbWorker := func() {
 		defer wg.Done()
 		for addr := range addressInfoQueue {

@@ -1,3 +1,4 @@
+// Tools for dealing with Ethereum addresses: AddressDetail struct, read & write token JSON, get from DB
 package ethtools
 
 import (
@@ -10,20 +11,38 @@ import (
 	"strings"
 )
 
+var (
+	INTERFACEID_ERC165            = [4]byte{1, 255, 201, 167}  // 0x01ffc9a7
+	INTERFACEID_ERC721            = [4]byte{128, 172, 88, 205} // 0x80ac58cd
+	INTERFACEID_ERC721_METADATA   = [4]byte{91, 94, 19, 159}   // 0x5b5e139f
+	INTERFACEID_ERC721_ENUMERABLE = [4]byte{120, 14, 157, 99}  // 0x780e9d63
+)
+
+type AddressType string
+
 const (
-	// AddressTypeErc20    string = "ERC20"
-	// AddressTypeErc721   string = "ERC721"
-	AddressTypeToken    string = "ERC_Token"
-	AddressTypeAddress  string = "Address"
-	AddressTypeContract string = "Contract"
+	AddressTypeWallet        AddressType = "Wallet"
+	AddressTypeErc20         AddressType = "Erc20"
+	AddressTypeErc721        AddressType = "Erc721"
+	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
+	AddressTypeUnknown       AddressType = "Unknown"  // For new addresses, will be updated on next sync.
+	AddressTypeOtherContract AddressType = "OtherContract"
 )
 
 type AddressDetail struct {
-	Address  string `json:"address"`
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Symbol   string `json:"symbol"`
-	Decimals int    `json:"decimals"`
+	Address  string      `json:"address"`
+	Type     AddressType `json:"type"`
+	Name     string      `json:"name"`
+	Symbol   string      `json:"symbol"`
+	Decimals uint8       `json:"decimals"`
+}
+
+func (a AddressDetail) String() string {
+	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
+}
+
+func NewAddressDetail(address string) AddressDetail {
+	return AddressDetail{Address: address, Type: AddressTypeUnknown}
 }
 
 const ( // iota is reset to 0
@@ -79,7 +98,7 @@ func GetAddressDetailMap(dataset int) map[string]AddressDetail {
 	return AddressDetailMap
 }
 
-func AddToken(address *AddressDetail) {
+func AddTokenToJson(address *AddressDetail) {
 	addressMap := GetAddressDetailMap(DATASET_TOKENS)
 	addressMap[address.Address] = *address
 
@@ -90,11 +109,11 @@ func AddToken(address *AddressDetail) {
 	}
 
 	b, err := json.MarshalIndent(addressList, "", "  ")
-	Check(err)
+	Perror(err)
 	// fmt.Println(b)
 
 	err = ioutil.WriteFile(FN_JSON_TOKENS, b, 0644)
-	Check(err)
+	Perror(err)
 
 	fmt.Println("Updated", FN_JSON_TOKENS)
 }

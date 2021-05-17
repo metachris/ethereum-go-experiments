@@ -38,14 +38,6 @@ func getTargetBlocknumber(utcTimestamp int64) int64 {
 	return targetBlock
 }
 
-// func testTimestamp() {
-// 	dayStr := "2021-01-27"
-// 	hour := 17 // 0:00 - 0:59
-
-// 	targetBlockNumber := getTargetBlocknumber(dayStr, hour)
-// 	fmt.Println("target block", targetBlockNumber)
-// }
-
 func Abs(x int64) int64 {
 	if x < 0 {
 		return -x
@@ -70,7 +62,8 @@ func printBlock(block *types.Block) {
 	fmt.Printf("%d \t %s \t %d \t tx=%d \t %d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()), block.GasUsed())
 }
 
-func Check(err error) {
+// panic on error
+func Perror(err error) {
 	if err != nil {
 		panic(err)
 	}
