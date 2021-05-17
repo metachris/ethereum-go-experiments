@@ -20,7 +20,8 @@ go run cmd/analyzer/main.go -date 2021-05-09 -len 1d -addDb -out output/2021-05-
 go run cmd/analyzer/main.go -block 12381372
 go run cmd/analyzer/main.go -block 12381372 -len 10
 
-# Run addresstool - check ethplorer
+# Run addresstool to get info about an address
+go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 
 # Download data from server
@@ -40,18 +41,19 @@ Notes:
 
 ## To do
 
+* Search for TODO
 * Handle NFT transfer vs token transfers (for NFT it's `tokenId`, vs `value` for tokens)
   * NFT: https://etherscan.io/tx/0xbcb696bf17f6d47748cd58f667d269c3dd816377db9fe17653be67f8a2d6f377
   * Token: https://etherscan.io/tx/0x0d86cfde5a6e2a1d86f8e9d0d1c30ac8edcdc415235689cdf81260cdd45ad25c
 * Handle reverted transactions: https://etherscan.io/tx/0x50d55cad863ea3028474076882475f21c29312131a660d9628bad81c098fc30b
-* **Address-update: detect from SC itself the properties, and if it is ERC-20 or ERC-721**
-* search for TODO
 
 Maybe?
 
 * Save results for 1h in addition to 1d
 * Gas fees
 * Add blocks in own goroutine (not in main routine and not one per block)
+* Tests
+  * contract type detection
 
 ---
 

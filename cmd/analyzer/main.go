@@ -156,7 +156,7 @@ func main() {
 	}
 
 	if *addToDbPtr {
-		ethtools.AddAnalysisResultToDatabase(db, date, hour, min, sec, timespanSec, result)
+		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
 		fmt.Println("Saved to database ✔")
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -173,7 +174,7 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 	db.MustExec("INSERT INTO block (Number, Time, NumTx, GasUsed, GasLimit) VALUES ($1, $2, $3, $4, $5)", block.Number().String(), block.Header().Time, len(block.Transactions()), block.GasUsed(), block.GasLimit())
 }
 
-func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
+func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
 	// Insert Analysis
 	analysisId := 0
 	db.QueryRow("INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumTransactions, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id",
@@ -190,20 +191,12 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		// fmt.Println("+ stats:", addr)
 		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
 		if !foundInDb { // Not in DB, add now
-			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
-			if !foundInJson {
-				detail = NewAddressDetail(addr.Address)
-				if addr.NumTxTokenTransfer > 0 {
-					detail.Type = AddressTypeErcToken
-				}
-			}
+			detail := GetAddressDetailFromBlockchain(addr.Address, client)
 			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 
 		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
-			detail, foundInJson := AllAddressesFromJson[strings.ToLower(strings.ToLower(addr.Address))]
-			if foundInJson {
-				db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-			}
+			detail := GetAddressDetailFromBlockchain(addr.Address, client)
+			db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 		}
 
 		// Avoid adding one address multiple times per analysis
@@ -236,54 +229,46 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, date string, hour int, minute int,
 		go saveAddrStatToDbWorker()
 	}
 
+	config := GetConfig()
+
 	fmt.Println("Adding address stats to DB...")
 	fmt.Println("- Tokens transferred")
-	numAddressesTokenTransfers := 100
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
-	for i := 0; i < len(_addresses) && i < numAddressesTokenTransfers; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByTokenTransfers; i++ {
 		if _addresses[i].NumTxTokenTransfer > 0 {
 			addressInfoQueue <- _addresses[i]
-			// addAddressAndStats(_addresses[i])
 		}
 	}
 
 	fmt.Println("- Num tx received")
-	numAddressesTxReceived := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	for i := 0; i < len(_addresses) && i < numAddressesTxReceived; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
 		if _addresses[i].NumTxReceived > 0 {
 			addressInfoQueue <- _addresses[i]
-			// addAddressAndStats(_addresses[i])
 		}
 	}
 
 	fmt.Println("- Num tx sent")
-	numAddressesTxSent := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
-	for i := 0; i < len(_addresses) && i < numAddressesTxSent; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
 		if _addresses[i].NumTxSent > 0 {
 			addressInfoQueue <- _addresses[i]
-			// addAddressAndStats(_addresses[i])
 		}
 	}
 
 	fmt.Println("- Value received")
-	numAddressesValueReceived := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
-	for i := 0; i < len(_addresses) && i < numAddressesValueReceived; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
 		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
 			addressInfoQueue <- _addresses[i]
-			// addAddressAndStats(_addresses[i])
 		}
 	}
 
 	fmt.Println("- Value sent")
-	numAddressesValueSent := 25
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
-	for i := 0; i < len(_addresses) && i < numAddressesValueSent; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
 		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
 			addressInfoQueue <- _addresses[i]
-			// addAddressAndStats(_addresses[i])
 		}
 	}
 

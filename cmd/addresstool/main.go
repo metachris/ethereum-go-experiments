@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"ethstats/ethtools"
 	"flag"
 	"fmt"
@@ -11,10 +10,6 @@ import (
 	"strings"
 	"time"
 
-	erc20 "ethstats/ethtools/contracts/erc20"
-	erc721 "ethstats/ethtools/contracts/erc721"
-
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -68,111 +63,6 @@ func loadAddressesFromRawFile(filename string, saveToJson bool, skipIfExists boo
 	}
 }
 
-func IsContract(address string, client *ethclient.Client) bool {
-	addr := common.HexToAddress(address)
-	b, err := client.CodeAt(context.Background(), addr, nil)
-	ethtools.Perror(err)
-	return len(b) > 0
-}
-
-func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail ethtools.AddressDetail) {
-	detail.Address = address
-
-	addr := common.HexToAddress(address)
-	instance, err := erc721.NewErc721(addr, client)
-	ethtools.Perror(err)
-
-	isErc721, err = instance.SupportsInterface(nil, ethtools.INTERFACEID_ERC721)
-	if err != nil || !isErc721 {
-		return false, detail
-	}
-
-	detail.Type = ethtools.AddressTypeErc721
-
-	// Check if has metadata
-	implementsMetadata, err := instance.SupportsInterface(nil, ethtools.INTERFACEID_ERC721_METADATA)
-	if err == nil && implementsMetadata {
-		detail.Name, err = instance.Name(nil)
-		ethtools.Perror(err)
-
-		detail.Symbol, err = instance.Symbol(nil)
-		ethtools.Perror(err)
-	}
-
-	return true, detail
-}
-
-func IsErc20(address string, client *ethclient.Client) (isErc20 bool, detail ethtools.AddressDetail) {
-	detail.Address = address
-	addr := common.HexToAddress(address)
-	instance, err := erc20.NewErc20(addr, client)
-	ethtools.Perror(err)
-
-	detail.Name, err = instance.Name(nil)
-	if err != nil || len(detail.Name) == 0 {
-		return false, detail
-	}
-
-	// Needs symbol
-	detail.Symbol, err = instance.Symbol(nil)
-	if err != nil || len(detail.Symbol) == 0 {
-		return false, detail
-	}
-
-	// Needs decimals
-	detail.Decimals, err = instance.Decimals(nil)
-	if err != nil {
-		return false, detail
-	}
-
-	// Needs totalSupply
-	_, err = instance.TotalSupply(nil)
-	if err != nil {
-		return false, detail
-	}
-
-	detail.Type = ethtools.AddressTypeErc20
-	return true, detail
-}
-
-func GetAddressType(address string, client *ethclient.Client) ethtools.AddressType {
-	if !IsContract(address, client) {
-		return ethtools.AddressTypeWallet
-	}
-
-	if isErc721, _ := IsErc721(address, client); isErc721 {
-		return ethtools.AddressTypeErc721
-	}
-
-	if isErc20, _ := IsErc20(address, client); isErc20 {
-		return ethtools.AddressTypeErc20
-	}
-
-	return ethtools.AddressTypeOtherContract
-}
-
-func getAddressDetailFromBlockchain(address string, client *ethclient.Client) ethtools.AddressDetail {
-	ret := ethtools.NewAddressDetail(address)
-
-	// If not a contract then return just a wallet detail
-	if !IsContract(address, client) {
-		ret.Type = ethtools.AddressTypeWallet
-		return ret
-	}
-
-	if isErc721, detail := IsErc721(address, client); isErc721 {
-		return detail
-	}
-
-	if isErc20, detail := IsErc20(address, client); isErc20 {
-		return detail
-	}
-
-	// Return unknown (other) contract
-	ret.Type = ethtools.AddressTypeOtherContract
-	return ret
-}
-
 func main() {
 	filePtr := flag.String("file", "", "get addresses from specified file")
 	addressPtr := flag.String("addr", "", "address")
@@ -223,9 +113,10 @@ func main() {
 		// address := "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85" // nft (ens)
 		// address := "0xdc76a2de1861ea49e8b41a1de1e461085e8f369f" // nft (terravirtua)
 		// address := "0xa74476443119A942dE498590Fe1f2454d7D4aC0d" // erc20
+		// address := "0xC46E0E7eCb3EfCC417f6F89b940FFAFf72556382" // other contract
 
 		// a := GetAddressType(address, client)
-		a := getAddressDetailFromBlockchain(*addressPtr, client)
+		a := ethtools.GetAddressDetailFromBlockchain(*addressPtr, client)
 		fmt.Println(a)
 		return
 	}

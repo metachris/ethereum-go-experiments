@@ -150,6 +150,7 @@ func (result *AnalysisResult) AddBlock(block *types.Block) {
 					// If number is too big, it is either an error or a erc-721 SC
 					if len(valBigInt.String()) > 40 {
 						fmt.Printf("warn: very large value! block: %d \t tx: %s \t val: %s \t valBigInt: %v \n", block.Number().Uint64(), tx.Hash(), value, valBigInt)
+						// TODO: check if ERC721 or failed tx. For now as workaround just skip
 					} else {
 						toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
 					}

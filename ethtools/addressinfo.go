@@ -2,6 +2,7 @@
 package ethtools
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	erc20 "ethstats/ethtools/contracts/erc20"
+	erc721 "ethstats/ethtools/contracts/erc721"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var (
@@ -116,4 +123,91 @@ func AddTokenToJson(address *AddressDetail) {
 	Perror(err)
 
 	fmt.Println("Updated", FN_JSON_TOKENS)
+}
+
+func IsContract(address string, client *ethclient.Client) bool {
+	addr := common.HexToAddress(address)
+	b, err := client.CodeAt(context.Background(), addr, nil)
+	Perror(err)
+	return len(b) > 0
+}
+
+func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail AddressDetail) {
+	detail.Address = address
+
+	addr := common.HexToAddress(address)
+	instance, err := erc721.NewErc721(addr, client)
+	Perror(err)
+
+	isErc721, err = instance.SupportsInterface(nil, INTERFACEID_ERC721)
+	if err != nil || !isErc721 {
+		return false, detail
+	}
+
+	detail.Type = AddressTypeErc721
+
+	// Check if has metadata
+	implementsMetadata, err := instance.SupportsInterface(nil, INTERFACEID_ERC721_METADATA)
+	if err == nil && implementsMetadata {
+		detail.Name, err = instance.Name(nil)
+		Perror(err)
+
+		detail.Symbol, err = instance.Symbol(nil)
+		Perror(err)
+	}
+
+	return true, detail
+}
+
+func IsErc20(address string, client *ethclient.Client) (isErc20 bool, detail AddressDetail) {
+	detail.Address = address
+	addr := common.HexToAddress(address)
+	instance, err := erc20.NewErc20(addr, client)
+	Perror(err)
+
+	detail.Name, err = instance.Name(nil)
+	if err != nil || len(detail.Name) == 0 {
+		return false, detail
+	}
+
+	// Needs symbol
+	detail.Symbol, err = instance.Symbol(nil)
+	if err != nil || len(detail.Symbol) == 0 {
+		return false, detail
+	}
+
+	// Needs decimals
+	detail.Decimals, err = instance.Decimals(nil)
+	if err != nil {
+		return false, detail
+	}
+
+	// Needs totalSupply
+	_, err = instance.TotalSupply(nil)
+	if err != nil {
+		return false, detail
+	}
+
+	detail.Type = AddressTypeErc20
+	return true, detail
+}
+
+func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) AddressDetail {
+	ret := NewAddressDetail(address)
+
+	if isErc721, detail := IsErc721(address, client); isErc721 {
+		return detail
+	}
+
+	if isErc20, detail := IsErc20(address, client); isErc20 {
+		return detail
+	}
+
+	if IsContract(address, client) {
+		ret.Type = AddressTypeOtherContract
+		return ret
+	}
+
+	ret.Type = AddressTypeWallet
+	return ret
 }
