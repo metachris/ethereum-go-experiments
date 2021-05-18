@@ -226,7 +226,7 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 					DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
 
 					toAddrStats.EnsureAddressDetails(client)
-					fmt.Println("type:", toAddrStats.AddressDetail.Type)
+					// fmt.Println("type:", toAddrStats.AddressDetail.Type)
 				}
 
 				// Increase number of tokens transferred if either ERC20 or Unknown Contract
