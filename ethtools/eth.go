@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -257,6 +258,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		}
 	}
 
+	timeStartBlockProcessing := time.Now()
 	for {
 		// fmt.Println(currentBlockNumber, "fetching...")
 		currentBlock, err := client.BlockByNumber(context.Background(), currentBlockNumber)
@@ -289,11 +291,16 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	// Close DB-add-block channel and wait for all to be saved
 	close(blocksForDbQueue)
 	if db != nil {
-		fmt.Println("Waiting for db-workers to finish...")
+		fmt.Println("Waiting for workers to finish adding blocks...")
 	}
 	wg.Wait()
 
+	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
+	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))
+	timeStartSort := time.Now()
 	result.SortTopAddresses()
+	timeNeededSort := time.Since(timeStartSort)
+	fmt.Printf("Sorting done (%.3fs)\n", timeNeededSort.Seconds())
 	return result
 }
 

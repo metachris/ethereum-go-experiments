@@ -84,7 +84,7 @@ func main() {
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethtools.NewDatabaseConnection(config)
+		db = ethtools.NewDatabaseConnection(config.Database)
 	}
 
 	fmt.Println("Connecting to Ethereum node at", config.EthNode)
@@ -128,8 +128,17 @@ func main() {
 		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp, db)
 	}
 
-	fmt.Println("")
+	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
+
+	if *addToDbPtr {
+		// Add to database (and log execution time)
+		fmt.Printf("\nAdding analysis to database...\n")
+		timeStartAddToDb := time.Now()
+		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+		timeNeededAddToDb := time.Since(timeStartAddToDb)
+		fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
+	}
 
 	// if len(*outJsonPtr) > 0 {
 	// 	j, err := json.MarshalIndent(exportData, "", " ")
@@ -143,10 +152,6 @@ func main() {
 	// 	fmt.Println("Saved to " + *outJsonPtr)
 	// }
 
-	// if *addToDbPtr {
-	// 	ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
-	// 	fmt.Println("Saved to database ✔")
-	// }
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
@@ -170,7 +175,7 @@ func printResult(result *ethtools.AnalysisResult) {
 
 	/* SORT BY TOKEN_TRANSFERS */
 	fmt.Println("")
-	fmt.Printf("Top addresses by token-transfers\n")
+	fmt.Printf("Top %d addresses by token-transfers\n", len(result.TopAddresses.NumTokenTransfers))
 	for _, v := range result.TopAddresses.NumTokenTransfers {
 		tokensTransferredInUnit, tokenSymbol, found := ethtools.TokenAmountToUnit(v.TokensTransferred, v.Address)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
@@ -181,25 +186,25 @@ func printResult(result *ethtools.AnalysisResult) {
 	}
 
 	fmt.Println("")
-	fmt.Printf("Top addresses by num-tx-received\n")
+	fmt.Printf("Top %d addresses by num-tx-received\n", len(result.TopAddresses.NumTxReceived))
 	for _, v := range result.TopAddresses.NumTxReceived {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
-	fmt.Printf("Top addresses by num-tx-sent\n")
+	fmt.Printf("Top %d addresses by num-tx-sent\n", len(result.TopAddresses.NumTxSent))
 	for _, v := range result.TopAddresses.NumTxSent {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
-	fmt.Printf("Top addresses by value-received\n")
+	fmt.Printf("Top %d addresses by value-received\n", len(result.TopAddresses.ValueReceived))
 	for _, v := range result.TopAddresses.ValueReceived {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
-	fmt.Printf("Top addresses by value-sent\n")
+	fmt.Printf("Top %d addresses by value-sent\n", len(result.TopAddresses.ValueSent))
 	for _, v := range result.TopAddresses.ValueSent {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
 	}

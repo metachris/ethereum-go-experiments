@@ -101,7 +101,7 @@ type AnalysisEntry struct {
 var db *sqlx.DB
 
 // GetDatabase returns an already existing DB connection. If not exists then creates it
-func GetDatabase(cfg Config) *sqlx.DB {
+func GetDatabase(cfg PostgresConfig) *sqlx.DB {
 	if db != nil {
 		return db
 	}
@@ -109,11 +109,22 @@ func GetDatabase(cfg Config) *sqlx.DB {
 	return db
 }
 
+func DropDatabase(db *sqlx.DB) {
+	db.MustExec(`DROP TABLE "analysis_address_stat";`)
+	db.MustExec(`DROP TABLE "analysis";`)
+	db.MustExec(`DROP TABLE "address";`)
+	db.MustExec(`DROP TABLE "block";`)
+}
+
+func ResetDatabase(db *sqlx.DB) {
+	DropDatabase(db)
+	db.MustExec(schema)
+}
+
 // NewDatabaseConnection creates a new sqlx.DB database connection
-func NewDatabaseConnection(cfg Config) *sqlx.DB {
+func NewDatabaseConnection(cfg PostgresConfig) *sqlx.DB {
 	sslMode := "require"
-	dbConfig := cfg.Database
-	if dbConfig.DisableTLS {
+	if cfg.DisableTLS {
 		sslMode = "disable"
 	}
 
@@ -123,9 +134,9 @@ func NewDatabaseConnection(cfg Config) *sqlx.DB {
 
 	u := url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(dbConfig.User, dbConfig.Password),
-		Host:     dbConfig.Host,
-		Path:     dbConfig.Name,
+		User:     url.UserPassword(cfg.User, cfg.Password),
+		Host:     cfg.Host,
+		Path:     cfg.Name,
 		RawQuery: q.Encode(),
 	}
 
@@ -136,8 +147,8 @@ func NewDatabaseConnection(cfg Config) *sqlx.DB {
 
 func GetAddressFromDatabase(db *sqlx.DB, address string) (addr AddressDetail, found bool) {
 	err := db.Get(&addr, "SELECT * FROM address WHERE address=$1", strings.ToLower(address))
-	// fmt.Println("_", err, addr)
 	if err != nil {
+		// fmt.Println("err:", err, addr)
 		return addr, false
 	}
 	return addr, true
@@ -177,7 +188,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	analysisId := 0
 	db.QueryRow("INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumTransactions, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id",
 		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumTransactions, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
-	fmt.Println("Added analysis to database with ID", analysisId)
+	fmt.Println("Analysis ID:", analysisId)
 
 	addAddressAndStats := func(addr AddressStats) {
 		// fmt.Println("+ stats:", addr)
@@ -216,38 +227,40 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		}
 	}
 
-	// Start workers
-	for w := 1; w <= 5; w++ {
+	// Start workers for adding address-stats to database (using 1 sqlx instance)
+	numWorkers := 10
+	for w := 1; w <= numWorkers; w++ {
 		wg.Add(1)
 		go saveAddrStatToDbWorker()
 	}
 
-	fmt.Println("Adding address stats to DB...")
-	fmt.Println("- Tokens transferred")
+	fmt.Println("Saving addresses and stats...")
+	fmt.Printf("- Tokens transferred: %d\n", len(result.TopAddresses.NumTokenTransfers))
 	for _, addr := range result.TopAddresses.NumTokenTransfers {
 		addressInfoQueue <- addr
 	}
 
-	fmt.Println("- Num tx received")
+	fmt.Printf("- Num tx received: %d\n", len(result.TopAddresses.NumTxReceived))
 	for _, addr := range result.TopAddresses.NumTxReceived {
 		addressInfoQueue <- addr
 	}
 
-	fmt.Println("- Num tx sent")
+	fmt.Printf("- Num tx sent: %d\n", len(result.TopAddresses.NumTxSent))
 	for _, addr := range result.TopAddresses.NumTxSent {
 		addressInfoQueue <- addr
 	}
 
-	fmt.Println("- Value received")
+	fmt.Printf("- Value received: %d\n", len(result.TopAddresses.ValueReceived))
 	for _, addr := range result.TopAddresses.ValueReceived {
 		addressInfoQueue <- addr
 	}
 
-	fmt.Println("- Value sent")
+	fmt.Printf("- Value sent: %d\n", len(result.TopAddresses.ValueSent))
 	for _, addr := range result.TopAddresses.ValueSent {
 		addressInfoQueue <- addr
 	}
 
+	fmt.Println("Waiting for workers to finish...")
 	close(addressInfoQueue)
 	wg.Wait()
 }

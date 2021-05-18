@@ -23,6 +23,7 @@ var (
 	INTERFACEID_ERC721            = [4]byte{128, 172, 88, 205} // 0x80ac58cd
 	INTERFACEID_ERC721_METADATA   = [4]byte{91, 94, 19, 159}   // 0x5b5e139f
 	INTERFACEID_ERC721_ENUMERABLE = [4]byte{120, 14, 157, 99}  // 0x780e9d63
+	INTERFACEID_ERC1155           = [4]byte{217, 182, 122, 38} // 0xd9b67a26
 )
 
 type AddressType string
@@ -130,6 +131,14 @@ func IsContract(address string, client *ethclient.Client) bool {
 	b, err := client.CodeAt(context.Background(), addr, nil)
 	Perror(err)
 	return len(b) > 0
+}
+
+func SmartContractSupportsInterface(address string, interfaceId [4]byte, client *ethclient.Client) bool {
+	addr := common.HexToAddress(address)
+	instance, err := erc721.NewErc721(addr, client) // the SupportsInterface signature is the same for all contract types, so we can just use the ERC721 interface
+	Perror(err)
+	isSupported, err := instance.SupportsInterface(nil, INTERFACEID_ERC721)
+	return err == nil && isSupported
 }
 
 func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail AddressDetail) {
