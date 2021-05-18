@@ -158,6 +158,7 @@ func main() {
 // Processes a raw result into the export data structure, and prints the stats to stdout
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
+	fmt.Println("- blocks without tx:", result.NumBlocksWithoutTx)
 	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
 	fmt.Printf("- failed:     %d \t %.2f%%\n", result.NumTransactionsFailed, (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
 	fmt.Printf("- with value: %d \t %.2f%%\n", result.NumTransactions-result.NumTransactionsWithZeroValue, (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)

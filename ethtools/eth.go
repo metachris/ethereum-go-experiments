@@ -97,7 +97,9 @@ type AnalysisResult struct {
 	ValueTotalWei *big.Int
 	ValueTotalEth string
 
-	NumBlocks                        int
+	NumBlocks          int
+	NumBlocksWithoutTx int
+
 	NumTransactions                  int
 	NumTransactionsFailed            int
 	NumTransactionsWithZeroValue     int
@@ -127,6 +129,11 @@ func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Cli
 	// Iterate over all transactions
 	for _, tx := range block.Transactions() {
 		result.AddTransaction(tx, client)
+	}
+
+	// If no transactions in this block then record that
+	if len(block.Transactions()) == 0 {
+		result.NumBlocksWithoutTx += 1
 	}
 }
 

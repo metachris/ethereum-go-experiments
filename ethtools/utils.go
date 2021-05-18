@@ -58,7 +58,7 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 
 func printBlock(block *types.Block) {
 	t := time.Unix(int64(block.Header().Time), 0).UTC()
-	fmt.Printf("%d \t %s \t %d \t tx=%d \t %d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()), block.GasUsed())
+	fmt.Printf("%d \t %s \t %d \t tx=%-4d \t %d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()), block.GasUsed())
 }
 
 // panic on error

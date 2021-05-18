@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS analysis (
 
     ValueTotalEth                    NUMERIC(24, 8) NOT NULL,
     NumBlocks                        integer NOT NULL,
+    NumBlocksWithoutTx               integer NOT NULL,
     NumTransactions                  integer NOT NULL,
     NumTransactionsFailed            integer NOT NULL,
     NumTransactionsWithZeroValue     integer NOT NULL,
@@ -82,18 +83,21 @@ CREATE TABLE IF NOT EXISTS block (
 `
 
 type AnalysisEntry struct {
-	Id                               int
-	Date                             string
-	Hour                             int
-	Minute                           int
-	Sec                              int
-	DurationSec                      int
-	StartBlockNumber                 int
-	StartBlockTimestamp              int
-	EndBlockNumber                   int
-	EndBlockTimestamp                int
+	Id          int
+	Date        string
+	Hour        int
+	Minute      int
+	Sec         int
+	DurationSec int
+
+	StartBlockNumber    int
+	StartBlockTimestamp int
+	EndBlockNumber      int
+	EndBlockTimestamp   int
+
 	ValueTotalEth                    string
 	NumBlocks                        int
+	NumBlocksWithoutTx               int
 	NumTransactions                  int
 	NumTransactionsFailed            int
 	NumTransactionsWithZeroValue     int
@@ -190,8 +194,10 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
 	// Insert Analysis
 	analysisId := 0
-	db.QueryRow("INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
-		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
+	db.QueryRow(
+		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
+		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)
+	).Scan(&analysisId)
 	fmt.Println("Analysis ID:", analysisId)
 
 	addAddressAndStats := func(addr AddressStats) {

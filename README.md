@@ -15,7 +15,7 @@ source .env.example
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
 go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb | tee tmp.txt
-go run cmd/analyzer/main.go -date 2021-05-09 -len 1d -addDb -out output/2021-05-09.json | tee output/2021-05-09.txt
+go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb -out output/2021-05-17.json | tee output/2021-05-17.txt
 
 # Run analyzer for specific block
 go run cmd/analyzer/main.go -block 12381372
@@ -43,10 +43,7 @@ Notes:
 ## To do
 
 * Search for TODO
-* Handle NFT transfer vs token transfers (for NFT it's `tokenId`, vs `value` for tokens)
-  * NFT: https://etherscan.io/tx/0xbcb696bf17f6d47748cd58f667d269c3dd816377db9fe17653be67f8a2d6f377
-  * Token: https://etherscan.io/tx/0x0d86cfde5a6e2a1d86f8e9d0d1c30ac8edcdc415235689cdf81260cdd45ad25c
-* Handle reverted transactions: https://etherscan.io/tx/0x50d55cad863ea3028474076882475f21c29312131a660d9628bad81c098fc30b
+* 
 
 Maybe?
 
