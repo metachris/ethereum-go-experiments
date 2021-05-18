@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math"
 	"math/big"
 	"sort"
 	"sync"
@@ -32,7 +33,34 @@ type AddressStats struct {
 	ValueSentEth                 string
 	ValueReceivedWei             *big.Int
 	ValueReceivedEth             string
-	TokensTransferred            *big.Int
+	TokensTransferred            *big.Int // SC volume in native units (before conversion, all decimals are in the int)
+}
+
+// Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
+// Updates from blockchain if not already has
+func (stats *AddressStats) TokensTransferredInUnit(client *ethclient.Client) (amount *big.Float, symbol string) {
+	tokensTransferredFloat := new(big.Float).SetInt(stats.TokensTransferred)
+
+	stats.EnsureAddressDetails(client)
+
+	if stats.AddressDetail.IsErc20() {
+		decimals := uint64(stats.AddressDetail.Decimals)
+		divider := float64(1)
+		if decimals > 0 {
+			divider = float64(math.Pow(10, float64(decimals)))
+		}
+
+		amount := new(big.Float).Quo(tokensTransferredFloat, big.NewFloat(divider))
+		return amount, stats.AddressDetail.Symbol
+	} else {
+		return tokensTransferredFloat, ""
+	}
+}
+
+func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
+	if !stats.AddressDetail.IsKnown() && client != nil {
+		stats.AddressDetail = GetAddressDetail(stats.Address, client)
+	}
 }
 
 func NewAddressStats(address string) *AddressStats {
@@ -197,7 +225,7 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 				if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeUnknown {
 					DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
 
-					toAddrStats.AddressDetail = GetAddressDetailFromBlockchain(toAddrStats.Address, client)
+					toAddrStats.EnsureAddressDetails(client)
 					fmt.Println("type:", toAddrStats.AddressDetail.Type)
 				}
 
@@ -217,8 +245,9 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 	}
 }
 
-// AnalysisResult.SortTopAddresses() sorts the addresses into TopAddresses after all blocks have been added
-func (result *AnalysisResult) SortTopAddresses() {
+// AnalysisResult.SortTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
+// Ensures that details for all top addresses are queried from blockchain
+func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	config := GetConfig()
 
 	// Convert addresses from map into a sortable array
@@ -231,6 +260,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTokenTransfer; i++ {
 		if _addresses[i].NumTxTokenTransfer > 0 {
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumTokenTransfers = append(result.TopAddresses.NumTokenTransfers, _addresses[i])
 		}
 	}
@@ -239,6 +269,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
 		if _addresses[i].NumTxReceived > 0 {
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumTxReceived = append(result.TopAddresses.NumTxReceived, _addresses[i])
 		}
 	}
@@ -247,6 +278,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
 		if _addresses[i].NumTxSent > 0 {
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumTxSent = append(result.TopAddresses.NumTxSent, _addresses[i])
 		}
 	}
@@ -255,6 +287,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
 		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.ValueReceived = append(result.TopAddresses.ValueReceived, _addresses[i])
 		}
 	}
@@ -263,6 +296,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
 		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
 		}
 	}
@@ -271,6 +305,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxReceived > _addresses[j].NumFailedTxReceived })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
 		if _addresses[i].NumFailedTxReceived > 0 {
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumFailedTxReceived = append(result.TopAddresses.NumFailedTxReceived, _addresses[i])
 		}
 	}
@@ -279,6 +314,7 @@ func (result *AnalysisResult) SortTopAddresses() {
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxSent > _addresses[j].NumFailedTxSent })
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
 		if _addresses[i].NumFailedTxSent > 0 {
+			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumFailedTxSent = append(result.TopAddresses.NumFailedTxSent, _addresses[i])
 		}
 	}
@@ -351,10 +387,18 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 
 	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
 	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))
+
+	// Sort now
 	timeStartSort := time.Now()
-	result.SortTopAddresses()
+	result.SortTopAddresses(client)
 	timeNeededSort := time.Since(timeStartSort)
 	fmt.Printf("Sorting done (%.3fs)\n", timeNeededSort.Seconds())
+
+	// // Ensure top addresses have details from blockchain
+	// timeStartUpdateAddresses := time.Now()
+	// result.EnsureAddressDetails(client)
+	// timeNeededUpdateAddresses := time.Since(timeStartUpdateAddresses)
+	// fmt.Printf("Updating addresses done (in %.3fs)\n", timeNeededUpdateAddresses.Seconds())
 	return result
 }
 

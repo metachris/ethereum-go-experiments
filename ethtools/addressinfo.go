@@ -29,11 +29,13 @@ var (
 type AddressType string
 
 const (
+	AddressTypeUnknown AddressType = "Unknown" // Init value
+
+	// After detection
 	AddressTypeWallet        AddressType = "Wallet"
 	AddressTypeErc20         AddressType = "Erc20"
 	AddressTypeErc721        AddressType = "Erc721"
 	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
-	AddressTypeUnknown       AddressType = "Unknown"  // For new addresses, will be updated on next sync.
 	AddressTypeOtherContract AddressType = "OtherContract"
 )
 
@@ -47,6 +49,18 @@ type AddressDetail struct {
 
 func (a AddressDetail) String() string {
 	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
+}
+
+func (a *AddressDetail) IsKnown() bool {
+	return a.Type != AddressTypeUnknown
+}
+
+func (a *AddressDetail) IsErc20() bool {
+	return a.Type == AddressTypeErc20
+}
+
+func (a *AddressDetail) IsErc721() bool {
+	return a.Type != AddressTypeErc721
 }
 
 // Returns a new unknown address detail
@@ -103,7 +117,8 @@ func GetAddressDetailMap(dataset int) map[string]AddressDetail {
 		AddressDetailMap[strings.ToLower(v.Address)] = v
 	}
 
-	// fmt.Println(AddressDetailMap["0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"])
+	// fmt.Println(AddressDetailMap[strings.ToLower("0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2")])
+	// fmt.Println(AddressDetailMap["0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2"])
 	return AddressDetailMap
 }
 
@@ -177,24 +192,28 @@ func IsErc20(address string, client *ethclient.Client) (isErc20 bool, detail Add
 
 	detail.Name, err = instance.Name(nil)
 	if err != nil || len(detail.Name) == 0 {
+		// fmt.Println(1, err)
 		return false, detail
 	}
 
 	// Needs symbol
 	detail.Symbol, err = instance.Symbol(nil)
 	if err != nil || len(detail.Symbol) == 0 {
+		// fmt.Println(2)
 		return false, detail
 	}
 
 	// Needs decimals
 	detail.Decimals, err = instance.Decimals(nil)
 	if err != nil {
+		// fmt.Println(3, err)
 		return false, detail
 	}
 
 	// Needs totalSupply
 	_, err = instance.TotalSupply(nil)
 	if err != nil {
+		// fmt.Println(4)
 		return false, detail
 	}
 
@@ -220,4 +239,13 @@ func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) Ad
 
 	ret.Type = AddressTypeWallet
 	return ret
+}
+
+// GetAddressDetail returns the AddressDetail from JSON. If not exists then query the Blockchain
+func GetAddressDetail(address string, client *ethclient.Client) AddressDetail {
+	addr, found := AllAddressesFromJson[strings.ToLower(address)]
+	if found {
+		return addr
+	}
+	return GetAddressDetailFromBlockchain(address, client)
 }

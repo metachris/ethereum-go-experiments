@@ -175,66 +175,58 @@ func printResult(result *ethtools.AnalysisResult) {
 	// Address details
 	fmt.Println("Total addresses:", len(result.Addresses))
 
-	if ethtools.GetConfig().HideOutput {
-		fmt.Println("End because of config.HideOutput")
-		return
+	addressWithName := func(detail ethtools.AddressDetail) string {
+		return fmt.Sprintf("%s %-28s", detail.Address, detail.Name)
 	}
 
 	/* SORT BY TOKEN_TRANSFERS */
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by token-transfers\n", len(result.TopAddresses.NumTokenTransfers))
 	for _, v := range result.TopAddresses.NumTokenTransfers {
-		tokensTransferredInUnit, tokenSymbol, found := ethtools.TokenAmountToUnit(v.TokensTransferred, v.Address)
+		tokensTransferredInUnit, tokenSymbol := v.TokensTransferredInUnit(nil)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-		if !found {
-			tokenAmount = fmt.Sprintf("%s ?    ", tokensTransferredInUnit.Text('f', 0))
-		}
-		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %32v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, tokenAmount)
+		fmt.Printf("%s \t %8d token transfers \t %8d tx \t %32v \t %s\n", addressWithName(v.AddressDetail), v.NumTxTokenTransfer, v.NumTxReceived, tokenAmount, v.AddressDetail.Type)
+	}
+
+	if ethtools.GetConfig().HideOutput {
+		fmt.Println("End because of config.HideOutput")
+		return
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by num-tx-received\n", len(result.TopAddresses.NumTxReceived))
 	for _, v := range result.TopAddresses.NumTxReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by num-tx-sent\n", len(result.TopAddresses.NumTxSent))
 	for _, v := range result.TopAddresses.NumTxSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-received\n", len(result.TopAddresses.ValueReceived))
 	for _, v := range result.TopAddresses.ValueReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by value-sent\n", len(result.TopAddresses.ValueSent))
 	for _, v := range result.TopAddresses.ValueSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by failed-tx-received\n", len(result.TopAddresses.NumFailedTxReceived))
 	for _, v := range result.TopAddresses.NumFailedTxReceived {
-		fmt.Printf("%-66v %7d %7d \t received:%4d - sent:%4d\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
+		fmt.Printf("%-66v %7d tx-rec %7d tx-sent \t %4d failed-tx-rec \t %4d failed-tx-sent\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
 	}
 
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by failed-tx-sent\n", len(result.TopAddresses.NumFailedTxSent))
 	for _, v := range result.TopAddresses.NumFailedTxSent {
-		fmt.Printf("%-66v %7d %7d \t received:%4d - sent:%4d\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
-	}
-}
-
-func AddressWithName(address string) string {
-	detail, ok := ethtools.AllAddressesFromJson[strings.ToLower(address)]
-	if ok {
-		return fmt.Sprintf("%s %s", address, detail.Name)
-	} else {
-		return address
+		fmt.Printf("%-66v %7d tx-rec %7d tx-sent \t %4d failed-tx-rec \t %4d failed-tx-sent\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
 	}
 }
 
