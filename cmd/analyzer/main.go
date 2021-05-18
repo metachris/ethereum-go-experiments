@@ -1,14 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"ethstats/ethtools"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -17,38 +14,27 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const TOP_ADDRESS_COUNT = 30
-const TOP_ADDRESS_TOKEN_TRANSFER_COUNT = 100
-
-type TopAddressData struct {
-	NumTxReceived  []ethtools.AddressStats
-	NumTxSent      []ethtools.AddressStats
-	ValueReceived  []ethtools.AddressStats
-	ValueSent      []ethtools.AddressStats
-	TokenTransfers []ethtools.AddressStats // of a contract address, how many times a transfer/transferFrom method was called
-}
-
 // Raw AnalysisResult extended with a few interesting fields
-type ExportData struct {
-	Data ethtools.AnalysisResult
+// type ExportData struct {
+// 	Data ethtools.AnalysisResult
 
-	TopAddressData TopAddressData
-}
+// 	TopAddressData TopAddressData
+// }
 
-func NewExportData(result ethtools.AnalysisResult) *ExportData {
-	topAddressData := TopAddressData{
-		NumTxReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-		NumTxSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-		ValueReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-		ValueSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-		TokenTransfers: make([]ethtools.AddressStats, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
-	}
+// func NewExportData(result ethtools.AnalysisResult) *ExportData {
+// 	topAddressData := TopAddressData{
+// 		NumTxReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+// 		NumTxSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+// 		ValueReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+// 		ValueSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
+// 		TokenTransfers: make([]ethtools.AddressStats, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+// 	}
 
-	return &ExportData{
-		Data:           result,
-		TopAddressData: topAddressData,
-	}
-}
+// 	return &ExportData{
+// 		Data:           result,
+// 		TopAddressData: topAddressData,
+// 	}
+// }
 
 func main() {
 	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
@@ -113,6 +99,8 @@ func main() {
 	hour := *hourPtr
 	min := *minPtr
 	sec := 0
+	_ = sec
+	_ = outJsonPtr
 
 	if *blockNumPtr > 0 {
 		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec), db)
@@ -141,28 +129,28 @@ func main() {
 	}
 
 	fmt.Println("")
-	exportData := processResultAndPrint(result)
+	printResult(result)
 
-	if len(*outJsonPtr) > 0 {
-		j, err := json.MarshalIndent(exportData, "", " ")
-		if err != nil {
-			panic(err)
-		}
+	// if len(*outJsonPtr) > 0 {
+	// 	j, err := json.MarshalIndent(exportData, "", " ")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		// outFn := "/tmp/test.json"
-		outFn := *outJsonPtr
-		_ = ioutil.WriteFile(outFn, j, 0644)
-		fmt.Println("Saved to " + *outJsonPtr)
-	}
+	// 	// outFn := "/tmp/test.json"
+	// 	outFn := *outJsonPtr
+	// 	_ = ioutil.WriteFile(outFn, j, 0644)
+	// 	fmt.Println("Saved to " + *outJsonPtr)
+	// }
 
-	if *addToDbPtr {
-		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
-		fmt.Println("Saved to database ✔")
-	}
+	// if *addToDbPtr {
+	// 	ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+	// 	fmt.Println("Saved to database ✔")
+	// }
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
-func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
+func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
 	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
 	fmt.Println("- with value:", result.NumTransactions-result.NumTransactionsWithZeroValue)
@@ -180,68 +168,41 @@ func processResultAndPrint(result *ethtools.AnalysisResult) *ExportData {
 	// Address details
 	fmt.Println("Total addresses:", len(result.Addresses))
 
-	// Create addresses array for sorting
-	_addresses := make([]ethtools.AddressStats, 0, len(result.Addresses))
-	for _, k := range result.Addresses {
-		_addresses = append(_addresses, *k)
-	}
-
-	exportData := NewExportData(*result)
-
-	/* SORT BY NUM_TX_RECEIVED */
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by num-tx-received\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	copy(exportData.TopAddressData.NumTxReceived, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range exportData.TopAddressData.NumTxReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
-	}
-
-	/* SORT BY NUM_TX_SENT */
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by num-tx-sent\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
-	copy(exportData.TopAddressData.NumTxSent, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range exportData.TopAddressData.NumTxSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
-	}
-
-	/* SORT BY VALUE_RECEIVED */
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by value-received\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
-	copy(exportData.TopAddressData.ValueReceived, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range exportData.TopAddressData.ValueReceived {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
-	}
-
-	/* SORT BY VALUE_SENT */
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by value-sent\n", TOP_ADDRESS_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
-	copy(exportData.TopAddressData.ValueSent, _addresses[:TOP_ADDRESS_COUNT])
-	for _, v := range exportData.TopAddressData.ValueSent {
-		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
-	}
-
 	/* SORT BY TOKEN_TRANSFERS */
 	fmt.Println("")
-	fmt.Printf("Top %d addresses by token-transfers\n", TOP_ADDRESS_TOKEN_TRANSFER_COUNT)
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
-	copy(exportData.TopAddressData.TokenTransfers, _addresses[:TOP_ADDRESS_TOKEN_TRANSFER_COUNT])
-	for _, v := range exportData.TopAddressData.TokenTransfers {
-		if v.NumTxReceived == 0 {
-			continue
-		}
+	fmt.Printf("Top addresses by token-transfers\n")
+	for _, v := range result.TopAddresses.NumTokenTransfers {
 		tokensTransferredInUnit, tokenSymbol, found := ethtools.TokenAmountToUnit(v.TokensTransferred, v.Address)
-		tokenAmount := fmt.Sprintf("%s %-5v", formatInt(tokensTransferredInUnit), tokenSymbol)
+		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
 		if !found {
 			tokenAmount = fmt.Sprintf("%s ?    ", tokensTransferredInUnit.Text('f', 0))
 		}
 		fmt.Printf("%-66v %8d token transfers \t %8d tx \t %32v\n", AddressWithName(v.Address), v.NumTxTokenTransfer, v.NumTxReceived, tokenAmount)
 	}
 
-	return exportData
+	fmt.Println("")
+	fmt.Printf("Top addresses by num-tx-received\n")
+	for _, v := range result.TopAddresses.NumTxReceived {
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top addresses by num-tx-sent\n")
+	for _, v := range result.TopAddresses.NumTxSent {
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top addresses by value-received\n")
+	for _, v := range result.TopAddresses.ValueReceived {
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueReceivedWei).Text('f', 2))
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top addresses by value-sent\n")
+	for _, v := range result.TopAddresses.ValueSent {
+		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
+	}
 }
 
 func AddressWithName(address string) string {
@@ -253,7 +214,7 @@ func AddressWithName(address string) string {
 	}
 }
 
-func formatInt(number *big.Float) string {
+func formatBigFloat(number *big.Float) string {
 	output := number.Text('f', 0)
 	startOffset := 3
 	if number.Cmp(big.NewFloat(0)) == -1 { // negative number, starts with -

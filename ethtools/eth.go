@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"sort"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -37,13 +38,23 @@ func NewAddressInfo(address string) *AddressStats {
 	}
 }
 
+type TopAddressData struct {
+	ValueReceived     []AddressStats
+	ValueSent         []AddressStats
+	NumTxReceived     []AddressStats
+	NumTxSent         []AddressStats
+	NumTokenTransfers []AddressStats
+}
+
 type AnalysisResult struct {
 	StartBlockNumber    int64
 	StartBlockTimestamp uint64
 	EndBlockNumber      int64
 	EndBlockTimestamp   uint64
 
-	Addresses     map[string]*AddressStats `json:"-"`
+	Addresses    map[string]*AddressStats `json:"-"`
+	TopAddresses TopAddressData
+
 	TxTypes       map[uint8]int
 	ValueTotalWei *big.Int
 	ValueTotalEth string
@@ -58,8 +69,8 @@ type AnalysisResult struct {
 func NewResult() *AnalysisResult {
 	return &AnalysisResult{
 		ValueTotalWei: new(big.Int),
-		Addresses:     make(map[string]*AddressStats),
 		TxTypes:       make(map[uint8]int),
+		Addresses:     make(map[string]*AddressStats),
 	}
 }
 
@@ -167,6 +178,57 @@ func (result *AnalysisResult) AddBlock(block *types.Block) {
 	}
 }
 
+// AnalysisResult.SortTopAddresses() sorts the addresses into TopAddresses after all blocks have been added
+func (result *AnalysisResult) SortTopAddresses() {
+	config := GetConfig()
+
+	// Convert addresses from map into a sortable array
+	_addresses := make([]AddressStats, 0, len(result.Addresses))
+	for _, k := range result.Addresses {
+		_addresses = append(_addresses, *k)
+	}
+
+	// token transfers
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTokenTransfer; i++ {
+		if _addresses[i].NumTxTokenTransfer > 0 {
+			result.TopAddresses.NumTokenTransfers = append(result.TopAddresses.NumTokenTransfers, _addresses[i])
+		}
+	}
+
+	// tx received
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
+		if _addresses[i].NumTxReceived > 0 {
+			result.TopAddresses.NumTxReceived = append(result.TopAddresses.NumTxReceived, _addresses[i])
+		}
+	}
+
+	// tx sent
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
+		if _addresses[i].NumTxSent > 0 {
+			result.TopAddresses.NumTxSent = append(result.TopAddresses.NumTxSent, _addresses[i])
+		}
+	}
+
+	// value received
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
+		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
+			result.TopAddresses.ValueReceived = append(result.TopAddresses.ValueReceived, _addresses[i])
+		}
+	}
+
+	// value sent
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
+			result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
+		}
+	}
+}
+
 // Worker to add blocks to DB
 func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
 	defer wg.Done()
@@ -184,7 +246,6 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	result.StartBlockNumber = startBlockNumber
 
 	currentBlockNumber := big.NewInt(startBlockNumber)
-	numBlocksProcessed := 0
 
 	// Setup database worker pool, for saving blocks to database
 	numDbWorkers := 5
@@ -206,7 +267,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		printBlock(currentBlock)
 
 		if endTimestamp > -1 && currentBlock.Time() > uint64(endTimestamp) {
-			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", numBlocksProcessed, currentBlockNumber.Text(10))
+			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", result.NumBlocks, currentBlockNumber.Text(10))
 			break
 		}
 
@@ -217,11 +278,10 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		result.AddBlock(currentBlock)
 
 		// Increase current block number and number of blocks processed
-		numBlocksProcessed += 1
 		currentBlockNumber.Add(currentBlockNumber, One)
 
 		// negative endTimestamp is a helper to process only a certain number of blocks. If reached, then end now
-		if endTimestamp < 0 && numBlocksProcessed*-1 == int(endTimestamp) {
+		if endTimestamp < 0 && result.NumBlocks*-1 == int(endTimestamp) {
 			break
 		}
 	}
@@ -232,6 +292,8 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 		fmt.Println("Waiting for db-workers to finish...")
 	}
 	wg.Wait()
+
+	result.SortTopAddresses()
 	return result
 }
 

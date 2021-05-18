@@ -2,9 +2,7 @@ package ethtools
 
 import (
 	"fmt"
-	"math/big"
 	"net/url"
-	"sort"
 	"strings"
 	"sync"
 
@@ -181,12 +179,6 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumTransactions, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
 	fmt.Println("Added analysis to database with ID", analysisId)
 
-	// Create addresses array for sorting
-	_addresses := make([]AddressStats, 0, len(result.Addresses))
-	for _, k := range result.Addresses {
-		_addresses = append(_addresses, *k)
-	}
-
 	addAddressAndStats := func(addr AddressStats) {
 		// fmt.Println("+ stats:", addr)
 		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
@@ -224,52 +216,36 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		}
 	}
 
+	// Start workers
 	for w := 1; w <= 5; w++ {
 		wg.Add(1)
 		go saveAddrStatToDbWorker()
 	}
 
-	config := GetConfig()
-
 	fmt.Println("Adding address stats to DB...")
 	fmt.Println("- Tokens transferred")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByTokenTransfers; i++ {
-		if _addresses[i].NumTxTokenTransfer > 0 {
-			addressInfoQueue <- _addresses[i]
-		}
+	for _, addr := range result.TopAddresses.NumTokenTransfers {
+		addressInfoQueue <- addr
 	}
 
 	fmt.Println("- Num tx received")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
-		if _addresses[i].NumTxReceived > 0 {
-			addressInfoQueue <- _addresses[i]
-		}
+	for _, addr := range result.TopAddresses.NumTxReceived {
+		addressInfoQueue <- addr
 	}
 
 	fmt.Println("- Num tx sent")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
-		if _addresses[i].NumTxSent > 0 {
-			addressInfoQueue <- _addresses[i]
-		}
+	for _, addr := range result.TopAddresses.NumTxSent {
+		addressInfoQueue <- addr
 	}
 
 	fmt.Println("- Value received")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
-		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
-			addressInfoQueue <- _addresses[i]
-		}
+	for _, addr := range result.TopAddresses.ValueReceived {
+		addressInfoQueue <- addr
 	}
 
 	fmt.Println("- Value sent")
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
-		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
-			addressInfoQueue <- _addresses[i]
-		}
+	for _, addr := range result.TopAddresses.ValueSent {
+		addressInfoQueue <- addr
 	}
 
 	close(addressInfoQueue)

@@ -16,15 +16,15 @@ type Config struct {
 	WebserverHost string
 	WebserverPort int
 
-	NumAddressesByValueSent      int
-	NumAddressesByValueReceived  int
-	NumAddressesByNumTxSent      int
-	NumAddressesByNumTxReceived  int
-	NumAddressesByTokenTransfers int
+	NumAddressesByValueSent        int
+	NumAddressesByValueReceived    int
+	NumAddressesByNumTxSent        int
+	NumAddressesByNumTxReceived    int
+	NumAddressesByNumTokenTransfer int
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByTokenTransfers)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer)
 }
 
 type PostgresConfig struct {
@@ -79,10 +79,10 @@ func GetConfig() Config {
 		EthNode:         getEnvStr("ETH_NODE", ""),
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
-		NumAddressesByValueSent:      getEnvInt("NUM_ADDR_VALUE_SENT", 25),
-		NumAddressesByValueReceived:  getEnvInt("NUM_ADDR_VALUE_RECEIVED", 25),
-		NumAddressesByNumTxSent:      getEnvInt("NUM_ADDR_NUM_TX_SENT", 25),
-		NumAddressesByNumTxReceived:  getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
-		NumAddressesByTokenTransfers: getEnvInt("NUM_ADDR_TOKEN_TRANSFERS", 100),
+		NumAddressesByValueSent:        getEnvInt("NUM_ADDR_VALUE_SENT", 25),
+		NumAddressesByValueReceived:    getEnvInt("NUM_ADDR_VALUE_RECEIVED", 25),
+		NumAddressesByNumTxSent:        getEnvInt("NUM_ADDR_NUM_TX_SENT", 25),
+		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
+		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
 	}
 }
