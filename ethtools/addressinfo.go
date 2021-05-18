@@ -29,14 +29,14 @@ var (
 type AddressType string
 
 const (
-	AddressTypeUnknown AddressType = "Unknown" // Init value
+	AddressTypeInit AddressType = "" // Init value
 
 	// After detection
-	AddressTypeWallet        AddressType = "Wallet"
 	AddressTypeErc20         AddressType = "Erc20"
 	AddressTypeErc721        AddressType = "Erc721"
 	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
 	AddressTypeOtherContract AddressType = "OtherContract"
+	AddressTypePubkey        AddressType = "-" // if nothing else could be detected
 )
 
 type AddressDetail struct {
@@ -51,8 +51,8 @@ func (a AddressDetail) String() string {
 	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
 }
 
-func (a *AddressDetail) IsKnown() bool {
-	return a.Type != AddressTypeUnknown
+func (a *AddressDetail) IsLoaded() bool {
+	return a.Type != AddressTypeInit
 }
 
 func (a *AddressDetail) IsErc20() bool {
@@ -65,7 +65,7 @@ func (a *AddressDetail) IsErc721() bool {
 
 // Returns a new unknown address detail
 func NewAddressDetail(address string) AddressDetail {
-	return AddressDetail{Address: address, Type: AddressTypeUnknown}
+	return AddressDetail{Address: address, Type: AddressTypeInit}
 }
 
 const ( // iota is reset to 0
@@ -237,7 +237,7 @@ func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) Ad
 		return ret
 	}
 
-	ret.Type = AddressTypeWallet
+	ret.Type = AddressTypePubkey
 	return ret
 }
 

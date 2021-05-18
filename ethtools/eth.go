@@ -58,7 +58,7 @@ func (stats *AddressStats) TokensTransferredInUnit(client *ethclient.Client) (am
 }
 
 func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
-	if !stats.AddressDetail.IsKnown() && client != nil {
+	if !stats.AddressDetail.IsLoaded() && client != nil {
 		stats.AddressDetail = GetAddressDetail(stats.Address, client)
 	}
 }
@@ -222,7 +222,7 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 				valBigInt.SetString(value, 16)
 
 				// If number is too big, it is either an error or a erc-721 SC
-				if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeUnknown {
+				if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeInit {
 					DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
 
 					toAddrStats.EnsureAddressDetails(client)
@@ -230,7 +230,7 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 				}
 
 				// Increase number of tokens transferred if either ERC20 or Unknown Contract
-				if toAddrStats.AddressDetail.Type == AddressTypeErc20 || toAddrStats.AddressDetail.Type == AddressTypeUnknown {
+				if toAddrStats.AddressDetail.Type == AddressTypeErc20 || toAddrStats.AddressDetail.Type == AddressTypeInit {
 					toAddrStats.TokensTransferred = new(big.Int).Add(toAddrStats.TokensTransferred, valBigInt)
 				}
 

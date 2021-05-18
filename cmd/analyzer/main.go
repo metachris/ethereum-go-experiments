@@ -81,7 +81,7 @@ func main() {
 	}
 
 	config := ethtools.GetConfig()
-	fmt.Println(config)
+	// fmt.Println(config)
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
