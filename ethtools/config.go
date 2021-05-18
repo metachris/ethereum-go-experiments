@@ -28,7 +28,7 @@ type Config struct {
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d, debug=%t, checkTx=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer, c.Debug, c.CheckTxStatus)
 }
 
 type PostgresConfig struct {
@@ -50,7 +50,11 @@ func getEnvStr(key string, defaultVal string) string {
 
 func getEnvBool(key string, defaultVal bool) bool {
 	val, exists := os.LookupEnv(key)
-	return exists && len(val) > 0
+	if exists && len(val) > 0 {
+		return true
+	} else {
+		return defaultVal
+	}
 }
 
 func getEnvInt(key string, defaultVal int) int {

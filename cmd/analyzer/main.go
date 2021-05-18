@@ -81,6 +81,7 @@ func main() {
 	}
 
 	config := ethtools.GetConfig()
+	fmt.Println(config)
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
@@ -128,10 +129,6 @@ func main() {
 		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp, db)
 	}
 
-	if config.HideOutput {
-		fmt.Println("End because of config.HideOutput")
-		return
-	}
 	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
 
@@ -178,6 +175,11 @@ func printResult(result *ethtools.AnalysisResult) {
 	// Address details
 	fmt.Println("Total addresses:", len(result.Addresses))
 
+	if ethtools.GetConfig().HideOutput {
+		fmt.Println("End because of config.HideOutput")
+		return
+	}
+
 	/* SORT BY TOKEN_TRANSFERS */
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by token-transfers\n", len(result.TopAddresses.NumTokenTransfers))
@@ -212,6 +214,18 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("Top %d addresses by value-sent\n", len(result.TopAddresses.ValueSent))
 	for _, v := range result.TopAddresses.ValueSent {
 		fmt.Printf("%-66v %7d %7d\t%10v ETH\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, ethtools.WeiToEth(v.ValueSentWei).Text('f', 2))
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top %d addresses by failed-tx-received\n", len(result.TopAddresses.NumFailedTxReceived))
+	for _, v := range result.TopAddresses.NumFailedTxReceived {
+		fmt.Printf("%-66v %7d %7d \t received:%4d - sent:%4d\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top %d addresses by failed-tx-sent\n", len(result.TopAddresses.NumFailedTxSent))
+	for _, v := range result.TopAddresses.NumFailedTxSent {
+		fmt.Printf("%-66v %7d %7d \t received:%4d - sent:%4d\n", AddressWithName(v.Address), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
 	}
 }
 

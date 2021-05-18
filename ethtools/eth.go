@@ -16,12 +16,14 @@ import (
 )
 
 type AddressStats struct {
-	Address                      string
-	AddressDetail                AddressDetail
-	NumTxSent                    int
-	NumTxReceived                int
-	NumFailedTransfersSender     int
-	NumFailedTransfersReceiver   int
+	Address       string
+	AddressDetail AddressDetail
+
+	NumTxSent           int
+	NumTxReceived       int
+	NumFailedTxSent     int
+	NumFailedTxReceived int
+
 	NumTxWithData                int
 	NumTxTokenTransfer           int
 	NumTxTokenMethodTransfer     int
@@ -49,6 +51,9 @@ type TopAddressData struct {
 	NumTxReceived     []AddressStats
 	NumTxSent         []AddressStats
 	NumTokenTransfers []AddressStats
+
+	NumFailedTxSent     []AddressStats
+	NumFailedTxReceived []AddressStats
 }
 
 type AnalysisResult struct {
@@ -99,8 +104,8 @@ func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Cli
 
 func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethclient.Client) {
 	// Count receiver stats
-	var toAddrStats *AddressStats = &AddressStats{}   // might not exist
-	var fromAddrStats *AddressStats = &AddressStats{} // might not exist - see EIP155Signer
+	var toAddrStats *AddressStats = NewAddressStats("")   // might not exist
+	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist - see EIP155Signer
 	var isAddressKnown bool
 
 	// Prepare address stats for receiver of tx
@@ -132,8 +137,8 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 		if receipt.Status == 0 { // failed transaction. revert stats
 			// DebugPrintln("- failed transaction, revert ", tx.Hash())
 			result.NumTransactionsFailed += 1
-			fromAddrStats.NumFailedTransfersSender += 1
-			toAddrStats.NumFailedTransfersReceiver += 1
+			fromAddrStats.NumFailedTxSent += 1
+			toAddrStats.NumFailedTxReceived += 1
 			return
 		}
 	}
@@ -259,6 +264,22 @@ func (result *AnalysisResult) SortTopAddresses() {
 	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
 		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
 			result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
+		}
+	}
+
+	// failed tx received
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxReceived > _addresses[j].NumFailedTxReceived })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+		if _addresses[i].NumFailedTxReceived > 0 {
+			result.TopAddresses.NumFailedTxReceived = append(result.TopAddresses.NumFailedTxReceived, _addresses[i])
+		}
+	}
+
+	// failed tx sent
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxSent > _addresses[j].NumFailedTxSent })
+	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+		if _addresses[i].NumFailedTxSent > 0 {
+			result.TopAddresses.NumFailedTxSent = append(result.TopAddresses.NumFailedTxSent, _addresses[i])
 		}
 	}
 }
