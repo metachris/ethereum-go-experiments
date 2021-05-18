@@ -4,12 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "go run .",
+            "label": "go",
             "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/src"
-            },
-            "command": "time go run .",
+            "command": "source .env.local && time go run cmd/analyzer/main.go -block 12381372 -len 2",
             "problemMatcher": [],
             "group": {
                 "kind": "test",
