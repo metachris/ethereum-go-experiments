@@ -128,6 +128,10 @@ func main() {
 		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp, db)
 	}
 
+	if config.HideOutput {
+		fmt.Println("End because of config.HideOutput")
+		return
+	}
 	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
 
@@ -158,10 +162,11 @@ func main() {
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
 	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
-	fmt.Println("- with value:", result.NumTransactions-result.NumTransactionsWithZeroValue)
-	fmt.Println("- zero value:", result.NumTransactionsWithZeroValue)
-	fmt.Println("- with data: ", result.NumTransactionsWithData)
-	fmt.Printf("- with token transfer: %d (%.2f%%)\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
+	fmt.Printf("- failed:     %d \t %.2f%%\n", result.NumTransactionsFailed, (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with value: %d \t %.2f%%\n", result.NumTransactions-result.NumTransactionsWithZeroValue, (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
+	fmt.Printf("- zero value: %d \t %.2f%%\n", result.NumTransactionsWithZeroValue, (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with data:  %d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
+	fmt.Printf("- token transfer: %d\t %.2f%%\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
 
 	// ETH value transferred
 	ethValue := ethtools.WeiToEth(result.ValueTotalWei)

@@ -14,6 +14,7 @@ source .env.example
 # Run analyzer for certain timespan
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
+go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb | tee tmp.txt
 go run cmd/analyzer/main.go -date 2021-05-09 -len 1d -addDb -out output/2021-05-09.json | tee output/2021-05-09.txt
 
 # Run analyzer for specific block
@@ -166,3 +167,11 @@ Function: `transferFrom(address from, address to, uint256 tokenId)`
 * https://etherscan.io/tx/0x18bd3184549fc2456f2968d3565f620413336ab556613440eea803b153f62fc3 (rarible)
 * https://etherscan.io/tx/0x2909d76a36a5daf8c9b998841b516461b27961dd4edbc009338f9e87fef2b44d (Hashmasks)
 
+
+---
+
+## Log
+
+#### 2021-05-18
+
+* Do I really need to check status of every transaction? Analyze performance slows to 10%. Only for SC calls: 20%

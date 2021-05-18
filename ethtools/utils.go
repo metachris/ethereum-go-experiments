@@ -92,3 +92,15 @@ func TokenAmountToUnit(numTokens *big.Int, address string) (res *big.Float, symb
 		return res, "", false
 	}
 }
+
+func DebugPrintf(format string, a ...interface{}) {
+	if GetConfig().Debug {
+		_, _ = fmt.Printf(format, a...)
+	}
+}
+
+func DebugPrintln(a ...interface{}) {
+	if GetConfig().Debug {
+		_, _ = fmt.Println(a...)
+	}
+}

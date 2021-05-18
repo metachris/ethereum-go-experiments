@@ -49,6 +49,7 @@ func (a AddressDetail) String() string {
 	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
 }
 
+// Returns a new unknown address detail
 func NewAddressDetail(address string) AddressDetail {
 	return AddressDetail{Address: address, Type: AddressTypeUnknown}
 }

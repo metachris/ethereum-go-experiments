@@ -17,8 +17,11 @@ import (
 
 type AddressStats struct {
 	Address                      string
+	AddressDetail                AddressDetail
 	NumTxSent                    int
 	NumTxReceived                int
+	NumFailedTransfersSender     int
+	NumFailedTransfersReceiver   int
 	NumTxWithData                int
 	NumTxTokenTransfer           int
 	NumTxTokenMethodTransfer     int
@@ -30,9 +33,10 @@ type AddressStats struct {
 	TokensTransferred            *big.Int
 }
 
-func NewAddressInfo(address string) *AddressStats {
+func NewAddressStats(address string) *AddressStats {
 	return &AddressStats{
 		Address:           address,
+		AddressDetail:     NewAddressDetail(address),
 		ValueSentWei:      new(big.Int),
 		ValueReceivedWei:  new(big.Int),
 		TokensTransferred: new(big.Int),
@@ -62,6 +66,7 @@ type AnalysisResult struct {
 
 	NumBlocks                        int
 	NumTransactions                  int
+	NumTransactionsFailed            int
 	NumTransactionsWithZeroValue     int
 	NumTransactionsWithData          int
 	NumTransactionsWithTokenTransfer int
@@ -75,7 +80,7 @@ func NewResult() *AnalysisResult {
 	}
 }
 
-func (result *AnalysisResult) AddBlock(block *types.Block) {
+func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Client) {
 	if result.StartBlockTimestamp == 0 {
 		result.StartBlockTimestamp = block.Time()
 	}
@@ -88,92 +93,120 @@ func (result *AnalysisResult) AddBlock(block *types.Block) {
 
 	// Iterate over all transactions
 	for _, tx := range block.Transactions() {
-		// Count total value
-		result.ValueTotalWei = result.ValueTotalWei.Add(result.ValueTotalWei, tx.Value())
+		result.AddTransaction(tx, client)
+	}
+}
 
-		// Count number of transactions without value
-		if isBigIntZero(tx.Value()) {
-			result.NumTransactionsWithZeroValue += 1
+func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethclient.Client) {
+	// Count receiver stats
+	var toAddrStats *AddressStats = &AddressStats{}   // might not exist
+	var fromAddrStats *AddressStats = &AddressStats{} // might not exist - see EIP155Signer
+	var isAddressKnown bool
+
+	// Prepare address stats for receiver of tx
+	if tx.To() != nil {
+		recAddr := tx.To().String()
+		toAddrStats, isAddressKnown = result.Addresses[recAddr]
+		if !isAddressKnown {
+			toAddrStats = NewAddressStats(recAddr)
+			result.Addresses[recAddr] = toAddrStats
 		}
+	}
 
-		// Count tx types
-		result.TxTypes[tx.Type()] += 1
-
-		// Count receiver stats
-		recAddr := "-"
-		if tx.To() != nil {
-			recAddr = tx.To().String()
+	// Prepare address stats for sender of tx, if exists
+	if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
+		fromAddressString := msg.From().Hex()
+		fromAddrStats, isAddressKnown = result.Addresses[fromAddressString]
+		if !isAddressKnown {
+			fromAddrStats = NewAddressStats(fromAddressString)
+			result.Addresses[fromAddressString] = fromAddrStats
 		}
-		toAddrInfo, exists := result.Addresses[recAddr]
-		if !exists {
-			toAddrInfo = NewAddressInfo(recAddr)
-			if tx.To() != nil { // only keep around if it has a receiver
-				result.Addresses[recAddr] = toAddrInfo
-			}
+	}
+
+	// log.Fatal("from addr:", fromAddrStats.Address)
+
+	if GetConfig().CheckTxStatus {
+		// Check tx status
+		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+		Perror(err)
+		if receipt.Status == 0 { // failed transaction. revert stats
+			// DebugPrintln("- failed transaction, revert ", tx.Hash())
+			result.NumTransactionsFailed += 1
+			fromAddrStats.NumFailedTransfersSender += 1
+			toAddrStats.NumFailedTransfersReceiver += 1
+			return
 		}
+	}
 
-		toAddrInfo.NumTxReceived += 1
-		toAddrInfo.ValueReceivedWei = new(big.Int).Add(toAddrInfo.ValueReceivedWei, tx.Value())
-		toAddrInfo.ValueReceivedEth = WeiToEth(toAddrInfo.ValueReceivedWei).Text('f', 2)
+	// Count total value
+	result.ValueTotalWei = result.ValueTotalWei.Add(result.ValueTotalWei, tx.Value())
 
-		// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
-		if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
-			fromHex := msg.From().Hex()
-			// fmt.Println(fromHex)
-			fromAddrInfo, exists := result.Addresses[fromHex]
-			if !exists {
-				fromAddrInfo = NewAddressInfo(fromHex)
-				result.Addresses[fromHex] = fromAddrInfo
-			}
+	// Count number of transactions without value
+	if isBigIntZero(tx.Value()) {
+		result.NumTransactionsWithZeroValue += 1
+	}
 
-			fromAddrInfo.NumTxSent += 1
-			fromAddrInfo.ValueSentWei = big.NewInt(0).Add(fromAddrInfo.ValueSentWei, tx.Value())
-			fromAddrInfo.ValueSentEth = WeiToEth(fromAddrInfo.ValueSentWei).Text('f', 2)
-		}
+	// Count tx types
+	result.TxTypes[tx.Type()] += 1
 
-		// Check for token transfer
-		data := tx.Data()
-		if len(data) > 0 {
-			result.NumTransactionsWithData += 1
-			toAddrInfo.NumTxWithData += 1
+	toAddrStats.NumTxReceived += 1
+	toAddrStats.ValueReceivedWei = new(big.Int).Add(toAddrStats.ValueReceivedWei, tx.Value())
+	toAddrStats.ValueReceivedEth = WeiToEth(toAddrStats.ValueReceivedWei).Text('f', 2)
 
-			if len(data) > 4 {
-				methodId := hex.EncodeToString(data[:4])
-				// fmt.Println(methodId)
-				if methodId == "a9059cbb" || methodId == "23b872dd" {
-					result.NumTransactionsWithTokenTransfer += 1
-					toAddrInfo.NumTxTokenTransfer += 1
+	// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
+	if fromAddrStats != nil {
+		fromAddrStats.NumTxSent += 1
+		fromAddrStats.ValueSentWei = big.NewInt(0).Add(fromAddrStats.ValueSentWei, tx.Value())
+		fromAddrStats.ValueSentEth = WeiToEth(fromAddrStats.ValueSentWei).Text('f', 2)
+	}
 
-					// Calculate and store the number of tokens transferred
-					var value string
-					switch methodId {
-					case "a9059cbb": // transfer
-						// targetAddr = hex.EncodeToString(data[4:36])
-						value = hex.EncodeToString(data[36:68])
-						toAddrInfo.NumTxTokenMethodTransfer += 1
-					case "23b872dd": // transferFrom
-						// targetAddr = hex.EncodeToString(data[36:68])
-						value = hex.EncodeToString(data[68:100])
-						toAddrInfo.NumTxTokenMethodTransferFrom += 1
-					}
-					valBigInt := new(big.Int)
-					valBigInt.SetString(value, 16)
+	// Check for smart contract calls: token transfer
+	data := tx.Data()
+	if len(data) > 0 {
+		result.NumTransactionsWithData += 1
+		toAddrStats.NumTxWithData += 1
 
-					// If number is too big, it is either an error or a erc-721 SC
-					if len(valBigInt.String()) > 40 {
-						fmt.Printf("warn: very large value! block: %d \t tx: %s \t val: %s \t valBigInt: %v \n", block.Number().Uint64(), tx.Hash(), value, valBigInt)
-						// TODO: check if ERC721 or failed tx. For now as workaround just skip
-					} else {
-						toAddrInfo.TokensTransferred = new(big.Int).Add(toAddrInfo.TokensTransferred, valBigInt)
-					}
+		if len(data) > 4 {
+			methodId := hex.EncodeToString(data[:4])
+			// fmt.Println(methodId)
+			if methodId == "a9059cbb" || methodId == "23b872dd" {
+				result.NumTransactionsWithTokenTransfer += 1
+				toAddrStats.NumTxTokenTransfer += 1
 
-					// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
-					// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
-					// 	if valBigInt.Cmp(errVal) == 1 {
-					// 		fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
-					// 	}
-					// }
+				// Calculate and store the number of tokens transferred
+				var value string
+				switch methodId {
+				case "a9059cbb": // transfer
+					// targetAddr = hex.EncodeToString(data[4:36])
+					value = hex.EncodeToString(data[36:68])
+					toAddrStats.NumTxTokenMethodTransfer += 1
+				case "23b872dd": // transferFrom
+					// targetAddr = hex.EncodeToString(data[36:68])
+					value = hex.EncodeToString(data[68:100])
+					toAddrStats.NumTxTokenMethodTransferFrom += 1
 				}
+				valBigInt := new(big.Int)
+				valBigInt.SetString(value, 16)
+
+				// If number is too big, it is either an error or a erc-721 SC
+				if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeUnknown {
+					DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
+
+					toAddrStats.AddressDetail = GetAddressDetailFromBlockchain(toAddrStats.Address, client)
+					fmt.Println("type:", toAddrStats.AddressDetail.Type)
+				}
+
+				// Increase number of tokens transferred if either ERC20 or Unknown Contract
+				if toAddrStats.AddressDetail.Type == AddressTypeErc20 || toAddrStats.AddressDetail.Type == AddressTypeUnknown {
+					toAddrStats.TokensTransferred = new(big.Int).Add(toAddrStats.TokensTransferred, valBigInt)
+				}
+
+				// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
+				// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
+				// 	if valBigInt.Cmp(errVal) == 1 {
+				// 		fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
+				// 	}
+				// }
 			}
 		}
 	}
@@ -277,7 +310,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 			blocksForDbQueue <- currentBlock
 		}
 
-		result.AddBlock(currentBlock)
+		result.AddBlock(currentBlock, client)
 
 		// Increase current block number and number of blocks processed
 		currentBlockNumber.Add(currentBlockNumber, One)

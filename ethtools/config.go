@@ -21,6 +21,10 @@ type Config struct {
 	NumAddressesByNumTxSent        int
 	NumAddressesByNumTxReceived    int
 	NumAddressesByNumTokenTransfer int
+
+	Debug         bool
+	CheckTxStatus bool
+	HideOutput    bool
 }
 
 func (c Config) String() string {
@@ -44,6 +48,11 @@ func getEnvStr(key string, defaultVal string) string {
 	}
 }
 
+func getEnvBool(key string, defaultVal bool) bool {
+	val, exists := os.LookupEnv(key)
+	return exists && len(val) > 0
+}
+
 func getEnvInt(key string, defaultVal int) int {
 	val, exists := os.LookupEnv(key)
 	if exists {
@@ -57,7 +66,13 @@ func getEnvInt(key string, defaultVal int) int {
 	}
 }
 
-func GetConfig() Config {
+var config *Config
+
+func GetConfig() *Config {
+	if config != nil {
+		return config
+	}
+
 	dbConfig := PostgresConfig{
 		User:       getEnvStr("DB_USER", ""),
 		Password:   getEnvStr("DB_PASS", ""),
@@ -70,7 +85,7 @@ func GetConfig() Config {
 		panic("Error: no DB_HOST environment variable set! Please check if you've set all environment variables.")
 	}
 
-	return Config{
+	config = &Config{
 		Database: dbConfig,
 
 		WebserverHost: getEnvStr("WEBSERVER_HOST", ""),
@@ -84,5 +99,11 @@ func GetConfig() Config {
 		NumAddressesByNumTxSent:        getEnvInt("NUM_ADDR_NUM_TX_SENT", 25),
 		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
 		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
+
+		Debug:         getEnvBool("DEBUG", false),
+		CheckTxStatus: getEnvBool("CHECK_TX_STATUS", true),
+		HideOutput:    getEnvBool("HIDE_OUTPUT", false),
 	}
+
+	return config
 }
