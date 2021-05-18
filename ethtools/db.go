@@ -198,11 +198,11 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		// fmt.Println("+ stats:", addr)
 		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
 		if !foundInDb { // Not in DB, add now
-			detail := GetAddressDetailFromBlockchain(addr.Address, client)
+			detail := GetAddressDetail(addr.Address, client)
 			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 
 		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
-			detail := GetAddressDetailFromBlockchain(addr.Address, client)
+			detail := GetAddressDetail(addr.Address, client)
 			db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 		}
 
