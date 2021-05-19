@@ -42,7 +42,7 @@ Notes:
 
 ## To do
 
-* geth parameter tuning?
+* Gas paid per address. In particular interesting for sent failed transactions.
 * Save results for 1h granularity, add up for daily stats?
 * Speeding up things?
   * Maybe paralellize processing single blocks, and merging the individual results.

@@ -33,7 +33,9 @@ type AddressStats struct {
 	ValueSentEth                 string
 	ValueReceivedWei             *big.Int
 	ValueReceivedEth             string
-	TokensTransferred            *big.Int // SC volume in native units (before conversion, all decimals are in the int)
+
+	TokensTransferred *big.Int // SC volume in raw int units
+	GasUsed           uint64
 }
 
 // Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
@@ -99,6 +101,7 @@ type AnalysisResult struct {
 
 	NumBlocks          int
 	NumBlocksWithoutTx int
+	GasUsed            uint64
 
 	NumTransactions                  int
 	NumTransactionsFailed            int
@@ -125,6 +128,7 @@ func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Cli
 
 	result.NumBlocks += 1
 	result.NumTransactions += len(block.Transactions())
+	result.GasUsed += block.GasUsed()
 
 	// Iterate over all transactions
 	for _, tx := range block.Transactions() {
@@ -169,6 +173,10 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 		// Check tx status
 		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 		Perror(err)
+
+		// Gas used is counted (and paid) even if transaction failed
+		fromAddrStats.GasUsed += receipt.GasUsed
+
 		if receipt.Status == 0 { // failed transaction. revert stats
 			// DebugPrintln("- failed transaction, revert ", tx.Hash())
 			result.NumTransactionsFailed += 1
@@ -176,6 +184,7 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 			toAddrStats.NumFailedTxReceived += 1
 			return
 		}
+
 	}
 
 	// Count total value

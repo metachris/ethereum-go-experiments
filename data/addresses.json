@@ -10,6 +10,16 @@
         "address": "0x090d4613473dee047c3f2706764f49e0821d256e"
     },
     {
+        "name": "Uniswap V3: Router",
+        "type": "Contract",
+        "address": "0xE592427A0AEce92De3Edee1F18E0157C05861564"
+    },
+    {
+        "name": "SushiSwap: Router",
+        "type": "Contract",
+        "address": "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F"
+    },
+    {
         "name": "Binance",
         "type": "Address",
         "address": "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE"

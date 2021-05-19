@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS analysis (
     EndBlockNumber      integer NOT NULL,
     EndBlockTimestamp   integer NOT NULL,
 
-    ValueTotalEth                    NUMERIC(24, 8) NOT NULL,
     NumBlocks                        integer NOT NULL,
     NumBlocksWithoutTx               integer NOT NULL,
     NumTransactions                  integer NOT NULL,
@@ -45,7 +44,10 @@ CREATE TABLE IF NOT EXISTS analysis (
     NumTransactionsWithZeroValue     integer NOT NULL,
     NumTransactionsWithData          integer NOT NULL,
     NumTransactionsWithTokenTransfer integer NOT NULL,
-    TotalAddresses                   integer NOT NULL
+    TotalAddresses                   integer NOT NULL,
+
+    ValueTotalEth   NUMERIC(24, 8) NOT NULL,
+    GasUsed         bigint NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS analysis_address_stat (
@@ -58,6 +60,8 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
 	NumTxReceived                int NOT NULL,
 	NumFailedTxSent              int NOT NULL,
 	NumFailedTxReceived          int NOT NULL,
+	GasUsed                      bigint NOT NULL,
+
 	NumTxWithData                int NOT NULL,
 	NumTxTokenTransfer           int NOT NULL,
 	NumTxTokenMethodTransfer     int NOT NULL,
@@ -67,7 +71,7 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
 	ValueReceivedEth   NUMERIC(32, 8) NOT NULL,
 	TokensTransferred  NUMERIC(48, 0) NOT NULL,
 
-    TokensTransferredInUnit  NUMERIC(64, 8) NOT NULL,
+    TokensTransferredInUnit  NUMERIC(56, 8) NOT NULL,
     TokensTransferredSymbol  text NOT NULL
 );
 
@@ -95,7 +99,6 @@ type AnalysisEntry struct {
 	EndBlockNumber      int
 	EndBlockTimestamp   int
 
-	ValueTotalEth                    string
 	NumBlocks                        int
 	NumBlocksWithoutTx               int
 	NumTransactions                  int
@@ -104,6 +107,9 @@ type AnalysisEntry struct {
 	NumTransactionsWithData          int
 	NumTransactionsWithTokenTransfer int
 	TotalAddresses                   int
+
+	ValueTotalEth string
+	GasUsed       uint64
 }
 
 var db *sqlx.DB
@@ -196,8 +202,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	// Insert Analysis
 	analysisId := 0
 	err := db.QueryRow(
-		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id",
-		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
+		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id",
+		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses), result.GasUsed).Scan(&analysisId)
 	Perror(err)
 	fmt.Println("Analysis ID:", analysisId)
 
@@ -225,8 +231,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		valRecEth := WeiToEth(addr.ValueReceivedWei).Text('f', 2)
 		valSentEth := WeiToEth(addr.ValueSentWei).Text('f', 2)
 		tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
-		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)",
-			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumFailedTxSent, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol)
+		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
+			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumFailedTxSent, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
 	}
 
 	// Setup worker pool
