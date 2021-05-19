@@ -182,7 +182,8 @@ func AddAddressesFromJsonToDatabase(db *sqlx.DB) {
 func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 	// Check count
 	var count int
-	db.QueryRow("SELECT COUNT(*) FROM block WHERE number = $1", block.Header().Number.Int64()).Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM block WHERE number = $1", block.Header().Number.Int64()).Scan(&count)
+	Perror(err)
 	if count > 0 {
 		return
 	}
@@ -194,9 +195,10 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
 	// Insert Analysis
 	analysisId := 0
-	db.QueryRow(
-		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
+	err := db.QueryRow(
+		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id",
 		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
+	Perror(err)
 	fmt.Println("Analysis ID:", analysisId)
 
 	addAddressAndStats := func(addr AddressStats) {
@@ -213,7 +215,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 
 		// Avoid adding one address multiple times per analysis
 		var count int
-		db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, strings.ToLower(addr.Address)).Scan(&count)
+		err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, strings.ToLower(addr.Address)).Scan(&count)
+		Perror(err)
 		if count > 0 {
 			return
 		}
