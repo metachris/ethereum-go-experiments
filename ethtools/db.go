@@ -196,8 +196,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	analysisId := 0
 	db.QueryRow(
 		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
-		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)
-	).Scan(&analysisId)
+		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses)).Scan(&analysisId)
 	fmt.Println("Analysis ID:", analysisId)
 
 	addAddressAndStats := func(addr AddressStats) {

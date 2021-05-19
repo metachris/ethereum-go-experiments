@@ -42,13 +42,15 @@ Notes:
 
 ## To do
 
-* Search for TODO
-* 
+* geth parameter tuning?
+* Save results for 1h granularity, add up for daily stats?
+* Speeding up things?
+  * Maybe paralellize processing single blocks, and merging the individual results.
 
 Maybe?
 
-* Save results for 1h in addition to 1d
-* Gas fees
+* Search for "todo"
+* Gas fees per transaction?
 * Add blocks in own goroutine (not in main routine and not one per block)
 * Tests
   * contract type detection
