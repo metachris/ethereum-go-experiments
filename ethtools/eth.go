@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 	"sort"
@@ -434,11 +433,9 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 // var wg sync.WaitGroup // for waiting until all blocks are written into DB
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
-func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestamp int64, db *sqlx.DB) *AnalysisResult {
+func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64, endBlockNumber int64) *AnalysisResult {
 	result := NewResult()
 	result.StartBlockNumber = startBlockNumber
-
-	currentBlockNumber := big.NewInt(startBlockNumber)
 
 	// Setup database worker pool, for saving blocks to database
 	// numDbWorkers := 5
@@ -450,68 +447,42 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	// 	}
 	// }
 
+	blockHeightChan := make(chan int64, 100)          // blockHeight to fetch with receipts
+	blockChan := make(chan *BlockWithTxReceipts, 100) // channel for resulting BlockWithTxReceipt
+
 	// start block fetcher pool
-	blockHeightChan := make(chan int64, 100)
-	blockChan := make(chan *BlockWithTxReceipts, 100)
-	var wg sync.WaitGroup
+	var blockWorkerWg sync.WaitGroup
 	for w := 1; w <= 5; w++ {
-		wg.Add(1)
-		go GetBlockWithTxReceiptsWorker(&wg, blockHeightChan, blockChan)
+		blockWorkerWg.Add(1)
+		go GetBlockWithTxReceiptsWorker(&blockWorkerWg, blockHeightChan, blockChan)
 	}
 
 	// Start block processor
-	var lock sync.Mutex
+	var analyzeLock sync.Mutex
 	analyzeWorker := func(blockChan <-chan *BlockWithTxReceipts) {
-		defer lock.Unlock() // we unlock when done
+		defer analyzeLock.Unlock() // we unlock when done
 
 		for block := range blockChan {
 			printBlock(block.block)
-
-			if endTimestamp > -1 && block.block.Time() > uint64(endTimestamp) {
-				fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", result.NumBlocks, currentBlockNumber.Text(10))
-				return
-			}
-
 			result.AddBlockWithReceipts(block, client)
 		}
 	}
 
-	lock.Lock()
+	analyzeLock.Lock()
 	go analyzeWorker(blockChan)
 
-	var numBlocks int
 	timeStartBlockProcessing := time.Now()
-	for {
-		// fmt.Println(currentBlockNumber, "fetching...")
-		blockHeightChan <- currentBlockNumber.Int64()
-		numBlocks += 1
-		// currentBlock, err := client.BlockByNumber(context.Background(), currentBlockNumber)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		// printBlock(currentBlock)
-
-		// if db != nil {
-		// 	blocksForDbQueue <- currentBlock
-		// }
-
-		// Increase current block number and number of blocks processed
-		currentBlockNumber.Add(currentBlockNumber, One)
-
-		// negative endTimestamp is a helper to process only a certain number of blocks. If reached, then end now
-		if endTimestamp < 0 && numBlocks*-1 == int(endTimestamp) {
-			break
-		}
+	for currentBlockNumber := startBlockNumber; currentBlockNumber < endBlockNumber; currentBlockNumber++ {
+		blockHeightChan <- currentBlockNumber
 	}
 
 	fmt.Println("Waiting for block workers...")
 	close(blockHeightChan)
-	wg.Wait()
+	blockWorkerWg.Wait()
 
 	fmt.Println("Waiting for Analysis workers...")
 	close(blockChan)
-	lock.Lock() // try to get lock again
+	analyzeLock.Lock() // try to get lock again
 
 	// Close DB-add-block channel and wait for all to be saved
 	// close(blocksForDbQueue)
@@ -558,36 +529,45 @@ func (list *Int64RingBuffer) Add(a int64) {
 	*list = append(*list, a)
 }
 
-// GetBlockAtTimestamp searches for a block that is within 30 seconds of the target timestamp.
-// Guesses a block number, downloads it, and narrows down time gap if needed until block is found.
-func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types.Block {
+// GetBlockHeaderAtTimestamp returns the header of the first block at or after the timestamp.
+func GetBlockHeaderAtTimestamp(client *ethclient.Client, targetTimestamp int64, verbose bool) (header *types.Header, secDiff int64) {
+	latestBlockHeader, err := client.HeaderByNumber(context.Background(), nil)
+	Perror(err)
+
 	currentBlockNumber := estimateTargetBlocknumber(targetTimestamp)
+	if currentBlockNumber > latestBlockHeader.Number.Int64() {
+		currentBlockNumber = latestBlockHeader.Number.Int64()
+	}
+
 	// TODO: check that blockNumber <= latestHeight
 	var isNarrowingDownFromBelow = false
 
 	divideSec := int64(13)                      // average block time is 13 sec
 	lastSecDiffs := make(Int64RingBuffer, 0, 6) // if secDiffs keep repeating, need to adjust the divider
 
-	fmt.Println("Finding start block:")
+	var verbosePrintf = func(format string, a ...interface{}) {
+		if verbose {
+			fmt.Printf(format, a...)
+		}
+	}
+
+	verbosePrintf("Finding start block:\n")
 	for {
 		// fmt.Println("Checking block:", currentBlockNumber)
 		blockNumber := big.NewInt(currentBlockNumber)
-		block, err := client.BlockByNumber(context.Background(), blockNumber)
-		if err != nil {
-			log.Println("Error fetching block at height", currentBlockNumber)
-			log.Fatal(err)
-		}
+		header, err := client.HeaderByNumber(context.Background(), blockNumber)
+		Perror(err)
 
-		secDiff := int64(block.Time()) - targetTimestamp
+		secDiff = int64(header.Time) - targetTimestamp
 
+		// Check if this secDiff was already seen (avoid circular endless loop)
 		if lastSecDiffs.Has(secDiff) {
 			divideSec += 1
-			// fmt.Println("already contains time diff. adjusting divider", divideSec)
 		}
-		lastSecDiffs.Add(secDiff)
-		// fmt.Println(lastSecDiffs)
 
-		fmt.Printf("%d \t blockTime: %d \t secDiff: %5d\n", currentBlockNumber, block.Time(), secDiff)
+		lastSecDiffs.Add(secDiff)
+
+		verbosePrintf("%d \t blockTime: %d / %v \t secDiff: %5d\n", currentBlockNumber, header.Time, time.Unix(int64(header.Time), 0).UTC(), secDiff)
 		if Abs(secDiff) < 60 {
 			if secDiff < 0 {
 				// still before wanted startTime. Increase by 1 from here...
@@ -598,7 +578,7 @@ func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types
 
 			// Only return if coming block-by-block from below, making sure to take first block after target time
 			if isNarrowingDownFromBelow {
-				return block
+				return header, secDiff
 			} else {
 				currentBlockNumber -= 1
 				continue

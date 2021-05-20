@@ -40,20 +40,21 @@ func main() {
 	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
 	hourPtr := flag.Int("hour", 0, "hour (UTC)")
 	minPtr := flag.Int("min", 0, "hour (UTC)")
-	timespanPtr := flag.String("len", "", "timespan (4s, 5m, 1h, ...)")
+	timespanPtr := flag.String("len", "", "num blocks or timespan (4s, 5m, 1h, ...)")
 	outJsonPtr := flag.String("out", "", "filename to store JSON output")
-	blockNumPtr := flag.Int("block", 0, "specific block to check")
+	blockHeightPtr := flag.Int("block", 0, "specific block to check")
 	addToDbPtr := flag.Bool("addDb", false, "add to database")
 	flag.Parse()
 
-	if len(*datePtr) == 0 && *blockNumPtr == 0 {
+	if len(*datePtr) == 0 && *blockHeightPtr == 0 {
 		log.Fatal("Date or block missing, add with -date <yyyy-mm-dd> or -block <blockNum>")
 	}
 
-	if *blockNumPtr == 0 && len(*timespanPtr) == 0 {
+	if *blockHeightPtr == 0 && len(*timespanPtr) == 0 {
 		log.Fatal("Timespan missing, -len")
 	}
 
+	numBlocks := 0
 	timespanSec := 0
 	switch {
 	case strings.HasSuffix(*timespanPtr, "s"):
@@ -68,16 +69,8 @@ func main() {
 		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "d"))
 		timespanSec *= 60 * 60 * 24
 	default:
-		timespanSec, _ = strconv.Atoi(*timespanPtr)
-
-		// If we analyze by starting at a specific block, timespanSec is used for the number of blocks
-		if *blockNumPtr > 0 {
-			if timespanSec == 0 {
-				timespanSec = -1
-			} else if timespanSec > 0 {
-				timespanSec *= -1
-			}
-		}
+		// No suffix: number of blocks
+		numBlocks, _ = strconv.Atoi(*timespanPtr)
 	}
 
 	config := ethtools.GetConfig()
@@ -88,14 +81,15 @@ func main() {
 		db = ethtools.NewDatabaseConnection(config.Database)
 	}
 
+	_ = numBlocks
+	_ = db
+
 	fmt.Println("Connecting to Ethereum node at", config.EthNode)
 	fmt.Println("")
 	client, err := ethclient.Dial(config.EthNode)
-	if err != nil {
-		panic(err)
-	}
+	ethtools.Perror(err)
 
-	var result *ethtools.AnalysisResult
+	// var result *ethtools.AnalysisResult
 	date := *datePtr
 	hour := *hourPtr
 	min := *minPtr
@@ -103,62 +97,62 @@ func main() {
 	_ = sec
 	_ = outJsonPtr
 
-	if *blockNumPtr > 0 {
-		result = ethtools.AnalyzeBlocks(client, int64(*blockNumPtr), int64(timespanSec), db)
-		t1 := time.Unix(int64(result.StartBlockTimestamp), 0).UTC()
-		date = t1.Format("2006-01-02")
-		hour = t1.Hour()
-		min = t1.Minute()
-		sec = t1.Second()
-		timespanSec = int(result.EndBlockTimestamp - result.StartBlockTimestamp)
-
-	} else {
-		// Start of analysis (UTC)
+	startBlockHeight := int64(*blockHeightPtr)
+	if *blockHeightPtr == 0 { // start at timestamp
 		startTime := ethtools.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
-		fmt.Println("startTime:", startTimestamp, "/", time.Unix(startTimestamp, 0).UTC())
-
-		// End of analysis
-		endTimestamp := startTimestamp + int64(timespanSec)
-		fmt.Println("endTime:  ", endTimestamp, "/", time.Unix(endTimestamp, 0).UTC())
-
-		fmt.Println("")
-		block := ethtools.GetBlockAtTimestamp(client, startTimestamp)
-		fmt.Println("Starting block found:", block.Number(), "- time:", block.Time(), "/", time.Unix(int64(block.Time()), 0).UTC())
-		fmt.Println("")
-		result = ethtools.AnalyzeBlocks(client, block.Number().Int64(), endTimestamp, db)
+		fmt.Printf("startTime: %d / %v", startTimestamp, time.Unix(startTimestamp, 0).UTC())
+		startBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, false)
+		startBlockHeight = startBlockHeader.Number.Int64()
 	}
 
+	fmt.Printf(" ... startBlock: %d \n", startBlockHeight)
+
+	var endBlockHeight int64
+	if numBlocks > 0 {
+		endBlockHeight = startBlockHeight + int64(numBlocks)
+	} else if numBlocks == 0 && timespanSec > 0 {
+		startTime := ethtools.MakeTime(date, hour, min)
+		startTimestamp := startTime.Unix()
+		endTimestamp := startTimestamp + int64(timespanSec)
+		fmt.Printf("endTime:   %d / %v", endTimestamp, time.Unix(endTimestamp, 0).UTC())
+		endBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, endTimestamp, false)
+		endBlockHeight = endBlockHeader.Number.Int64() - 1
+	} else {
+		panic("No valid end")
+	}
+
+	fmt.Printf(" ..... endBlock: %d \n", endBlockHeight)
+	fmt.Println("")
+
+	result := ethtools.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
 	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
 
-	if *addToDbPtr {
-		// Add to database (and log execution time)
-		fmt.Printf("\nAdding analysis to database...\n")
-		timeStartAddToDb := time.Now()
-		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
-		timeNeededAddToDb := time.Since(timeStartAddToDb)
-		fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
-	}
+	// if *addToDbPtr {
+	// 	// Add to database (and log execution time)
+	// 	fmt.Printf("\nAdding analysis to database...\n")
+	// 	timeStartAddToDb := time.Now()
+	// 	ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+	// 	timeNeededAddToDb := time.Since(timeStartAddToDb)
+	// 	fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
+	// }
 
 	// if len(*outJsonPtr) > 0 {
 	// 	j, err := json.MarshalIndent(exportData, "", " ")
 	// 	if err != nil {
 	// 		panic(err)
 	// 	}
-
-	// 	// outFn := "/tmp/test.json"
 	// 	outFn := *outJsonPtr
 	// 	_ = ioutil.WriteFile(outFn, j, 0644)
 	// 	fmt.Println("Saved to " + *outJsonPtr)
 	// }
-
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
-	fmt.Println("- with 0 tx:", result.NumBlocksWithoutTx)
+	fmt.Println("- without tx:", result.NumBlocksWithoutTx)
 	fmt.Println("- gas fee:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
 	fmt.Println("")
 	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
