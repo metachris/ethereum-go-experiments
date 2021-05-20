@@ -47,31 +47,10 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 	}
 }
 
-// // Worker to add blocks to DB
-// func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
-// 	defer wg.Done()
-
-// 	for block := range jobChan {
-// 		AddBlockToDatabase(db, block)
-// 	}
-// }
-
-// var wg sync.WaitGroup // for waiting until all blocks are written into DB
-
 // Analyze blocks starting at specific block number, until a certain target timestamp
 func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64, endBlockNumber int64) *AnalysisResult {
 	result := NewResult()
 	result.StartBlockNumber = startBlockNumber
-
-	// Setup database worker pool, for saving blocks to database
-	// numDbWorkers := 5
-	// blocksForDbQueue := make(chan *types.Block, 100)
-	// if db != nil {
-	// 	for w := 1; w <= numDbWorkers; w++ {
-	// 		wg.Add(1)
-	// 		go addBlockToDbWorker(db, blocksForDbQueue)
-	// 	}
-	// }
 
 	blockHeightChan := make(chan int64, 100)          // blockHeight to fetch with receipts
 	blockChan := make(chan *BlockWithTxReceipts, 100) // channel for resulting BlockWithTxReceipt
@@ -109,13 +88,6 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 	fmt.Println("Waiting for Analysis workers...")
 	close(blockChan)
 	analyzeLock.Lock() // try to get lock again
-
-	// Close DB-add-block channel and wait for all to be saved
-	// close(blocksForDbQueue)
-	// if db != nil {
-	// 	fmt.Println("Waiting for workers to finish adding blocks...")
-	// }
-	// wg.Wait()
 
 	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
 	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))

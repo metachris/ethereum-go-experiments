@@ -116,7 +116,7 @@ func main() {
 		// address := "0xC46E0E7eCb3EfCC417f6F89b940FFAFf72556382" // other contract
 
 		// a := GetAddressType(address, client)
-		a := ethtools.GetAddressDetailFromBlockchain(*addressPtr, client)
+		a, _ := ethtools.GetAddressDetailFromBlockchain(*addressPtr, client)
 		fmt.Println(a)
 		return
 	}

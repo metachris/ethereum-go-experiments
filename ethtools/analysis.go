@@ -352,7 +352,7 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
 		if _addresses[i].NumTxErc721Received > 0 {
 			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc721Received = append(result.TopAddresses.NumTxErc721Sent, _addresses[i])
+			result.TopAddresses.NumTxErc721Received = append(result.TopAddresses.NumTxErc721Received, _addresses[i])
 		}
 	}
 

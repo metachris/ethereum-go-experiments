@@ -165,6 +165,9 @@ func SmartContractSupportsInterface(address string, interfaceId [4]byte, client 
 	return err == nil && isSupported
 }
 
+// TODO: Currently returns true for every SC that supports INTERFACEID_ERC165. It should really be INTERFACEID_ERC721,
+// but that doesn't detect some SCs, eg. cryptokitties https://etherscan.io/address/0x06012c8cf97BEaD5deAe237070F9587f8E7A266d#readContract
+// As a quick fix, just checks ERC165 and count it as ERC721 address. Improve with further/better SC method checks.
 func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail AddressDetail) {
 	detail.Address = address
 
@@ -172,28 +175,25 @@ func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail A
 	instance, err := erc721.NewErc721(addr, client)
 	Perror(err)
 
-	isErc721, err = instance.SupportsInterface(nil, INTERFACEID_ERC721)
+	isErc721, err = instance.SupportsInterface(nil, INTERFACEID_ERC165)
 	if err != nil || !isErc721 {
 		return false, detail
 	}
 
+	// It appears to be ERC721
 	detail.Type = AddressTypeErc721
 
-	// Check if has metadata
-	implementsMetadata, err := instance.SupportsInterface(nil, INTERFACEID_ERC721_METADATA)
-	if err == nil && implementsMetadata {
-		detail.Name, err = instance.Name(nil)
-		// Perror(err)
-		if err != nil {
-			// eg. "abi: cannot marshal in to go slice: offset 33 would go over slice boundary (len=32)"
-			return false, detail
-		}
+	// Try to get a name and symbol
+	detail.Name, _ = instance.Name(nil)
+	// if err != nil {
+	// 	// eg. "abi: cannot marshal in to go slice: offset 33 would go over slice boundary (len=32)"
+	// 	// ignore, since we don't check erc721 metadata extension
+	// }
 
-		detail.Symbol, err = instance.Symbol(nil)
-		if err != nil {
-			return false, detail
-		}
-	}
+	detail.Symbol, _ = instance.Symbol(nil)
+	// if err != nil {
+	// 	// ignore, since we don't check erc721 metadata extension
+	// }
 
 	return true, detail
 }
