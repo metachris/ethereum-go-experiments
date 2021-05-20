@@ -160,9 +160,8 @@ func printTopTx(msg string, txList []ethtools.TxStats) {
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
 	fmt.Println("- without tx:", result.NumBlocksWithoutTx)
-	fmt.Println("- gas fee:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
 	fmt.Println("")
-	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
+	fmt.Println("Total transactions:", result.NumTransactions, "\t", result.TxTypes)
 	fmt.Printf("- failed:         %7d \t %.2f%%\n", result.NumTransactionsFailed, (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
 	fmt.Printf("- with value:     %7d \t %.2f%%\n", result.NumTransactions-result.NumTransactionsWithZeroValue, (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
 	fmt.Printf("- zero value:     %7d \t %.2f%%\n", result.NumTransactionsWithZeroValue, (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
@@ -174,6 +173,7 @@ func printResult(result *ethtools.AnalysisResult) {
 
 	fmt.Println("Total addresses:", len(result.Addresses))
 	fmt.Println("Total value transferred:", ethtools.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
+	fmt.Println("Total gas fees:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
 
 	printTopTx("\nTop transactions by gas-fee", result.TopTransactions.GasFee)
 	printTopTx("\nTop transactions by value", result.TopTransactions.Value)
@@ -195,7 +195,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	for _, v := range result.TopAddresses.NumTxErc20Received {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v \t %s\n", addressWithName(v.Address), v.NumTxErc20Received, v.NumTxReceivedSuccess, tokenAmount, v.AddressDetail.Type)
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Received, v.NumTxReceivedSuccess, tokenAmount)
 	}
 
 	fmt.Println("")
@@ -213,7 +213,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	printTopAddr := func(msg string, list []ethtools.AddressStats) {
 		fmt.Println(msg)
 		for _, v := range list {
-			fmt.Printf("%-66v txIn: %7d  \t  txOut: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethtools.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethtools.WeiBigIntToEthString(v.ValueSentWei, 2), ethtools.WeiBigIntToEthString(v.GasFeeTotal, 2), ethtools.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
+			fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethtools.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethtools.WeiBigIntToEthString(v.ValueSentWei, 2), ethtools.WeiBigIntToEthString(v.GasFeeTotal, 2), ethtools.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
 		}
 	}
 
