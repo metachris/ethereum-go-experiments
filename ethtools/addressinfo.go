@@ -36,7 +36,7 @@ const (
 	AddressTypeErc721        AddressType = "Erc721"
 	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
 	AddressTypeOtherContract AddressType = "OtherContract"
-	AddressTypePubkey        AddressType = "-" // if nothing else could be detected
+	AddressTypePubkey        AddressType = "-" // nothing else detected, probably just a wallet
 )
 
 type AddressDetail struct {
@@ -95,7 +95,14 @@ func getDatasetFromJson(filename string) []AddressDetail {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// fmt.Println(len(AddressDetails), AddressDetails[0].Name)
+
+	// type field is not mandatory In JSON. Use wallet as default.
+	for i, v := range addressDetails {
+		if v.Type == "" {
+			addressDetails[i].Type = AddressTypePubkey
+		}
+	}
+
 	return addressDetails
 }
 
