@@ -22,6 +22,8 @@ type Config struct {
 	NumAddressesByNumTxReceived    int
 	NumAddressesByNumTokenTransfer int
 
+	NumTopTransactions int
+
 	// Debug helpers
 	Debug           bool
 	CheckTxStatus   bool
@@ -105,6 +107,8 @@ func GetConfig() *Config {
 		NumAddressesByNumTxSent:        getEnvInt("NUM_ADDR_NUM_TX_SENT", 25),
 		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
 		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
+
+		NumTopTransactions: getEnvInt("NUM_TOP_TX", 50),
 
 		Debug:           getEnvBool("DEBUG", false),
 		CheckTxStatus:   getEnvBool("CHECK_TX_STATUS", true),

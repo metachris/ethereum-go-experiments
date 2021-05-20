@@ -30,14 +30,7 @@ func TxTest() {
 	fmt.Println(receipt.GasUsed, tx.GasPrice(), fee)
 }
 
-type BlockWithTxReceipts struct {
-	block      *types.Block
-	txReceipts map[common.Hash]*types.Receipt
-}
-
-var wg sync.WaitGroup // for waiting until all blocks are written into DB
-
-func GetBlockWithTxReceipts(client *ethclient.Client, height *big.Int) (res BlockWithTxReceipts) {
+func GetBlockWithTxReceipts(client *ethclient.Client, wg *sync.WaitGroup, height *big.Int) (res ethtools.BlockWithTxReceipts) {
 	fmt.Println("getBlockWithTxReceipts", height)
 	defer wg.Done()
 
@@ -56,6 +49,7 @@ func GetBlockWithTxReceipts(client *ethclient.Client, height *big.Int) (res Bloc
 		res.txReceipts[tx.Hash()] = receipt
 	}
 
+	fmt.Println(height, len(res.txReceipts))
 	return res
 }
 
@@ -64,13 +58,16 @@ func TestBlockWithTxReceipts() {
 	// (a) get block and receipt for all tx in one function
 	// (b) do a, but for several blocks at once (with one and multiple geth connections)
 
-	blockHeight := big.NewInt(12465297)
-	numBlocks := 3
+	blockHeight := big.NewInt(12464297)
+	numBlocks := 10
+
+	var wg sync.WaitGroup // for waiting until all blocks are written into DB
+	// client, _ := ethclient.Dial(ethtools.GetConfig().EthNode)
 
 	timeStart := time.Now()
 	for i := 0; i < numBlocks; i++ {
 		wg.Add(1)
-		go GetBlockWithTxReceipts(nil, blockHeight)
+		go GetBlockWithTxReceipts(nil, &wg, blockHeight)
 		blockHeight = new(big.Int).Add(blockHeight, common.Big1)
 	}
 

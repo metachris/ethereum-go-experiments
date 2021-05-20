@@ -11,10 +11,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
 )
+
+type BlockWithTxReceipts struct {
+	block      *types.Block
+	txReceipts map[common.Hash]*types.Receipt
+}
 
 type AddressStats struct {
 	Address       string
@@ -89,14 +95,37 @@ type TopAddressData struct {
 	NumFailedTxReceived []AddressStats
 }
 
+type TxStats struct {
+	Hash     string
+	GasUsed  uint64
+	GasFee   uint64
+	Value    uint64
+	DataSize uint64
+}
+
+type TopTransactionData struct {
+	HighestGasFee []TxStats
+	LargestValue  []TxStats
+	LargestData   []TxStats
+}
+
+func NewTopTransactionData() *TopTransactionData {
+	return &TopTransactionData{
+		HighestGasFee: make([]TxStats, GetConfig().NumTopTransactions),
+		LargestValue:  make([]TxStats, GetConfig().NumTopTransactions),
+		LargestData:   make([]TxStats, GetConfig().NumTopTransactions),
+	}
+}
+
 type AnalysisResult struct {
 	StartBlockNumber    int64
 	StartBlockTimestamp uint64
 	EndBlockNumber      int64
 	EndBlockTimestamp   uint64
 
-	Addresses    map[string]*AddressStats `json:"-"`
-	TopAddresses TopAddressData
+	Addresses       map[string]*AddressStats `json:"-"`
+	TopAddresses    TopAddressData
+	TopTransactions TopTransactionData
 
 	TxTypes       map[uint8]int
 	ValueTotalWei *big.Int
@@ -126,30 +155,31 @@ func NewResult() *AnalysisResult {
 	}
 }
 
-func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Client) {
+func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client) {
 	if result.StartBlockTimestamp == 0 {
-		result.StartBlockTimestamp = block.Time()
+		result.StartBlockTimestamp = block.block.Time()
 	}
 
-	result.EndBlockNumber = block.Number().Int64()
-	result.EndBlockTimestamp = block.Time()
+	result.EndBlockNumber = block.block.Number().Int64()
+	result.EndBlockTimestamp = block.block.Time()
 
 	result.NumBlocks += 1
-	result.NumTransactions += len(block.Transactions())
-	result.GasUsed = new(big.Int).Add(result.GasUsed, big.NewInt(int64(block.GasUsed())))
+	result.NumTransactions += len(block.block.Transactions())
+	result.GasUsed = new(big.Int).Add(result.GasUsed, big.NewInt(int64(block.block.GasUsed())))
 
 	// Iterate over all transactions
-	for _, tx := range block.Transactions() {
-		result.AddTransaction(tx, client)
+	for _, tx := range block.block.Transactions() {
+		receipt := block.txReceipts[tx.Hash()]
+		result.AddTransaction(client, tx, receipt)
 	}
 
 	// If no transactions in this block then record that
-	if len(block.Transactions()) == 0 {
+	if len(block.block.Transactions()) == 0 {
 		result.NumBlocksWithoutTx += 1
 	}
 }
 
-func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethclient.Client) {
+func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt) {
 	// Count receiver stats
 	var toAddrStats *AddressStats = NewAddressStats("")   // might not exist
 	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist - see EIP155Signer
@@ -176,35 +206,30 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 	}
 
 	// log.Fatal("from addr:", fromAddrStats.Address)
-	if GetConfig().CheckTxStatus {
-		// Check tx status
-		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-		Perror(err)
+	// Check tx status
 
-		// Gas used is paid and counted no matter if transaction failed or succeeded
-		txGasUsed := big.NewInt(int64(receipt.GasUsed))
-		txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
-		fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, txGasUsed)
-		fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
-		result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
+	// Gas used is paid and counted no matter if transaction failed or succeeded
+	txGasUsed := big.NewInt(int64(receipt.GasUsed))
+	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
+	fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, txGasUsed)
+	fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
+	result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
 
-		if receipt.Status == 0 { // failed transaction. revert stats
-			// DebugPrintln("- failed transaction, revert ", tx.Hash())
-			result.NumTransactionsFailed += 1
-			fromAddrStats.NumFailedTxSent += 1
-			toAddrStats.NumFailedTxReceived += 1
+	if receipt.Status == 0 { // failed transaction. revert stats
+		// DebugPrintln("- failed transaction, revert ", tx.Hash())
+		result.NumTransactionsFailed += 1
+		fromAddrStats.NumFailedTxSent += 1
+		toAddrStats.NumFailedTxReceived += 1
 
-			// Count failed MEV tx
-			if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
-				result.NumMevTransactionsFailed += 1
-				if GetConfig().DebugPrintMevTx {
-					fmt.Printf("MEV fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
-				}
+		// Count failed MEV tx
+		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
+			result.NumMevTransactionsFailed += 1
+			if GetConfig().DebugPrintMevTx {
+				fmt.Printf("MEV fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
-
-			return
 		}
 
+		return
 	}
 
 	// Count total value
@@ -363,16 +388,50 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	}
 }
 
-// Worker to add blocks to DB
-func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
+func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {
+	// fmt.Println("getBlockWithTxReceipts", height)
+
+	var err error
+	if client == nil {
+		client, err = ethclient.Dial(GetConfig().EthNode)
+		Perror(err)
+	}
+	res.block, err = client.BlockByNumber(context.Background(), big.NewInt(height))
+	Perror(err)
+
+	res.txReceipts = make(map[common.Hash]*types.Receipt)
+	for _, tx := range res.block.Transactions() {
+		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+		Perror(err)
+		res.txReceipts[tx.Hash()] = receipt
+	}
+
+	// fmt.Println(height, len(res.txReceipts))
+	return res
+}
+
+func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int64, blockChan chan<- *BlockWithTxReceipts) {
 	defer wg.Done()
 
-	for block := range jobChan {
-		AddBlockToDatabase(db, block)
+	client, err := ethclient.Dial(GetConfig().EthNode)
+	Perror(err)
+
+	for blockHeight := range blockHeightChan {
+		res := GetBlockWithTxReceipts(client, blockHeight)
+		blockChan <- &res
 	}
 }
 
-var wg sync.WaitGroup // for waiting until all blocks are written into DB
+// // Worker to add blocks to DB
+// func addBlockToDbWorker(db *sqlx.DB, jobChan <-chan *types.Block) {
+// 	defer wg.Done()
+
+// 	for block := range jobChan {
+// 		AddBlockToDatabase(db, block)
+// 	}
+// }
+
+// var wg sync.WaitGroup // for waiting until all blocks are written into DB
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
 func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestamp int64, db *sqlx.DB) *AnalysisResult {
@@ -382,51 +441,84 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endTimestam
 	currentBlockNumber := big.NewInt(startBlockNumber)
 
 	// Setup database worker pool, for saving blocks to database
-	numDbWorkers := 5
-	blocksForDbQueue := make(chan *types.Block, 100)
-	if db != nil {
-		for w := 1; w <= numDbWorkers; w++ {
-			wg.Add(1)
-			go addBlockToDbWorker(db, blocksForDbQueue)
+	// numDbWorkers := 5
+	// blocksForDbQueue := make(chan *types.Block, 100)
+	// if db != nil {
+	// 	for w := 1; w <= numDbWorkers; w++ {
+	// 		wg.Add(1)
+	// 		go addBlockToDbWorker(db, blocksForDbQueue)
+	// 	}
+	// }
+
+	// start block fetcher pool
+	blockHeightChan := make(chan int64, 100)
+	blockChan := make(chan *BlockWithTxReceipts, 100)
+	var wg sync.WaitGroup
+	for w := 1; w <= 5; w++ {
+		wg.Add(1)
+		go GetBlockWithTxReceiptsWorker(&wg, blockHeightChan, blockChan)
+	}
+
+	// Start block processor
+	var lock sync.Mutex
+	analyzeWorker := func(blockChan <-chan *BlockWithTxReceipts) {
+		defer lock.Unlock() // we unlock when done
+
+		for block := range blockChan {
+			printBlock(block.block)
+
+			if endTimestamp > -1 && block.block.Time() > uint64(endTimestamp) {
+				fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", result.NumBlocks, currentBlockNumber.Text(10))
+				return
+			}
+
+			result.AddBlockWithReceipts(block, client)
 		}
 	}
 
+	lock.Lock()
+	go analyzeWorker(blockChan)
+
+	var numBlocks int
 	timeStartBlockProcessing := time.Now()
 	for {
 		// fmt.Println(currentBlockNumber, "fetching...")
-		currentBlock, err := client.BlockByNumber(context.Background(), currentBlockNumber)
-		if err != nil {
-			log.Fatal(err)
-		}
+		blockHeightChan <- currentBlockNumber.Int64()
+		numBlocks += 1
+		// currentBlock, err := client.BlockByNumber(context.Background(), currentBlockNumber)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-		printBlock(currentBlock)
+		// printBlock(currentBlock)
 
-		if endTimestamp > -1 && currentBlock.Time() > uint64(endTimestamp) {
-			fmt.Printf("- %d blocks processed. Skipped last block %s because it happened after endTime.\n\n", result.NumBlocks, currentBlockNumber.Text(10))
-			break
-		}
-
-		if db != nil {
-			blocksForDbQueue <- currentBlock
-		}
-
-		result.AddBlock(currentBlock, client)
+		// if db != nil {
+		// 	blocksForDbQueue <- currentBlock
+		// }
 
 		// Increase current block number and number of blocks processed
 		currentBlockNumber.Add(currentBlockNumber, One)
 
 		// negative endTimestamp is a helper to process only a certain number of blocks. If reached, then end now
-		if endTimestamp < 0 && result.NumBlocks*-1 == int(endTimestamp) {
+		if endTimestamp < 0 && numBlocks*-1 == int(endTimestamp) {
 			break
 		}
 	}
 
-	// Close DB-add-block channel and wait for all to be saved
-	close(blocksForDbQueue)
-	if db != nil {
-		fmt.Println("Waiting for workers to finish adding blocks...")
-	}
+	fmt.Println("Waiting for block workers...")
+	close(blockHeightChan)
 	wg.Wait()
+
+	fmt.Println("Waiting for Analysis workers...")
+	close(blockChan)
+	lock.Lock() // try to get lock again
+
+	// Close DB-add-block channel and wait for all to be saved
+	// close(blocksForDbQueue)
+	// if db != nil {
+	// 	fmt.Println("Waiting for workers to finish adding blocks...")
+	// }
+	// wg.Wait()
 
 	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
 	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))
@@ -469,7 +561,7 @@ func (list *Int64RingBuffer) Add(a int64) {
 // GetBlockAtTimestamp searches for a block that is within 30 seconds of the target timestamp.
 // Guesses a block number, downloads it, and narrows down time gap if needed until block is found.
 func GetBlockAtTimestamp(client *ethclient.Client, targetTimestamp int64) *types.Block {
-	currentBlockNumber := getTargetBlocknumber(targetTimestamp)
+	currentBlockNumber := estimateTargetBlocknumber(targetTimestamp)
 	// TODO: check that blockNumber <= latestHeight
 	var isNarrowingDownFromBelow = false
 
