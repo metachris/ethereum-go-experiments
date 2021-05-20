@@ -112,7 +112,8 @@ type AnalysisResult struct {
 	NumTransactionsWithZeroValue     int
 	NumTransactionsWithData          int
 	NumTransactionsWithTokenTransfer int
-	NumMevTransactions               int
+	NumMevTransactionsSuccess        int
+	NumMevTransactionsFailed         int
 }
 
 func NewResult() *AnalysisResult {
@@ -175,23 +176,32 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 	}
 
 	// log.Fatal("from addr:", fromAddrStats.Address)
-
 	if GetConfig().CheckTxStatus {
 		// Check tx status
 		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 		Perror(err)
 
 		// Gas used is paid and counted no matter if transaction failed or succeeded
-		gasFee := big.NewInt(int64(receipt.GasUsed) * tx.GasPrice().Int64())
-		fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, big.NewInt(int64(receipt.GasUsed)))
-		fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, gasFee)
-		result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, gasFee)
+		txGasUsed := big.NewInt(int64(receipt.GasUsed))
+		txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
+		fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, txGasUsed)
+		fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
+		result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
 
 		if receipt.Status == 0 { // failed transaction. revert stats
 			// DebugPrintln("- failed transaction, revert ", tx.Hash())
 			result.NumTransactionsFailed += 1
 			fromAddrStats.NumFailedTxSent += 1
 			toAddrStats.NumFailedTxReceived += 1
+
+			// Count failed MEV tx
+			if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
+				result.NumMevTransactionsFailed += 1
+				if GetConfig().DebugPrintMevTx {
+					fmt.Printf("MEV fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
+				}
+			}
+
 			return
 		}
 
@@ -225,10 +235,10 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 
 		// If no gas price, then it's probably a MEV/Flashbots tx
 		if tx.GasPrice().Uint64() == 0 {
-			result.NumMevTransactions += 1
+			result.NumMevTransactionsSuccess += 1
 			fromAddrStats.NumTxMev += 1
 			if GetConfig().DebugPrintMevTx {
-				fmt.Printf("MEV tx: https://etherscan.io/tx/%s\n", tx.Hash())
+				fmt.Printf("MEV ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
 		}
 

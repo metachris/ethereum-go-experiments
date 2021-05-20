@@ -167,7 +167,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("- zero value:     %7d \t %.2f%%\n", result.NumTransactionsWithZeroValue, (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
 	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
 	fmt.Printf("- token transfer: %7d \t %.2f%%\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- MEV: %d\n", result.NumMevTransactions)
+	fmt.Printf("- MEV: ok %d \t fail %d\n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
 	fmt.Println("")
 
 	// ETH value transferred

@@ -16,6 +16,7 @@ go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
 go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb | tee tmp.txt
 go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb -out output/2021-05-17.json | tee output/2021-05-17.txt
+time go run cmd/analyzer/main.go -date 2021-05-19 -len 1d | tee output/2021-05-19.txt
 
 # Run analyzer for specific block
 go run cmd/analyzer/main.go -block 12381372
