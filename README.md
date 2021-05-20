@@ -43,6 +43,7 @@ Notes:
 
 ## To do
 
+* Test (performance improvement): Paralellize getting blocks with tx receipts
 * MEV/flashbots tx: some pay miners, some not?
   * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
   * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
