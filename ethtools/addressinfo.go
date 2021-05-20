@@ -183,10 +183,16 @@ func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail A
 	implementsMetadata, err := instance.SupportsInterface(nil, INTERFACEID_ERC721_METADATA)
 	if err == nil && implementsMetadata {
 		detail.Name, err = instance.Name(nil)
-		Perror(err)
+		// Perror(err)
+		if err != nil {
+			// eg. "abi: cannot marshal in to go slice: offset 33 would go over slice boundary (len=32)"
+			return false, detail
+		}
 
 		detail.Symbol, err = instance.Symbol(nil)
-		Perror(err)
+		if err != nil {
+			return false, detail
+		}
 	}
 
 	return true, detail

@@ -1,6 +1,17 @@
-Iterate over blocks and all contained transactions on the Ethereum blockchain, and build statistics based on the data.
+Generate Ethereum stats for blocks, transactions and addresses.
 
-Requires an Ethereum Node to connect to (eg. geth, Infura).
+Example output: https://gist.github.com/metachris/33a78289512c60112ed5ebd570c03aa4
+
+Features
+
+* Iterate over block ranges and date ranges
+* Collect stats for ETH value sent, gas fees, failed transactions, erc20 transfers, ...
+* Output analysis as text, JSON, and Postgres DB
+
+Notes:
+
+* Needs high-throughput IPC access to geth. You should run this code on the same machine as the geth instance.
+* This code is a prototype and things still change frequently.
 
 ## Geting started
 
@@ -11,23 +22,18 @@ docker-compose up
 # Load the environment variables
 source .env.example
 
-# Run analyzer for certain timespan
-go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
-go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
-go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb | tee tmp.txt
-go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb -out output/2021-05-17.json | tee output/2021-05-17.txt
-time go run cmd/analyzer/main.go -date 2021-05-19 -len 1d | tee output/2021-05-19.txt
-
 # Run analyzer for specific block
 go run cmd/analyzer/main.go -block 12381372
 go run cmd/analyzer/main.go -block 12381372 -len 10
 
+# Run analyzer for certain timespan
+go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
+go run cmd/analyzer/main.go -date 2021-05-20 -len 2h
+go run cmd/analyzer/main.go -date 2021-05-20 -len 1d
+go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at supplied date
+
 # Run addresstool to get info about an address
 go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
-go run cmd/addresstool/main.go -add -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
-
-# Download data from server
-scp eth:/server/code/ethereum-go-experiments/data/out/2021-05-03.* .
 
 # Webserver
 go run cmd/webserver/main.go
@@ -43,7 +49,6 @@ Notes:
 
 ## To do
 
-* Test (performance improvement): Paralellize getting blocks with tx receipts
 * MEV/flashbots tx: some pay miners, some not?
   * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
   * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
