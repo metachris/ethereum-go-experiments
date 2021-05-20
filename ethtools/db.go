@@ -228,8 +228,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		}
 
 		// Add address-stats entry now
-		valRecEth := WeiToEth(addr.ValueReceivedWei).Text('f', 2)
-		valSentEth := WeiToEth(addr.ValueSentWei).Text('f', 2)
+		valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
+		valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
 		tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
 		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
 			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumFailedTxSent, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)

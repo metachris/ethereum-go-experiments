@@ -56,6 +56,15 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 	return
 }
 
+func WeiBigIntToEthString(wei *big.Int, decimals int) string {
+	return WeiToEth(wei).Text('f', decimals)
+}
+
+func WeiUintToEth(wei uint64) (ethValue float64) {
+	// wei / 10^18
+	return float64(wei) / math.Pow10(18)
+}
+
 func printBlock(block *types.Block) {
 	t := time.Unix(int64(block.Header().Time), 0).UTC()
 	fmt.Printf("%d \t %s \t %d \t tx=%-4d \t gas=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()), block.GasUsed())

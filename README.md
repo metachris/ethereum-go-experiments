@@ -12,7 +12,7 @@ docker-compose up
 source .env.example
 
 # Run analyzer for certain timespan
-go run cmd/analyzer/main.go -date 2021-05-01 -len 5m
+go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-01 -len 5m -addDb
 go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb | tee tmp.txt
 go run cmd/analyzer/main.go -date 2021-05-17 -len 1d -addDb -out output/2021-05-17.json | tee output/2021-05-17.txt
@@ -42,14 +42,16 @@ Notes:
 
 ## To do
 
-* Gas paid per address. In particular interesting for sent failed transactions.
-* Save results for 1h granularity, add up for daily stats?
-* Speeding up things?
-  * Maybe paralellize processing single blocks, and merging the individual results.
+* MEV/flashbots tx: some pay miners, some not?
+  * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
+  * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
 
 Maybe?
 
 * Search for "todo"
+* Save results for 1h granularity, add up for daily stats?
+* Speeding up things?
+  * Maybe paralellize processing single blocks, and merging the individual results.
 * Gas fees per transaction?
 * Add blocks in own goroutine (not in main routine and not one per block)
 * Tests

@@ -158,13 +158,17 @@ func main() {
 // Processes a raw result into the export data structure, and prints the stats to stdout
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
-	fmt.Println("- blocks without tx:", result.NumBlocksWithoutTx)
+	fmt.Println("- with 0 tx:", result.NumBlocksWithoutTx)
+	fmt.Println("- gas fee:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
+	fmt.Println("")
 	fmt.Println("Total transactions:", result.NumTransactions, "/ types:", result.TxTypes)
-	fmt.Printf("- failed:     %d \t %.2f%%\n", result.NumTransactionsFailed, (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with value: %d \t %.2f%%\n", result.NumTransactions-result.NumTransactionsWithZeroValue, (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
-	fmt.Printf("- zero value: %d \t %.2f%%\n", result.NumTransactionsWithZeroValue, (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with data:  %d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
-	fmt.Printf("- token transfer: %d\t %.2f%%\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
+	fmt.Printf("- failed:         %7d \t %.2f%%\n", result.NumTransactionsFailed, (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with value:     %7d \t %.2f%%\n", result.NumTransactions-result.NumTransactionsWithZeroValue, (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
+	fmt.Printf("- zero value:     %7d \t %.2f%%\n", result.NumTransactionsWithZeroValue, (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
+	fmt.Printf("- token transfer: %7d \t %.2f%%\n", result.NumTransactionsWithTokenTransfer, (float64(result.NumTransactionsWithTokenTransfer)/float64(result.NumTransactions))*100)
+	fmt.Printf("- MEV: %d\n", result.NumMevTransactions)
+	fmt.Println("")
 
 	// ETH value transferred
 	ethValue := ethtools.WeiToEth(result.ValueTotalWei)
@@ -227,7 +231,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by failed-tx-sent\n", len(result.TopAddresses.NumFailedTxSent))
 	for _, v := range result.TopAddresses.NumFailedTxSent {
-		fmt.Printf("%-66v %7d tx-rec %7d tx-sent \t %4d failed-tx-rec \t %4d failed-tx-sent\n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent)
+		fmt.Printf("%-66v %7d tx-rec %7d tx-sent \t %4d failed-tx-rec \t %4d failed-tx-sent \t %4d mev \t %s ETH gasFee \n", addressWithName(v.AddressDetail), v.NumTxReceived, v.NumTxSent, v.NumFailedTxReceived, v.NumFailedTxSent, v.NumTxMev, ethtools.WeiBigIntToEthString(v.GasFeeTotal, 2))
 	}
 }
 

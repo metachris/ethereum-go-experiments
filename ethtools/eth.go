@@ -29,13 +29,14 @@ type AddressStats struct {
 	NumTxTokenTransfer           int
 	NumTxTokenMethodTransfer     int
 	NumTxTokenMethodTransferFrom int
-	ValueSentWei                 *big.Int
-	ValueSentEth                 string
-	ValueReceivedWei             *big.Int
-	ValueReceivedEth             string
+	NumTxMev                     int
+
+	ValueSentWei     *big.Int
+	ValueReceivedWei *big.Int
 
 	TokensTransferred *big.Int // SC volume in raw int units
-	GasUsed           uint64
+	GasUsed           *big.Int
+	GasFeeTotal       *big.Int
 }
 
 // Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
@@ -72,6 +73,8 @@ func NewAddressStats(address string) *AddressStats {
 		ValueSentWei:      new(big.Int),
 		ValueReceivedWei:  new(big.Int),
 		TokensTransferred: new(big.Int),
+		GasUsed:           new(big.Int),
+		GasFeeTotal:       new(big.Int),
 	}
 }
 
@@ -101,13 +104,15 @@ type AnalysisResult struct {
 
 	NumBlocks          int
 	NumBlocksWithoutTx int
-	GasUsed            uint64
+	GasUsed            *big.Int
+	GasFeeTotal        *big.Int
 
 	NumTransactions                  int
 	NumTransactionsFailed            int
 	NumTransactionsWithZeroValue     int
 	NumTransactionsWithData          int
 	NumTransactionsWithTokenTransfer int
+	NumMevTransactions               int
 }
 
 func NewResult() *AnalysisResult {
@@ -115,6 +120,8 @@ func NewResult() *AnalysisResult {
 		ValueTotalWei: new(big.Int),
 		TxTypes:       make(map[uint8]int),
 		Addresses:     make(map[string]*AddressStats),
+		GasUsed:       new(big.Int),
+		GasFeeTotal:   new(big.Int),
 	}
 }
 
@@ -128,7 +135,7 @@ func (result *AnalysisResult) AddBlock(block *types.Block, client *ethclient.Cli
 
 	result.NumBlocks += 1
 	result.NumTransactions += len(block.Transactions())
-	result.GasUsed += block.GasUsed()
+	result.GasUsed = new(big.Int).Add(result.GasUsed, big.NewInt(int64(block.GasUsed())))
 
 	// Iterate over all transactions
 	for _, tx := range block.Transactions() {
@@ -174,8 +181,11 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 		Perror(err)
 
-		// Gas used is counted (and paid) even if transaction failed
-		fromAddrStats.GasUsed += receipt.GasUsed
+		// Gas used is paid and counted no matter if transaction failed or succeeded
+		gasFee := big.NewInt(int64(receipt.GasUsed) * tx.GasPrice().Int64())
+		fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, big.NewInt(int64(receipt.GasUsed)))
+		fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, gasFee)
+		result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, gasFee)
 
 		if receipt.Status == 0 { // failed transaction. revert stats
 			// DebugPrintln("- failed transaction, revert ", tx.Hash())
@@ -200,13 +210,11 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 
 	toAddrStats.NumTxReceived += 1
 	toAddrStats.ValueReceivedWei = new(big.Int).Add(toAddrStats.ValueReceivedWei, tx.Value())
-	toAddrStats.ValueReceivedEth = WeiToEth(toAddrStats.ValueReceivedWei).Text('f', 2)
 
 	// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
 	if fromAddrStats != nil {
 		fromAddrStats.NumTxSent += 1
-		fromAddrStats.ValueSentWei = big.NewInt(0).Add(fromAddrStats.ValueSentWei, tx.Value())
-		fromAddrStats.ValueSentEth = WeiToEth(fromAddrStats.ValueSentWei).Text('f', 2)
+		fromAddrStats.ValueSentWei = new(big.Int).Add(fromAddrStats.ValueSentWei, tx.Value())
 	}
 
 	// Check for smart contract calls: token transfer
@@ -214,6 +222,15 @@ func (result *AnalysisResult) AddTransaction(tx *types.Transaction, client *ethc
 	if len(data) > 0 {
 		result.NumTransactionsWithData += 1
 		toAddrStats.NumTxWithData += 1
+
+		// If no gas price, then it's probably a MEV/Flashbots tx
+		if tx.GasPrice().Uint64() == 0 {
+			result.NumMevTransactions += 1
+			fromAddrStats.NumTxMev += 1
+			if GetConfig().DebugPrintMevTx {
+				fmt.Printf("MEV tx: https://etherscan.io/tx/%s\n", tx.Hash())
+			}
+		}
 
 		if len(data) > 4 {
 			methodId := hex.EncodeToString(data[:4])

@@ -22,9 +22,11 @@ type Config struct {
 	NumAddressesByNumTxReceived    int
 	NumAddressesByNumTokenTransfer int
 
-	Debug         bool
-	CheckTxStatus bool
-	HideOutput    bool
+	// Debug helpers
+	Debug           bool
+	CheckTxStatus   bool
+	HideOutput      bool
+	DebugPrintMevTx bool
 }
 
 func (c Config) String() string {
@@ -104,9 +106,10 @@ func GetConfig() *Config {
 		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
 		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
 
-		Debug:         getEnvBool("DEBUG", false),
-		CheckTxStatus: getEnvBool("CHECK_TX_STATUS", true),
-		HideOutput:    getEnvBool("HIDE_OUTPUT", false),
+		Debug:           getEnvBool("DEBUG", false),
+		CheckTxStatus:   getEnvBool("CHECK_TX_STATUS", true),
+		HideOutput:      getEnvBool("HIDE_OUTPUT", false),
+		DebugPrintMevTx: getEnvBool("MEV", false),
 	}
 
 	return config
