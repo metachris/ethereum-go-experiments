@@ -26,13 +26,12 @@ type Config struct {
 
 	// Debug helpers
 	Debug           bool
-	CheckTxStatus   bool
 	HideOutput      bool
 	DebugPrintMevTx bool
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d, debug=%t, checkTx=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer, c.Debug, c.CheckTxStatus)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d, debug=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer, c.Debug)
 }
 
 type PostgresConfig struct {
@@ -108,10 +107,9 @@ func GetConfig() *Config {
 		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
 		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
 
-		NumTopTransactions: getEnvInt("NUM_TOP_TX", 50),
+		NumTopTransactions: getEnvInt("NUM_TOP_TX", 20),
 
 		Debug:           getEnvBool("DEBUG", false),
-		CheckTxStatus:   getEnvBool("CHECK_TX_STATUS", true),
 		HideOutput:      getEnvBool("HIDE_OUTPUT", false),
 		DebugPrintMevTx: getEnvBool("MEV", false),
 	}

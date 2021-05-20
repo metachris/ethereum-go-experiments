@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -55,7 +56,15 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 }
 
 func WeiBigIntToEthString(wei *big.Int, decimals int) string {
-	return WeiToEth(wei).Text('f', decimals)
+	output := WeiToEth(wei).Text('f', decimals)
+	// return s
+
+	dotIndex := strings.Index(output, ".")
+	for outputIndex := dotIndex; outputIndex > 3; {
+		outputIndex -= 3
+		output = output[:outputIndex] + "," + output[outputIndex:]
+	}
+	return output
 }
 
 func WeiUintToEth(wei uint64) (ethValue float64) {

@@ -36,7 +36,7 @@ const (
 	AddressTypeErc721        AddressType = "Erc721"
 	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
 	AddressTypeOtherContract AddressType = "OtherContract"
-	AddressTypePubkey        AddressType = "-" // nothing else detected, probably just a wallet
+	AddressTypePubkey        AddressType = "Wallet" // nothing else detected, probably just a wallet
 )
 
 type AddressDetail struct {
@@ -77,7 +77,7 @@ const ( // iota is reset to 0
 const FN_JSON_TOKENS string = "data/tokens.json"
 const FN_JSON_ADDRESSES string = "data/addresses.json"
 
-var AllAddressesFromJson = GetAddressDetailMap(DATASET_BOTH)
+var AddressDetailCache = GetAddressDetailMap(DATASET_BOTH)
 
 func getDatasetFromJson(filename string) []AddressDetail {
 	fn, _ := filepath.Abs(filename)
@@ -98,6 +98,7 @@ func getDatasetFromJson(filename string) []AddressDetail {
 
 	// type field is not mandatory In JSON. Use wallet as default.
 	for i, v := range addressDetails {
+		addressDetails[i].Address = strings.ToLower(addressDetails[i].Address)
 		if v.Type == "" {
 			addressDetails[i].Type = AddressTypePubkey
 		}
@@ -228,31 +229,44 @@ func IsErc20(address string, client *ethclient.Client) (isErc20 bool, detail Add
 	return true, detail
 }
 
-func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) AddressDetail {
+func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) (detail AddressDetail, found bool) {
 	ret := NewAddressDetail(address)
 
 	if isErc721, detail := IsErc721(address, client); isErc721 {
-		return detail
+		return detail, true
 	}
 
 	if isErc20, detail := IsErc20(address, client); isErc20 {
-		return detail
+		return detail, true
 	}
 
 	if IsContract(address, client) {
 		ret.Type = AddressTypeOtherContract
-		return ret
+		return ret, true
 	}
 
 	ret.Type = AddressTypePubkey
-	return ret
+	return ret, false
 }
 
 // GetAddressDetail returns the AddressDetail from JSON. If not exists then query the Blockchain
-func GetAddressDetail(address string, client *ethclient.Client) AddressDetail {
-	addr, found := AllAddressesFromJson[strings.ToLower(address)]
+func GetAddressDetail(address string, client *ethclient.Client) (detail AddressDetail, found bool) {
+	addr, found := AddressDetailCache[strings.ToLower(address)]
 	if found {
-		return addr
+		return addr, true
 	}
-	return GetAddressDetailFromBlockchain(address, client)
+
+	if client == nil {
+		return NewAddressDetail(address), false
+	}
+
+	detail, found = GetAddressDetailFromBlockchain(address, client)
+	if found {
+		AddAddressDetailToCache(detail)
+	}
+	return detail, found
+}
+
+func AddAddressDetailToCache(detail AddressDetail) {
+	AddressDetailCache[strings.ToLower(detail.Address)] = detail
 }

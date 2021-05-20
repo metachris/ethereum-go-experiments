@@ -5,6 +5,7 @@ import (
 	"ethstats/ethtools"
 	"fmt"
 	"math"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -24,6 +25,7 @@ func TxTest() {
 	ethtools.Perror(err)
 	fee := float64((receipt.GasUsed * tx.GasPrice().Uint64())) / math.Pow10(18)
 	fmt.Println(receipt.GasUsed, tx.GasPrice(), fee)
+	fmt.Println(tx.Hash().Hex())
 }
 
 // func GetBlockWithTxReceipts(client *ethclient.Client, wg *sync.WaitGroup, height *big.Int) (res ethtools.BlockWithTxReceipts) {
@@ -72,9 +74,44 @@ func TxTest() {
 // 	fmt.Printf("Finished in (%.3fs)\n", timeNeeded.Seconds())
 // }
 
+const maxEntries = 5
+
+type Test struct {
+	lists map[string][]int
+}
+
+func (test *Test) Add1(key string, val int) { // test lists are already sorted
+	if _, ok := test.lists[key]; !ok {
+		test.lists[key] = make([]int, 5)
+	}
+
+	if test.lists[key][len(test.lists[key])-1] < val {
+		test.lists[key][len(test.lists[key])-1] = val
+	}
+
+	sort.Sort(sort.Reverse(sort.IntSlice((test.lists[key]))))
+	fmt.Println("3", test.lists[key])
+
+	// test.lists[key][0] = val
+	// list, _ := test.lists[key]
+
+}
+
 func main() {
 	// resetPtr := flag.Bool("reset", false, "reset database")
 	// flag.Parse()
 	// TestBlockWithTxReceipts()
-	fmt.Println(math.Pow10(0))
+
+	TxTest()
+
+	// fmt.Println(math.Pow10(0))
+	// t := Test{
+	// 	lists: make(map[string][]int),
+	// }
+
+	// for i := 0; i < 10; i++ {
+	// 	t.Add1("foo", i)
+	// }
+
+	// fmt.Println(t.lists["foo"])
 }

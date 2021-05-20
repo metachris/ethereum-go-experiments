@@ -149,6 +149,13 @@ func main() {
 	// }
 }
 
+func printTopTx(msg string, txList []ethtools.TxStats) {
+	fmt.Println(msg)
+	for _, v := range txList {
+		fmt.Println(v)
+	}
+}
+
 // Processes a raw result into the export data structure, and prints the stats to stdout
 func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
@@ -162,27 +169,34 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc20 transfer: %7d \t %.2f%%\n", result.NumTransactionsErc20Transfer, (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc721 transfer:%7d \t %.2f%%\n", result.NumTransactionsErc721Transfer, (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- MEV: ok %d \t fail %d\n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
+	fmt.Printf("- MEV:         ok %d \t fail %d\n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
 	fmt.Println("")
 
-	// ETH value transferred
-	ethValue := ethtools.WeiToEth(result.ValueTotalWei)
-	result.ValueTotalEth = ethValue.Text('f', 2)
-
 	fmt.Println("Total addresses:", len(result.Addresses))
-	fmt.Println("Total value transferred:", ethValue.Text('f', 2), "ETH")
+	fmt.Println("Total value transferred:", ethtools.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
 
-	addressWithName := func(detail ethtools.AddressDetail) string {
+	printTopTx("\nTop transactions by gas-fee", result.TopTransactions.GasFee)
+	printTopTx("\nTop transactions by value", result.TopTransactions.Value)
+	printTopTx("\nTop transactions by most data", result.TopTransactions.DataSize)
+
+	addressWithName := func(address string) string {
+		detail, _ := ethtools.GetAddressDetail(address, nil)
 		return fmt.Sprintf("%s %-28s", detail.Address, detail.Name)
 	}
 
 	/* SORT BY TOKEN_TRANSFERS */
 	fmt.Println("")
-	fmt.Printf("Top %d addresses by token-transfers\n", len(result.TopAddresses.NumErc20TransfersReceived))
+	fmt.Printf("Top %d addresses by erc20 received\n", len(result.TopAddresses.NumErc20TransfersReceived))
 	for _, v := range result.TopAddresses.NumErc20TransfersReceived {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-		fmt.Printf("%s \t %8d token transfers \t %8d tx \t %32v \t %s\n", addressWithName(v.AddressDetail), v.NumTxErc20TransferReceived, v.NumTxReceivedSuccess, tokenAmount, v.AddressDetail.Type)
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v \t %s\n", addressWithName(v.Address), v.NumTxErc20TransferReceived, v.NumTxReceivedSuccess, tokenAmount, v.AddressDetail.Type)
+	}
+
+	fmt.Println("")
+	fmt.Printf("Top %d addresses by erc20 sent\n", len(result.TopAddresses.NumErc20TransfersSent))
+	for _, v := range result.TopAddresses.NumErc20TransfersSent {
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \n", addressWithName(v.Address), v.NumTxErc20TransferSent, v.NumTxSentSuccess)
 	}
 
 	if ethtools.GetConfig().HideOutput {

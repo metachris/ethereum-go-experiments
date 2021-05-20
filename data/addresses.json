@@ -40,10 +40,6 @@
         "address": "0x85b931A32a0725Be14285B66f1a22178c672d69B"
     },
     {
-        "name": "Binance",
-        "address": "0xF977814e90dA44bFA03b6295A0616a897441aceC"
-    },
-    {
         "name": "Kraken",
         "address": "0xFa52274DD61E1643d2205169732f29114BC240b3"
     },
@@ -76,10 +72,6 @@
         "address": "0xA7EFAe728D2936e78BDA97dc267687568dD593f3"
     },
     {
-        "name": "Nexo: WBTC Merchant Deposit Address",
-        "address": "0x65b0BF8Ee4947edD2A500D74E50a3d757DC79de0"
-    },
-    {
         "name": "MetaMask Dex",
         "type": "OtherContract",
         "address": "0x881D40237659C251811CEC9c364ef91dC08D300C",
@@ -87,20 +79,7 @@
     },
     {
         "name": "Eth2 Depositor",
+        "type": "OtherContract",
         "address": "0x27D71A464Da941118A4E056D0737274aA308a923"
-    },
-    {
-        "name": "Gemini",
-        "address": "0xd24400ae8BfEBb18cA49Be86258a3C749cf46853"
-    },
-    {
-        "name": "1inch V3",
-        "type": "OtherContract",
-        "address": "0x11111112542D85B3EF69AE05771c2dCCff4fAa26"
-    },
-    {
-        "name": "0x: Exchange Proxy",
-        "type": "OtherContract",
-        "address": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF"
     }
 ]
