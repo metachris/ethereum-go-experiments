@@ -60,7 +60,7 @@ func (a *AddressDetail) IsErc20() bool {
 }
 
 func (a *AddressDetail) IsErc721() bool {
-	return a.Type != AddressTypeErc721
+	return a.Type == AddressTypeErc721
 }
 
 // Returns a new unknown address detail
