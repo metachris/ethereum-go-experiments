@@ -190,22 +190,22 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total value transferred:", ethtools.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
 	fmt.Println("Total gas fees:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
 
-	// if ethtools.GetConfig().HideOutput {
-	// 	fmt.Println("End because of config.HideOutput")
-	// 	return
-	// }
+	if ethtools.GetConfig().HideOutput {
+		fmt.Println("End because of config.HideOutput")
+		return
+	}
 
-	// printTopTx("\nTop transactions by gas-fee", result.TopTransactions.GasFee)
-	// printTopTx("\nTop transactions by value", result.TopTransactions.Value)
-	// printTopTx("\nTop transactions by most data", result.TopTransactions.DataSize)
+	printTopTx("\nTop transactions by gas-fee", result.TopTransactions.GasFee)
+	printTopTx("\nTop transactions by value", result.TopTransactions.Value)
+	printTopTx("\nTop transactions by most data", result.TopTransactions.DataSize)
 
-	// fmt.Println("")
-	// fmt.Printf("Top %d addresses by erc20 received\n", len(result.TopAddresses.NumTxErc20Received))
-	// for _, v := range result.TopAddresses.NumTxErc20Received {
-	// 	tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
-	// 	tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Received, v.NumTxReceivedSuccess, tokenAmount)
-	// }
+	fmt.Println("")
+	fmt.Printf("Top %d addresses by erc20 received\n", len(result.TopAddresses.NumTxErc20Received))
+	for _, v := range result.TopAddresses.NumTxErc20Received {
+		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
+		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Received, v.NumTxReceivedSuccess, tokenAmount)
+	}
 
 	// fmt.Println("")
 	// fmt.Printf("Top %d addresses by erc20 sent\n", len(result.TopAddresses.NumTxErc20Sent))
@@ -219,12 +219,12 @@ func printResult(result *ethtools.AnalysisResult) {
 		fmt.Printf("%s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
-	// printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
-	// printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
-	// printTopAddr("\nTop addresses by value received", result.TopAddresses.ValueReceived, 0)
-	// printTopAddr("\nTop addresses by value sent", result.TopAddresses.ValueSent, 0)
-	// printTopAddr("\nTop addresses by failed tx received", result.TopAddresses.NumTxReceivedFailed, 0)
-	// printTopAddr("\nTop addresses by failed tx sent", result.TopAddresses.NumTxSentFailed, 0)
+	printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
+	printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
+	printTopAddr("\nTop addresses by value received", result.TopAddresses.ValueReceived, 0)
+	printTopAddr("\nTop addresses by value sent", result.TopAddresses.ValueSent, 0)
+	printTopAddr("\nTop addresses by failed tx received", result.TopAddresses.NumTxReceivedFailed, 0)
+	printTopAddr("\nTop addresses by failed tx sent", result.TopAddresses.NumTxSentFailed, 0)
 }
 
 func formatBigFloat(number *big.Float) string {

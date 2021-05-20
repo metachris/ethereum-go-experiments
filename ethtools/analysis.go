@@ -330,9 +330,6 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 			result.TopAddresses.NumTxReceivedFailed = append(result.TopAddresses.NumTxReceivedFailed, _addresses[i])
 		}
 	}
-	// for i, v := range result.TopAddresses.NumTxReceivedFailed {
-	// fmt.Println(i, v.Address, v.NumTxReceivedFailed)
-	// }
 
 	// erc721 sent
 	sort.SliceStable(_addresses, func(i, j int) bool {
@@ -349,11 +346,10 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	sort.SliceStable(_addresses, func(i, j int) bool {
 		return _addresses[i].NumTxErc721Received > _addresses[j].NumTxErc721Received
 	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
+	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
 		if _addresses[i].NumTxErc721Received > 0 {
 			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumTxErc721Received = append(result.TopAddresses.NumTxErc721Received, _addresses[i])
-			fmt.Println(_addresses[i].NumTxErc721Received)
 		}
 	}
 
