@@ -86,3 +86,15 @@ func DebugPrintln(a ...interface{}) {
 		_, _ = fmt.Println(a...)
 	}
 }
+
+// // Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
+// // Updates from blockchain if not already has
+func GetErc20TokensInUnit(numTokens *big.Int, addrDetail AddressDetail) (amount *big.Float, symbol string) {
+	tokensFloat := new(big.Float).SetInt(numTokens)
+
+	decimals := int(addrDetail.Decimals)
+	divider := math.Pow10(decimals)
+
+	amount = new(big.Float).Quo(tokensFloat, big.NewFloat(divider))
+	return amount, addrDetail.Symbol
+}

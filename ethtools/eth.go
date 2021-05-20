@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"math/big"
 	"sort"
 	"sync"
@@ -25,45 +24,52 @@ type AddressStats struct {
 	Address       string
 	AddressDetail AddressDetail
 
-	NumTxSent           int
-	NumTxReceived       int
-	NumFailedTxSent     int
-	NumFailedTxReceived int
+	NumTxSentSuccess     int
+	NumTxSentFailed      int
+	NumTxReceivedSuccess int
+	NumTxReceivedFailed  int
 
-	NumTxWithData                int
-	NumTxTokenTransfer           int
-	NumTxTokenMethodTransfer     int
-	NumTxTokenMethodTransferFrom int
-	NumTxMev                     int
+	NumTxMevSent          int
+	NumTxMevReceived      int
+	NumTxWithDataSent     int
+	NumTxWithDataReceived int
+
+	NumTxErc20TransferSent      int
+	NumTxErc20TransferReceived  int
+	NumTxErc721TransferSent     int
+	NumTxErc721TransferReceived int
 
 	ValueSentWei     *big.Int
 	ValueReceivedWei *big.Int
 
-	TokensTransferred *big.Int // SC volume in raw int units
-	GasUsed           *big.Int
-	GasFeeTotal       *big.Int
+	Erc20TokensSent     *big.Int
+	Erc20TokensReceived *big.Int
+
+	GasUsed        *big.Int
+	GasFeeTotal    *big.Int
+	GasFeeFailedTx *big.Int
 }
 
-// Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
-// Updates from blockchain if not already has
-func (stats *AddressStats) TokensTransferredInUnit(client *ethclient.Client) (amount *big.Float, symbol string) {
-	tokensTransferredFloat := new(big.Float).SetInt(stats.TokensTransferred)
+// // Returns the token amount in the correct unit. Eg. USDC has 6 decimals. 12345678 -> 12.345678
+// // Updates from blockchain if not already has
+// func (stats *AddressStats) TokensTransferredInUnit(client *ethclient.Client) (amount *big.Float, symbol string) {
+// 	tokensTransferredFloat := new(big.Float).SetInt(stats.TokensTransferred)
 
-	stats.EnsureAddressDetails(client)
+// 	stats.EnsureAddressDetails(client)
 
-	if stats.AddressDetail.IsErc20() {
-		decimals := uint64(stats.AddressDetail.Decimals)
-		divider := float64(1)
-		if decimals > 0 {
-			divider = float64(math.Pow(10, float64(decimals)))
-		}
+// 	if stats.AddressDetail.IsErc20() {
+// 		decimals := uint64(stats.AddressDetail.Decimals)
+// 		divider := float64(1)
+// 		if decimals > 0 {
+// 			divider = float64(math.Pow(10, float64(decimals)))
+// 		}
 
-		amount := new(big.Float).Quo(tokensTransferredFloat, big.NewFloat(divider))
-		return amount, stats.AddressDetail.Symbol
-	} else {
-		return tokensTransferredFloat, ""
-	}
-}
+// 		amount := new(big.Float).Quo(tokensTransferredFloat, big.NewFloat(divider))
+// 		return amount, stats.AddressDetail.Symbol
+// 	} else {
+// 		return tokensTransferredFloat, ""
+// 	}
+// }
 
 func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
 	if !stats.AddressDetail.IsLoaded() && client != nil {
@@ -73,25 +79,34 @@ func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
 
 func NewAddressStats(address string) *AddressStats {
 	return &AddressStats{
-		Address:           address,
-		AddressDetail:     NewAddressDetail(address),
-		ValueSentWei:      new(big.Int),
-		ValueReceivedWei:  new(big.Int),
-		TokensTransferred: new(big.Int),
-		GasUsed:           new(big.Int),
-		GasFeeTotal:       new(big.Int),
+		Address:             address,
+		AddressDetail:       NewAddressDetail(address),
+		ValueSentWei:        new(big.Int),
+		ValueReceivedWei:    new(big.Int),
+		Erc20TokensSent:     new(big.Int),
+		Erc20TokensReceived: new(big.Int),
+		GasUsed:             new(big.Int),
+		GasFeeTotal:         new(big.Int),
+		GasFeeFailedTx:      new(big.Int),
 	}
 }
 
 type TopAddressData struct {
-	ValueReceived     []AddressStats
-	ValueSent         []AddressStats
-	NumTxReceived     []AddressStats
-	NumTxSent         []AddressStats
-	NumTokenTransfers []AddressStats
+	ValueSent     []AddressStats
+	ValueReceived []AddressStats
 
-	NumFailedTxSent     []AddressStats
-	NumFailedTxReceived []AddressStats
+	NumTxSentSuccess     []AddressStats
+	NumTxSentFailed      []AddressStats
+	NumTxReceivedSuccess []AddressStats
+	NumTxReceivedFailed  []AddressStats
+
+	NumErc20TransfersSent      []AddressStats
+	NumErc20TransfersReceived  []AddressStats
+	NumErc721TransfersSent     []AddressStats
+	NumErc721TransfersReceived []AddressStats
+
+	GasFeeTotal    []AddressStats
+	GasFeeFailedTx []AddressStats
 }
 
 type TxStats struct {
@@ -100,6 +115,7 @@ type TxStats struct {
 	GasFee   uint64
 	Value    uint64
 	DataSize uint64
+	Success  bool
 }
 
 type TopTransactionData struct {
@@ -108,13 +124,13 @@ type TopTransactionData struct {
 	LargestData   []TxStats
 }
 
-func NewTopTransactionData() *TopTransactionData {
-	return &TopTransactionData{
-		HighestGasFee: make([]TxStats, GetConfig().NumTopTransactions),
-		LargestValue:  make([]TxStats, GetConfig().NumTopTransactions),
-		LargestData:   make([]TxStats, GetConfig().NumTopTransactions),
-	}
-}
+// func NewTopTransactionData() *TopTransactionData {
+// 	return &TopTransactionData{
+// 		HighestGasFee: make([]TxStats, GetConfig().NumTopTransactions),
+// 		LargestValue:  make([]TxStats, GetConfig().NumTopTransactions),
+// 		LargestData:   make([]TxStats, GetConfig().NumTopTransactions),
+// 	}
+// }
 
 type AnalysisResult struct {
 	StartBlockNumber    int64
@@ -135,13 +151,16 @@ type AnalysisResult struct {
 	GasUsed            *big.Int
 	GasFeeTotal        *big.Int
 
-	NumTransactions                  int
-	NumTransactionsFailed            int
-	NumTransactionsWithZeroValue     int
-	NumTransactionsWithData          int
-	NumTransactionsWithTokenTransfer int
-	NumMevTransactionsSuccess        int
-	NumMevTransactionsFailed         int
+	NumTransactions              int
+	NumTransactionsFailed        int
+	NumTransactionsWithZeroValue int
+	NumTransactionsWithData      int
+
+	NumTransactionsErc20Transfer  int
+	NumTransactionsErc721Transfer int
+
+	NumMevTransactionsSuccess int
+	NumMevTransactionsFailed  int
 }
 
 func NewResult() *AnalysisResult {
@@ -184,7 +203,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist - see EIP155Signer
 	var isAddressKnown bool
 
-	// Prepare address stats for receiver of tx
+	// Prepare address stats for receiver
 	if tx.To() != nil {
 		recAddr := tx.To().String()
 		toAddrStats, isAddressKnown = result.Addresses[recAddr]
@@ -194,7 +213,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		}
 	}
 
-	// Prepare address stats for sender of tx, if exists
+	// Prepare address stats for sender
 	if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
 		fromAddressString := msg.From().Hex()
 		fromAddrStats, isAddressKnown = result.Addresses[fromAddressString]
@@ -204,9 +223,6 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		}
 	}
 
-	// log.Fatal("from addr:", fromAddrStats.Address)
-	// Check tx status
-
 	// Gas used is paid and counted no matter if transaction failed or succeeded
 	txGasUsed := big.NewInt(int64(receipt.GasUsed))
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
@@ -214,11 +230,12 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
 	result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
 
-	if receipt.Status == 0 { // failed transaction. revert stats
-		// DebugPrintln("- failed transaction, revert ", tx.Hash())
+	txSuccessful := receipt.Status == 1
+	if !txSuccessful {
 		result.NumTransactionsFailed += 1
-		fromAddrStats.NumFailedTxSent += 1
-		toAddrStats.NumFailedTxReceived += 1
+		fromAddrStats.NumTxSentFailed += 1
+		toAddrStats.NumTxReceivedFailed += 1
+		fromAddrStats.GasFeeFailedTx = new(big.Int).Add(fromAddrStats.GasFeeFailedTx, txGasFee)
 
 		// Count failed MEV tx
 		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
@@ -231,36 +248,33 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		return
 	}
 
-	// Count total value
+	// TX was successful...
 	result.ValueTotalWei = result.ValueTotalWei.Add(result.ValueTotalWei, tx.Value())
-
-	// Count number of transactions without value
-	if isBigIntZero(tx.Value()) {
-		result.NumTransactionsWithZeroValue += 1
-	}
-
-	// Count tx types
 	result.TxTypes[tx.Type()] += 1
 
-	toAddrStats.NumTxReceived += 1
+	fromAddrStats.NumTxSentSuccess += 1
+	fromAddrStats.ValueSentWei = new(big.Int).Add(fromAddrStats.ValueSentWei, tx.Value())
+
+	toAddrStats.NumTxReceivedSuccess += 1
 	toAddrStats.ValueReceivedWei = new(big.Int).Add(toAddrStats.ValueReceivedWei, tx.Value())
 
-	// Process FROM address (see https://goethereumbook.org/en/transaction-query/)
-	if fromAddrStats != nil {
-		fromAddrStats.NumTxSent += 1
-		fromAddrStats.ValueSentWei = new(big.Int).Add(fromAddrStats.ValueSentWei, tx.Value())
+	if isBigIntZero(tx.Value()) {
+		result.NumTransactionsWithZeroValue += 1
 	}
 
 	// Check for smart contract calls: token transfer
 	data := tx.Data()
 	if len(data) > 0 {
 		result.NumTransactionsWithData += 1
-		toAddrStats.NumTxWithData += 1
+		fromAddrStats.NumTxWithDataSent += 1
+		toAddrStats.NumTxWithDataReceived += 1
 
 		// If no gas price, then it's probably a MEV/Flashbots tx
 		if tx.GasPrice().Uint64() == 0 {
 			result.NumMevTransactionsSuccess += 1
-			fromAddrStats.NumTxMev += 1
+			fromAddrStats.NumTxMevSent += 1
+			toAddrStats.NumTxMevReceived += 1
+
 			if GetConfig().DebugPrintMevTx {
 				fmt.Printf("MEV ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
@@ -270,8 +284,8 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 			methodId := hex.EncodeToString(data[:4])
 			// fmt.Println(methodId)
 			if methodId == "a9059cbb" || methodId == "23b872dd" {
-				result.NumTransactionsWithTokenTransfer += 1
-				toAddrStats.NumTxTokenTransfer += 1
+				fromAddrStats.EnsureAddressDetails(client)
+				toAddrStats.EnsureAddressDetails(client)
 
 				// Calculate and store the number of tokens transferred
 				var value string
@@ -279,33 +293,39 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 				case "a9059cbb": // transfer
 					// targetAddr = hex.EncodeToString(data[4:36])
 					value = hex.EncodeToString(data[36:68])
-					toAddrStats.NumTxTokenMethodTransfer += 1
 				case "23b872dd": // transferFrom
 					// targetAddr = hex.EncodeToString(data[36:68])
 					value = hex.EncodeToString(data[68:100])
-					toAddrStats.NumTxTokenMethodTransferFrom += 1
 				}
+
 				valBigInt := new(big.Int)
 				valBigInt.SetString(value, 16)
 
-				// If number is too big, it is either an error or a erc-721 SC
-				if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeInit {
-					DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
+				if toAddrStats.AddressDetail.IsErc20() {
+					result.NumTransactionsErc20Transfer += 1
 
-					toAddrStats.EnsureAddressDetails(client)
-					// fmt.Println("type:", toAddrStats.AddressDetail.Type)
+					fromAddrStats.NumTxErc20TransferSent += 1
+					fromAddrStats.Erc20TokensSent = new(big.Int).Add(fromAddrStats.Erc20TokensSent, valBigInt)
+
+					toAddrStats.NumTxErc20TransferReceived += 1
+					toAddrStats.Erc20TokensReceived = new(big.Int).Add(toAddrStats.Erc20TokensReceived, valBigInt)
+				} else if toAddrStats.AddressDetail.IsErc721() {
+					result.NumTransactionsErc721Transfer += 1
+					fromAddrStats.NumTxErc721TransferSent += 1
+					toAddrStats.NumTxErc721TransferReceived += 1
 				}
+
+				// If number is too big, it is either an error or a erc-721 SC
+				// if len(valBigInt.String()) > 34 && toAddrStats.AddressDetail.Type == AddressTypeInit {
+				// 	DebugPrintf("warn: large value! tx: %s \t val: %s \t valBigInt: %v \n", tx.Hash(), value, valBigInt)
+
+				// 	toAddrStats.EnsureAddressDetails(client)
+				// 	// fmt.Println("type:", toAddrStats.AddressDetail.Type)
+				// }
 
 				// Increase number of tokens transferred if either ERC20 or Unknown Contract
-				if toAddrStats.AddressDetail.Type == AddressTypeErc20 || toAddrStats.AddressDetail.Type == AddressTypeInit {
-					toAddrStats.TokensTransferred = new(big.Int).Add(toAddrStats.TokensTransferred, valBigInt)
-				}
-
-				// errVal, _ := new(big.Int).SetString("1000000000000000000000000000", 10)
-				// if toAddrInfo.Address == "0x0D8775F648430679A709E98d2b0Cb6250d2887EF" {
-				// 	if valBigInt.Cmp(errVal) == 1 {
-				// 		fmt.Printf("BAT %s \t %s \t %v \t %s \t %s \n", tx.Hash(), value, valBigInt, valBigInt.String(), toAddrInfo.TokensTransferred.String())
-				// 	}
+				// if toAddrStats.AddressDetail.Type == AddressTypeErc20 || toAddrStats.AddressDetail.Type == AddressTypeInit {
+				// toAddrStats.TokensTransferred = new(big.Int).Add(toAddrStats.TokensTransferred, valBigInt)
 				// }
 			}
 		}
@@ -324,67 +344,86 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	}
 
 	// token transfers
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTokenTransfer; i++ {
-		if _addresses[i].NumTxTokenTransfer > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTokenTransfers = append(result.TopAddresses.NumTokenTransfers, _addresses[i])
+	getTopAddresses := func(target *[]AddressStats, sortFunc func(i int, j int) bool, checkFunc func(i int) bool, n int) {
+		sort.SliceStable(_addresses, sortFunc)
+		for i := 0; i < len(_addresses) && i < n; i++ {
+			if checkFunc(i) {
+				_addresses[i].EnsureAddressDetails(client)
+				*target = append(*target, _addresses[i])
+			}
 		}
 	}
 
-	// tx received
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceived > _addresses[j].NumTxReceived })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
-		if _addresses[i].NumTxReceived > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxReceived = append(result.TopAddresses.NumTxReceived, _addresses[i])
-		}
-	}
+	getTopAddresses(
+		&result.TopAddresses.NumErc20TransfersReceived,
+		func(i, j int) bool {
+			return _addresses[i].NumTxErc20TransferReceived > _addresses[j].NumTxErc20TransferReceived
+		},
+		func(i int) bool { return _addresses[i].NumTxErc20TransferReceived > 0 },
+		config.NumAddressesByNumTokenTransfer,
+	)
 
-	// tx sent
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSent > _addresses[j].NumTxSent })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
-		if _addresses[i].NumTxSent > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxSent = append(result.TopAddresses.NumTxSent, _addresses[i])
-		}
-	}
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxTokenTransfer > _addresses[j].NumTxTokenTransfer })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTokenTransfer; i++ {
+	// 	if _addresses[i].NumTxTokenTransfer > 0 {
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.NumErc20TransfersReceived = append(result.TopAddresses.NumTokenTransfers, _addresses[i])
+	// 	}
+	// }
 
-	// value received
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
-		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.ValueReceived = append(result.TopAddresses.ValueReceived, _addresses[i])
-		}
-	}
+	// // tx received
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceivedSuccess > _addresses[j].NumTxReceivedSuccess })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxReceived; i++ {
+	// 	if _addresses[i].NumTxReceivedSuccess > 0 {
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.NumTxReceived = append(result.TopAddresses.NumTxReceived, _addresses[i])
+	// 	}
+	// }
 
-	// value sent
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
-		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
-		}
-	}
+	// // tx sent
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentSuccess > _addresses[j].NumTxSentSuccess })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByNumTxSent; i++ {
+	// 	if _addresses[i].NumTxSentSuccess > 0 {
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.NumTxSent = append(result.TopAddresses.NumTxSent, _addresses[i])
+	// 	}
+	// }
 
-	// failed tx received
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxReceived > _addresses[j].NumFailedTxReceived })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
-		if _addresses[i].NumFailedTxReceived > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumFailedTxReceived = append(result.TopAddresses.NumFailedTxReceived, _addresses[i])
-		}
-	}
+	// // value received
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByValueReceived; i++ {
+	// 	if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.ValueReceived = append(result.TopAddresses.ValueReceived, _addresses[i])
+	// 	}
+	// }
 
-	// failed tx sent
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxSent > _addresses[j].NumFailedTxSent })
-	for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
-		if _addresses[i].NumFailedTxSent > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumFailedTxSent = append(result.TopAddresses.NumFailedTxSent, _addresses[i])
-		}
-	}
+	// // value sent
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+	// 	if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
+	// 	}
+	// }
+
+	// // failed tx received
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumFailedTxReceived > _addresses[j].NumFailedTxReceived })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+	// 	if _addresses[i].NumFailedTxReceived > 0 {
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.NumFailedTxReceived = append(result.TopAddresses.NumFailedTxReceived, _addresses[i])
+	// 	}
+	// }
+
+	// // failed tx sent
+	// sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentFailed > _addresses[j].NumTxSentFailed })
+	// for i := 0; i < len(_addresses) && i < config.NumAddressesByValueSent; i++ {
+	// 	if _addresses[i].NumTxSentFailed > 0 {
+	// 		_addresses[i].EnsureAddressDetails(client)
+	// 		result.TopAddresses.NumFailedTxSent = append(result.TopAddresses.NumFailedTxSent, _addresses[i])
+	// 	}
+	// }
 }
 
 func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {
@@ -472,7 +511,7 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 	go analyzeWorker(blockChan)
 
 	timeStartBlockProcessing := time.Now()
-	for currentBlockNumber := startBlockNumber; currentBlockNumber < endBlockNumber; currentBlockNumber++ {
+	for currentBlockNumber := startBlockNumber; currentBlockNumber <= endBlockNumber; currentBlockNumber++ {
 		blockHeightChan <- currentBlockNumber
 	}
 

@@ -203,7 +203,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	analysisId := 0
 	err := db.QueryRow(
 		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id",
-		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsWithTokenTransfer, len(result.Addresses), result.GasUsed).Scan(&analysisId)
+		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsErc20Transfer, len(result.Addresses), result.GasUsed).Scan(&analysisId)
 	Perror(err)
 	fmt.Println("Analysis ID:", analysisId)
 
@@ -228,11 +228,11 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		}
 
 		// Add address-stats entry now
-		valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
-		valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
-		tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
-		db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
-			analysisId, strings.ToLower(addr.Address), addr.NumTxSent, addr.NumTxReceived, addr.NumFailedTxSent, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
+		// valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
+		// valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
+		// tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
+		// db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
+		// 	analysisId, strings.ToLower(addr.Address), addr.NumTxSentSuccess, addr.NumTxReceivedSuccess, addr.NumTxSentFailed, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
 	}
 
 	// Setup worker pool
@@ -253,40 +253,40 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	}
 
 	fmt.Println("Saving addresses and stats...")
-	fmt.Printf("- Tokens transferred: %d\n", len(result.TopAddresses.NumTokenTransfers))
-	for _, addr := range result.TopAddresses.NumTokenTransfers {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Tokens transferred: %d\n", len(result.TopAddresses.NumTokenTransfers))
+	// for _, addr := range result.TopAddresses.NumTokenTransfers {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Num tx received: %d\n", len(result.TopAddresses.NumTxReceived))
-	for _, addr := range result.TopAddresses.NumTxReceived {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Num tx received: %d\n", len(result.TopAddresses.NumTxReceived))
+	// for _, addr := range result.TopAddresses.NumTxReceived {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Num tx sent: %d\n", len(result.TopAddresses.NumTxSent))
-	for _, addr := range result.TopAddresses.NumTxSent {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Num tx sent: %d\n", len(result.TopAddresses.NumTxSent))
+	// for _, addr := range result.TopAddresses.NumTxSent {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Value received: %d\n", len(result.TopAddresses.ValueReceived))
-	for _, addr := range result.TopAddresses.ValueReceived {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Value received: %d\n", len(result.TopAddresses.ValueReceived))
+	// for _, addr := range result.TopAddresses.ValueReceived {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Value sent: %d\n", len(result.TopAddresses.ValueSent))
-	for _, addr := range result.TopAddresses.ValueSent {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Value sent: %d\n", len(result.TopAddresses.ValueSent))
+	// for _, addr := range result.TopAddresses.ValueSent {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Failed tx received: %d\n", len(result.TopAddresses.NumFailedTxReceived))
-	for _, addr := range result.TopAddresses.NumFailedTxReceived {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Failed tx received: %d\n", len(result.TopAddresses.NumFailedTxReceived))
+	// for _, addr := range result.TopAddresses.NumFailedTxReceived {
+	// 	addressInfoQueue <- addr
+	// }
 
-	fmt.Printf("- Failed tx sent: %d\n", len(result.TopAddresses.NumFailedTxSent))
-	for _, addr := range result.TopAddresses.NumFailedTxSent {
-		addressInfoQueue <- addr
-	}
+	// fmt.Printf("- Failed tx sent: %d\n", len(result.TopAddresses.NumFailedTxSent))
+	// for _, addr := range result.TopAddresses.NumFailedTxSent {
+	// 	addressInfoQueue <- addr
+	// }
 
 	fmt.Println("Waiting for workers to finish...")
 	close(addressInfoQueue)
