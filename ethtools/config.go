@@ -16,13 +16,9 @@ type Config struct {
 	WebserverHost string
 	WebserverPort int
 
-	NumAddressesByValueSent        int
-	NumAddressesByValueReceived    int
-	NumAddressesByNumTxSent        int
-	NumAddressesByNumTxReceived    int
-	NumAddressesByNumTokenTransfer int
-
-	NumTopTransactions int
+	NumTopAddresses      int
+	NumTopAddressesLarge int
+	NumTopTransactions   int
 
 	// Debug helpers
 	Debug           bool
@@ -31,7 +27,7 @@ type Config struct {
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d/%d/%d/%d, debug=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumAddressesByValueSent, c.NumAddressesByValueReceived, c.NumAddressesByNumTxSent, c.NumAddressesByNumTxReceived, c.NumAddressesByNumTokenTransfer, c.Debug)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d, debug=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumTopAddresses, c.NumTopAddressesLarge, c.Debug)
 }
 
 type PostgresConfig struct {
@@ -101,13 +97,9 @@ func GetConfig() *Config {
 		EthNode:         getEnvStr("ETH_NODE", ""),
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
-		NumAddressesByValueSent:        getEnvInt("NUM_ADDR_VALUE_SENT", 25),
-		NumAddressesByValueReceived:    getEnvInt("NUM_ADDR_VALUE_RECEIVED", 25),
-		NumAddressesByNumTxSent:        getEnvInt("NUM_ADDR_NUM_TX_SENT", 25),
-		NumAddressesByNumTxReceived:    getEnvInt("NUM_ADDR_NUM_TX_RECEIVED", 25),
-		NumAddressesByNumTokenTransfer: getEnvInt("NUM_ADDR_NUM_TOKEN_TRANSFER", 100),
-
-		NumTopTransactions: getEnvInt("NUM_TOP_TX", 20),
+		NumTopAddresses:      getEnvInt("NUM_TOP_ADDR", 25),
+		NumTopAddressesLarge: getEnvInt("NUM_TOP_ADDR_L", 100),
+		NumTopTransactions:   getEnvInt("NUM_TOP_TX", 20),
 
 		Debug:           getEnvBool("DEBUG", false),
 		HideOutput:      getEnvBool("HIDE_OUTPUT", false),
