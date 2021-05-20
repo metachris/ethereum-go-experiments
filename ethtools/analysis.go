@@ -323,13 +323,16 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 	}
 
 	// tx received:fail
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentFailed > _addresses[j].NumTxSentFailed })
+	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceivedFailed > _addresses[j].NumTxReceivedFailed })
 	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxSentFailed > 0 {
+		if _addresses[i].NumTxReceivedFailed > 0 {
 			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxSentFailed = append(result.TopAddresses.NumTxSentFailed, _addresses[i])
+			result.TopAddresses.NumTxReceivedFailed = append(result.TopAddresses.NumTxReceivedFailed, _addresses[i])
 		}
 	}
+	// for i, v := range result.TopAddresses.NumTxReceivedFailed {
+	// fmt.Println(i, v.Address, v.NumTxReceivedFailed)
+	// }
 
 	// erc721 sent
 	sort.SliceStable(_addresses, func(i, j int) bool {
