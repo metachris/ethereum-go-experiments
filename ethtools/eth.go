@@ -13,9 +13,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// GetBlockWithTxReceipts downloads a block and receipts for all transactions
 func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {
-	// fmt.Println("getBlockWithTxReceipts", height)
-
 	var err error
 	if client == nil {
 		client, err = ethclient.Dial(GetConfig().EthNode)
@@ -31,10 +30,10 @@ func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWi
 		res.txReceipts[tx.Hash()] = receipt
 	}
 
-	// fmt.Println(height, len(res.txReceipts))
 	return res
 }
 
+// GetBlockWithTxReceiptsWorker creates a geth connection, listens for blockHeights and fetches block with all tx receipts
 func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int64, blockChan chan<- *BlockWithTxReceipts) {
 	defer wg.Done()
 
@@ -57,7 +56,7 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 
 	// start block fetcher pool
 	var blockWorkerWg sync.WaitGroup
-	for w := 1; w <= 5; w++ {
+	for w := 1; w <= 10; w++ {
 		blockWorkerWg.Add(1)
 		go GetBlockWithTxReceiptsWorker(&blockWorkerWg, blockHeightChan, blockChan)
 	}
@@ -73,9 +72,11 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 		}
 	}
 
+	// Set the analyzer lock, to wait until it's done processing all blocks
 	analyzeLock.Lock()
 	go analyzeWorker(blockChan)
 
+	// Add block heights to worker queue
 	timeStartBlockProcessing := time.Now()
 	for currentBlockNumber := startBlockNumber; currentBlockNumber <= endBlockNumber; currentBlockNumber++ {
 		blockHeightChan <- currentBlockNumber
@@ -87,7 +88,7 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 
 	fmt.Println("Waiting for Analysis workers...")
 	close(blockChan)
-	analyzeLock.Lock() // try to get lock again
+	analyzeLock.Lock()
 
 	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
 	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))
@@ -98,13 +99,9 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 	timeNeededSort := time.Since(timeStartSort)
 	fmt.Printf("Sorting done (%.3fs)\n", timeNeededSort.Seconds())
 
+	// Update address details for top transactions
 	result.UpdateTxAddressDetails(client)
 
-	// // Ensure top addresses have details from blockchain
-	// timeStartUpdateAddresses := time.Now()
-	// result.EnsureAddressDetails(client)
-	// timeNeededUpdateAddresses := time.Since(timeStartUpdateAddresses)
-	// fmt.Printf("Updating addresses done (in %.3fs)\n", timeNeededUpdateAddresses.Seconds())
 	return result
 }
 

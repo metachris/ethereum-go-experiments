@@ -195,12 +195,16 @@ func printResult(result *ethtools.AnalysisResult) {
 		return
 	}
 
-	printTopTx("\nTop transactions by gas-fee", result.TopTransactions.GasFee)
-	printTopTx("\nTop transactions by value", result.TopTransactions.Value)
-	printTopTx("\nTop transactions by most data", result.TopTransactions.DataSize)
+	fmt.Println("\nTransactions")
+	fmt.Println("----------------")
+	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
+	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
+	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
 
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by erc20 received\n", len(result.TopAddresses.NumTxErc20Received))
+	fmt.Println("\nAddresses")
+	fmt.Println("-------------")
+
+	fmt.Printf("\nTop %d addresses by ERC20 received\n", len(result.TopAddresses.NumTxErc20Received))
 	for _, v := range result.TopAddresses.NumTxErc20Received {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
@@ -214,7 +218,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	// }
 
 	fmt.Println("")
-	fmt.Printf("Top %d addresses by erc721 received\n", len(result.TopAddresses.NumTxErc721Received))
+	fmt.Printf("Top %d addresses by ERC721 received\n", len(result.TopAddresses.NumTxErc721Received))
 	for _, v := range result.TopAddresses.NumTxErc721Received {
 		fmt.Printf("%s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}

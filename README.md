@@ -1,17 +1,23 @@
 Generate Ethereum stats for blocks, transactions and addresses.
 
-Example output: https://gist.github.com/metachris/33a78289512c60112ed5ebd570c03aa4
+Example output
+
+* 
+* https://gist.github.com/metachris/33a78289512c60112ed5ebd570c03aa4
 
 Features
 
-* Iterate over block ranges and date ranges
-* Collect stats for ETH value sent, gas fees, failed transactions, erc20 transfers, ...
-* Output analysis as text, JSON, and Postgres DB
+* Iterates over block ranges and date ranges
+* Collects statistics for top addresses and transactions (by ETH value sent, gas fees, failed transactions, erc20 transfers, ...)
+* Output analysis as text, JSON, and Postgres database
 
-Notes:
+Notes
 
-* Needs high-throughput IPC access to geth. You should run this code on the same machine as the geth instance.
-* This code is a prototype and things still change frequently.
+* Loading blocks with receipts for each transaction does a lot of API calls to the Ethereum node (1 per block and 1 for each transaction). 
+  For full statistics, you should run this code on the same machine as the geth instance and use the IPC interface. 
+* This code is a prototype and changes frequently. Also, I'm not a Go expert and this codebase probably doesn't follow many best practices.
+  I'm open to suggestions and improvements!
+
 
 ## Geting started
 
@@ -49,6 +55,7 @@ Notes:
 
 ## To do
 
+* 
 * MEV/flashbots tx: some pay miners, some not?
   * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
   * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
