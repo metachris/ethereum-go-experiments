@@ -1,9 +1,6 @@
 Generate Ethereum stats for blocks, transactions and addresses.
 
-Example output
-
-* 
-* https://gist.github.com/metachris/33a78289512c60112ed5ebd570c03aa4
+Example: [Analysis output for 2021-05-20](https://gist.githubusercontent.com/metachris/ee2b0163e3ba7cf2602d58a2eacadcd7/raw/c2e7cdb1e787314e45fa69cd859456e90d49ce66/eth-2021-05-20.txt)
 
 Features
 
@@ -52,17 +49,19 @@ Notes:
 
 ---
 
-
 ## To do
 
-* 
+* For ERC20 and ERC721 token transfers: count sender, SC and receiver (currently only sender and SC is counted)
 * MEV/flashbots tx: some pay miners, some not?
   * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
   * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
+* Save result to database
+* Save output as HTML
+* Search for "todo"
 
 Maybe?
 
-* Search for "todo"
+* Analyze receipt SC logs for more event stats (eg. Uniswap 'swap')
 * Save results for 1h granularity, add up for daily stats?
 * Speeding up things?
   * Maybe paralellize processing single blocks, and merging the individual results.
@@ -70,6 +69,12 @@ Maybe?
 * Add blocks in own goroutine (not in main routine and not one per block)
 * Tests
   * contract type detection
+
+---
+
+Interesting public functions
+
+* Get block at timestamp
 
 ---
 

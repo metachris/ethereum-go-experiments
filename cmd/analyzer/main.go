@@ -102,7 +102,7 @@ func main() {
 		startTime := ethtools.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
-		startBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, false)
+		startBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
 		startBlockHeight = startBlockHeader.Number.Int64()
 	}
 
@@ -116,7 +116,7 @@ func main() {
 		startTimestamp := startTime.Unix()
 		endTimestamp := startTimestamp + int64(timespanSec)
 		fmt.Printf("endTime:   %d / %v ... ", endTimestamp, time.Unix(endTimestamp, 0).UTC())
-		endBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, endTimestamp, false)
+		endBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
 		endBlockHeight = endBlockHeader.Number.Int64() - 1
 	} else {
 		endBlockHeight = startBlockHeight
@@ -220,7 +220,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("")
 	fmt.Printf("Top %d addresses by ERC721 received\n", len(result.TopAddresses.NumTxErc721Received))
 	for _, v := range result.TopAddresses.NumTxErc721Received {
-		fmt.Printf("%s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
+		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
 	printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
