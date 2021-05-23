@@ -208,23 +208,25 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	fmt.Println("Analysis ID:", analysisId)
 
 	addAddressAndStats := func(addr AddressStats) {
-		// fmt.Println("+ stats:", addr)
-		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
-		if !foundInDb { // Not in DB, add now
-			detail, _ := GetAddressDetail(addr.Address, client)
-			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-
-		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
-			detail, _ := GetAddressDetail(addr.Address, client)
-			db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-		}
-
-		// Avoid adding one address multiple times per analysis
+		// Ensure any address is added only once per analysis
 		var count int
 		err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, strings.ToLower(addr.Address)).Scan(&count)
 		Perror(err)
 		if count > 0 {
 			return
+		}
+
+		// Make sure address details are loaded
+		addr.EnsureAddressDetails(client)
+		detail := addr.AddressDetail
+
+		// fmt.Println("+ stats:", addr)
+		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
+		if !foundInDb { // Not in DB, add now
+			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+
+		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
+			db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
 		}
 
 		// Add address-stats entry now

@@ -183,7 +183,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc20 transfer: %7d \t %.2f%%\n", result.NumTransactionsErc20Transfer, (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc721 transfer:%7d \t %.2f%%\n", result.NumTransactionsErc721Transfer, (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- MEV:         ok %d \t fail %d\n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
+	fmt.Printf("- flashbots: %d ok \t %d failed \n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
 	fmt.Println("")
 
 	fmt.Println("Total addresses:", len(result.Addresses))
@@ -196,15 +196,15 @@ func printResult(result *ethtools.AnalysisResult) {
 	}
 
 	fmt.Println("\nTransactions")
-	fmt.Println("----------------")
+	fmt.Println("------------")
 	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
 	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
 	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
 
-	fmt.Println("\nAddresses")
-	fmt.Println("-------------")
+	fmt.Println("\nSmart Contracts")
+	fmt.Println("--------------")
 
-	fmt.Printf("\nTop %d addresses by ERC20 received\n", len(result.TopAddresses.NumTxErc20Received))
+	fmt.Printf("\nERC20: most token tranfers\n")
 	for _, v := range result.TopAddresses.NumTxErc20Received {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
@@ -217,11 +217,13 @@ func printResult(result *ethtools.AnalysisResult) {
 	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \n", addressWithName(v.Address), v.NumTxErc20Sent, v.NumTxSentSuccess)
 	// }
 
-	fmt.Println("")
-	fmt.Printf("Top %d addresses by ERC721 received\n", len(result.TopAddresses.NumTxErc721Received))
+	fmt.Printf("\nERC721: most token transfers\n")
 	for _, v := range result.TopAddresses.NumTxErc721Received {
 		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
+
+	fmt.Println("\nAddresses")
+	fmt.Println("---------")
 
 	printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
 	printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
