@@ -84,7 +84,7 @@ func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, c
 func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt) {
 	// Count receiver stats
 	var toAddrStats *AddressStats = NewAddressStats("")   // might not exist
-	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist - see EIP155Signer
+	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist
 	var isAddressKnown bool
 
 	result.AddTxToTopList(tx, receipt)
@@ -100,8 +100,8 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	}
 
 	// Prepare address stats for sender
-	if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
-		fromAddressString := msg.From().Hex()
+	if from, err := GetTxFromAddress(tx); err == nil {
+		fromAddressString := from.Hex()
 		fromAddrStats, isAddressKnown = result.Addresses[fromAddressString]
 		if !isAddressKnown {
 			fromAddrStats = NewAddressStats(fromAddressString)
@@ -216,8 +216,8 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 	}
 
 	from := NewAddressDetail("")
-	if msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId())); err == nil {
-		from = NewAddressDetail(msg.From().Hex())
+	if fromAddr, err := GetTxFromAddress(tx); err == nil {
+		from = NewAddressDetail(fromAddr.Hex())
 	}
 
 	stats := TxStats{

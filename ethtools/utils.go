@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -106,4 +107,12 @@ func GetErc20TokensInUnit(numTokens *big.Int, addrDetail AddressDetail) (amount 
 
 	amount = new(big.Float).Quo(tokensFloat, big.NewFloat(divider))
 	return amount, addrDetail.Symbol
+}
+
+func GetTxFromAddress(tx *types.Transaction) (from common.Address, err error) {
+	from, err = types.Sender(types.NewEIP155Signer(tx.ChainId()), tx)
+	if err != nil {
+		from, err = types.Sender(types.HomesteadSigner{}, tx)
+	}
+	return from, err
 }

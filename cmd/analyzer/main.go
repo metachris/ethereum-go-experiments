@@ -183,7 +183,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc20 transfer: %7d \t %.2f%%\n", result.NumTransactionsErc20Transfer, (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc721 transfer:%7d \t %.2f%%\n", result.NumTransactionsErc721Transfer, (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- flashbots: %d ok \t %d failed \n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
+	fmt.Printf("- flashbots:       %d ok, %d failed \n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
 	fmt.Println("")
 
 	fmt.Println("Total addresses:", len(result.Addresses))
