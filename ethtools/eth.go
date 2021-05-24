@@ -105,7 +105,7 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 
 	// Sort now
 	timeStartSort := time.Now()
-	result.SortTopAddresses(client)
+	result.BuildTopAddresses(client)
 	timeNeededSort := time.Since(timeStartSort)
 	fmt.Printf("Sorting & checking addresses done (%.3fs)\n", timeNeededSort.Seconds())
 

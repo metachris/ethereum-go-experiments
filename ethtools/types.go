@@ -3,6 +3,7 @@ package ethtools
 import (
 	"fmt"
 	"math/big"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -68,46 +69,19 @@ func NewAddressStats(address string) *AddressStats {
 	}
 }
 
-type TopAddressData struct {
-	ValueSent     []AddressStats
-	ValueReceived []AddressStats
+// Takes pointer to all addresses and builds a top-list
+func NewTopAddressList(allAddresses *[]AddressStats, client *ethclient.Client, numItems int, sortMethod func(i int, j int) bool, checkMethod func(a AddressStats) bool) (ret []AddressStats) {
+	ret = make([]AddressStats, 0, numItems)
+	sort.SliceStable(*allAddresses, sortMethod)
 
-	NumTxSentSuccess     []AddressStats
-	NumTxSentFailed      []AddressStats
-	NumTxReceivedSuccess []AddressStats
-	NumTxReceivedFailed  []AddressStats
-
-	NumTxErc20Sent       []AddressStats
-	NumTxErc721Sent      []AddressStats
-	NumTxErc20Received   []AddressStats
-	NumTxErc721Received  []AddressStats
-	NumTxErc20Transfers  []AddressStats // SC
-	NumTxErc721Transfers []AddressStats // SC
-
-	GasFeeTotal    []AddressStats
-	GasFeeFailedTx []AddressStats
-}
-
-// GetAllEntries returns all AddressStats entries
-func (topAddrData *TopAddressData) GetAllEntries() []AddressStats {
-	ret := make([]AddressStats, 0, 0)
-	_add := func(entries []AddressStats) {
-		ret = append(ret, entries...)
+	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
+		item := &(*allAddresses)[i]
+		item.EnsureAddressDetails(client)
+		if checkMethod((*allAddresses)[i]) {
+			ret = append(ret, *item)
+		}
 	}
-	_add(topAddrData.ValueSent)
-	_add(topAddrData.ValueReceived)
-	_add(topAddrData.NumTxSentSuccess)
-	_add(topAddrData.NumTxSentFailed)
-	_add(topAddrData.NumTxReceivedSuccess)
-	_add(topAddrData.NumTxReceivedFailed)
-	_add(topAddrData.NumTxErc20Sent)
-	_add(topAddrData.NumTxErc721Sent)
-	_add(topAddrData.NumTxErc20Received)
-	_add(topAddrData.NumTxErc721Received)
-	_add(topAddrData.NumTxErc20Transfers)
-	_add(topAddrData.NumTxErc721Transfers)
-	_add(topAddrData.GasFeeTotal)
-	_add(topAddrData.GasFeeFailedTx)
+
 	return ret
 }
 

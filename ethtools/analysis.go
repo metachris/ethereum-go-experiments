@@ -21,7 +21,7 @@ type AnalysisResult struct {
 	EndBlockTimestamp   uint64
 
 	Addresses       map[string]*AddressStats `json:"-"`
-	TopAddresses    TopAddressData
+	TopAddresses    map[string][]AddressStats
 	TopTransactions TopTransactionData
 
 	TxTypes       map[uint8]int
@@ -50,6 +50,7 @@ func NewResult() *AnalysisResult {
 		ValueTotalWei:  new(big.Int),
 		TxTypes:        make(map[uint8]int),
 		Addresses:      make(map[string]*AddressStats),
+		TopAddresses:   make(map[string][]AddressStats),
 		GasUsed:        new(big.Int),
 		GasFeeTotal:    new(big.Int),
 		GasFeeFailedTx: new(big.Int),
@@ -313,10 +314,10 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 	})
 }
 
-// AnalysisResult.SortTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
+// AnalysisResult.BuildTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
 // Ensures that details for all top addresses are queried from blockchain
-func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
-	config := GetConfig()
+func (result *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
+	numEntries := GetConfig().NumTopAddresses
 
 	// Convert addresses from map into a sortable array
 	_addresses := make([]AddressStats, 0, len(result.Addresses))
@@ -324,125 +325,47 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 		_addresses = append(_addresses, *k)
 	}
 
-	// erc20-tx sent
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc20Sent > _addresses[j].NumTxErc20Sent
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxErc20Sent > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc20Sent = append(result.TopAddresses.NumTxErc20Sent, _addresses[i])
-		}
-	}
+	// bigint
+	result.TopAddresses["ValueSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 }, func(a AddressStats) bool { return a.ValueSentWei.Cmp(common.Big0) == 1 })
+	result.TopAddresses["ValueReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 }, func(a AddressStats) bool { return a.ValueReceivedWei.Cmp(common.Big0) == 1 })
+	result.TopAddresses["Erc20TokensSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].Erc20TokensSent.Cmp(_addresses[j].Erc20TokensSent) == 1 }, func(a AddressStats) bool { return a.Erc20TokensSent.Cmp(common.Big0) == 1 })
+	result.TopAddresses["Erc20TokensReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool {
+		return _addresses[i].Erc20TokensReceived.Cmp(_addresses[j].Erc20TokensReceived) == 1
+	}, func(a AddressStats) bool { return a.Erc20TokensReceived.Cmp(common.Big0) == 1 })
+	result.TopAddresses["Erc20TokensTransferred"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool {
+		return _addresses[i].Erc20TokensTransferred.Cmp(_addresses[j].Erc20TokensTransferred) == 1
+	}, func(a AddressStats) bool { return a.Erc20TokensTransferred.Cmp(common.Big0) == 1 })
+	result.TopAddresses["GasUsed"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].GasUsed.Cmp(_addresses[j].GasUsed) == 1 }, func(a AddressStats) bool { return a.GasUsed.Cmp(common.Big0) == 1 })
+	result.TopAddresses["GasFeeTotal"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].GasFeeTotal.Cmp(_addresses[j].GasFeeTotal) == 1 }, func(a AddressStats) bool { return a.GasFeeTotal.Cmp(common.Big0) == 1 })
+	result.TopAddresses["GasFeeFailedTx"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].GasFeeFailedTx.Cmp(_addresses[j].GasFeeFailedTx) == 1 }, func(a AddressStats) bool { return a.GasFeeFailedTx.Cmp(common.Big0) == 1 })
 
-	// erc20-tx received
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc20Received > _addresses[j].NumTxErc20Received
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
-		if _addresses[i].NumTxErc20Received > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc20Received = append(result.TopAddresses.NumTxErc20Received, _addresses[i])
-		}
-	}
+	// int
+	result.TopAddresses["NumTxSentSuccess"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxSentSuccess > _addresses[j].NumTxSentSuccess }, func(a AddressStats) bool { return a.NumTxSentSuccess > 0 })
+	result.TopAddresses["NumTxSentFailed"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxSentFailed > _addresses[j].NumTxSentFailed }, func(a AddressStats) bool { return a.NumTxSentFailed > 0 })
+	result.TopAddresses["NumTxReceivedSuccess"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxReceivedSuccess > _addresses[j].NumTxReceivedSuccess }, func(a AddressStats) bool { return a.NumTxReceivedSuccess > 0 })
+	result.TopAddresses["NumTxReceivedFailed"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxReceivedFailed > _addresses[j].NumTxReceivedFailed }, func(a AddressStats) bool { return a.NumTxReceivedFailed > 0 })
 
-	// erc20-tx transferred
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc20Transfer > _addresses[j].NumTxErc20Transfer
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
-		if _addresses[i].NumTxErc20Transfer > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc20Transfers = append(result.TopAddresses.NumTxErc20Transfers, _addresses[i])
-		}
-	}
+	result.TopAddresses["NumTxFlashbotsSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxFlashbotsSent > _addresses[j].NumTxFlashbotsSent }, func(a AddressStats) bool { return a.NumTxFlashbotsSent > 0 })
+	result.TopAddresses["NumTxFlashbotsReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool {
+		return _addresses[i].NumTxFlashbotsReceived > _addresses[j].NumTxFlashbotsReceived
+	}, func(a AddressStats) bool { return a.NumTxFlashbotsReceived > 0 })
+	result.TopAddresses["NumTxWithDataSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxWithDataSent > _addresses[j].NumTxWithDataSent }, func(a AddressStats) bool { return a.NumTxWithDataSent > 0 })
+	result.TopAddresses["NumTxWithDataReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxWithDataReceived > _addresses[j].NumTxWithDataReceived }, func(a AddressStats) bool { return a.NumTxWithDataReceived > 0 })
 
-	// tx sent:success
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentSuccess > _addresses[j].NumTxSentSuccess })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxSentSuccess > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxSentSuccess = append(result.TopAddresses.NumTxSentSuccess, _addresses[i])
-		}
-	}
+	result.TopAddresses["NumTxErc20Sent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc20Sent > _addresses[j].NumTxErc20Sent }, func(a AddressStats) bool { return a.NumTxErc20Sent > 0 })
+	result.TopAddresses["NumTxErc721Sent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc721Sent > _addresses[j].NumTxErc721Sent }, func(a AddressStats) bool { return a.NumTxErc721Sent > 0 })
+	result.TopAddresses["NumTxErc20Received"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc20Received > _addresses[j].NumTxErc20Received }, func(a AddressStats) bool { return a.NumTxErc20Received > 0 })
+	result.TopAddresses["NumTxErc721Received"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc721Received > _addresses[j].NumTxErc721Received }, func(a AddressStats) bool { return a.NumTxErc721Received > 0 })
+	result.TopAddresses["NumTxErc20Transfer"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc20Transfer > _addresses[j].NumTxErc20Transfer }, func(a AddressStats) bool { return a.NumTxErc20Transfer > 0 })
+	result.TopAddresses["NumTxErc721Transfer"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].NumTxErc721Transfer > _addresses[j].NumTxErc721Transfer }, func(a AddressStats) bool { return a.NumTxErc721Transfer > 0 })
+}
 
-	// tx sent:fail
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentFailed > _addresses[j].NumTxSentFailed })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxSentFailed > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxSentFailed = append(result.TopAddresses.NumTxSentFailed, _addresses[i])
-		}
+func (result *AnalysisResult) GetAllTopAddressStats() []AddressStats {
+	ret := make([]AddressStats, 0, 0)
+	for k := range result.TopAddresses {
+		ret = append(ret, result.TopAddresses[k]...)
 	}
-
-	// tx received:success
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceivedSuccess > _addresses[j].NumTxReceivedSuccess })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxReceivedSuccess > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxReceivedSuccess = append(result.TopAddresses.NumTxReceivedSuccess, _addresses[i])
-		}
-	}
-
-	// tx received:fail
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxReceivedFailed > _addresses[j].NumTxReceivedFailed })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxReceivedFailed > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxReceivedFailed = append(result.TopAddresses.NumTxReceivedFailed, _addresses[i])
-		}
-	}
-
-	// erc721 sent
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc721Sent > _addresses[j].NumTxErc721Sent
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].NumTxErc721Sent > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc721Sent = append(result.TopAddresses.NumTxErc721Sent, _addresses[i])
-		}
-	}
-
-	// erc721 received
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc721Received > _addresses[j].NumTxErc721Received
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
-		if _addresses[i].NumTxErc721Received > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc721Received = append(result.TopAddresses.NumTxErc721Received, _addresses[i])
-		}
-	}
-
-	// erc721 transferred
-	sort.SliceStable(_addresses, func(i, j int) bool {
-		return _addresses[i].NumTxErc721Transfer > _addresses[j].NumTxErc721Transfer
-	})
-	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
-		if _addresses[i].NumTxErc721Transfer > 0 {
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.NumTxErc721Transfers = append(result.TopAddresses.NumTxErc721Transfers, _addresses[i])
-		}
-	}
-
-	// value received
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].ValueReceivedWei.Cmp(big.NewInt(0)) == 1 { // if valueReceived > 0
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.ValueReceived = append(result.TopAddresses.ValueReceived, _addresses[i])
-		}
-	}
-
-	// value sent
-	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 })
-	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
-		if _addresses[i].ValueSentWei.Cmp(big.NewInt(0)) == 1 { // if valueSent > 0
-			_addresses[i].EnsureAddressDetails(client)
-			result.TopAddresses.ValueSent = append(result.TopAddresses.ValueSent, _addresses[i])
-		}
-	}
+	return ret
 }
 
 // UpdateTxAddressDetails gets the address details from cache for each top transaction

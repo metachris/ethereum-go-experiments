@@ -136,16 +136,16 @@ func main() {
 	printResult(result)
 
 	timeNeeded := time.Since(timestampMainStart)
-	fmt.Printf("\nAll done in %.2fs\n", timeNeeded.Seconds())
+	fmt.Printf("\nAnalysis finished (%.2fs)\n", timeNeeded.Seconds())
 
 	// result.ToHtml("/tmp/x.html")
 	if *addToDbPtr {
 		// Add to database
-		fmt.Printf("\nAdding analysis to database...\n")
+		fmt.Printf("\nSaving to database...\n")
 		timeStartAddToDb := time.Now()
 		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
 		timeNeededAddToDb := time.Since(timeStartAddToDb)
-		fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
+		fmt.Printf("Saved to database (%.2fs)\n", timeNeededAddToDb.Seconds())
 	}
 
 	// if len(*outJsonPtr) > 0 {
@@ -229,7 +229,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	printH1("\nSmart Contracts")
 
 	printH2("\nERC20: most token tranfers")
-	for _, v := range result.TopAddresses.NumTxErc20Transfers {
+	for _, v := range result.TopAddresses["NumTxErc20Transfer"] {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
 		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
@@ -242,19 +242,24 @@ func printResult(result *ethtools.AnalysisResult) {
 	// }
 
 	printH2("\nERC721: most token transfers")
-	for _, v := range result.TopAddresses.NumTxErc721Transfers {
+	for _, v := range result.TopAddresses["NumTxErc721Transfers"] {
 		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
 	fmt.Println("")
 	printH1("\nAddresses")
 
-	printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
-	printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
-	printTopAddr("\nTop addresses by value received", result.TopAddresses.ValueReceived, 0)
-	printTopAddr("\nTop addresses by value sent", result.TopAddresses.ValueSent, 0)
-	printTopAddr("\nTop addresses by failed tx received", result.TopAddresses.NumTxReceivedFailed, 0)
-	printTopAddr("\nTop addresses by failed tx sent", result.TopAddresses.NumTxSentFailed, 0)
+	interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", "ValueReceived", "ValueSent", "NumTxReceivedFailed", "NumTxSentFailed"}
+	for _, key := range interesting {
+		fmt.Println("")
+		printTopAddr(key, result.TopAddresses[key], 0)
+	}
+	// printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
+	// printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
+	// printTopAddr("\nTop addresses by value received", result.TopAddresses.ValueReceived, 0)
+	// printTopAddr("\nTop addresses by value sent", result.TopAddresses.ValueSent, 0)
+	// printTopAddr("\nTop addresses by failed tx received", result.TopAddresses.NumTxReceivedFailed, 0)
+	// printTopAddr("\nTop addresses by failed tx sent", result.TopAddresses.NumTxSentFailed, 0)
 }
 
 func formatBigFloat(number *big.Float) string {

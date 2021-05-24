@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS analysis (
     NumBlocks           integer NOT NULL,
     NumBlocksWithoutTx  integer NOT NULL,
 
-    GasUsed             bigint NOT NULL,
-    GasFeeTotal         bigint NOT NULL,
-    GasFeeFailedTx      bigint NOT NULL,
+    GasUsed             NUMERIC(48, 0) NOT NULL,
+    GasFeeTotal         NUMERIC(48, 0) NOT NULL,
+    GasFeeFailedTx      NUMERIC(48, 0) NOT NULL,
 
     NumTransactions                  integer NOT NULL,
     NumTransactionsFailed            integer NOT NULL,
@@ -89,9 +89,9 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
     TokensTransferredInUnit  NUMERIC(56, 8) NOT NULL,
     TokensTransferredSymbol  text NOT NULL,
 
-	GasUsed         bigint NOT NULL,
-	GasFeeTotal     bigint NOT NULL,
-	GasFeeFailedTx  bigint NOT NULL
+	GasUsed          NUMERIC(48, 0) NOT NULL,
+	GasFeeTotal      NUMERIC(48, 0) NOT NULL,
+	GasFeeFailedTx   NUMERIC(48, 0) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS block (
@@ -311,9 +311,9 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 		tokensTransferredInUnit.Text('f', 8),
 		tokenSymbol,
 
-		addr.GasUsed.Uint64(),
-		addr.GasFeeTotal.Uint64(),
-		addr.GasFeeFailedTx.Uint64())
+		addr.GasUsed.String(),
+		addr.GasFeeTotal.String(),
+		addr.GasFeeFailedTx.String())
 }
 
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
@@ -351,9 +351,9 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp,
 		result.NumBlocks, result.NumBlocksWithoutTx,
 
-		result.GasUsed.Uint64(),
-		result.GasFeeTotal.Uint64(),
-		result.GasFeeFailedTx.Uint64(),
+		result.GasUsed.String(),
+		result.GasFeeTotal.String(),
+		result.GasFeeFailedTx.String(),
 
 		result.NumTransactions,
 		result.NumTransactionsFailed,
@@ -389,8 +389,8 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		go saveAddrStatToDbWorker()
 	}
 
-	entries := result.TopAddresses.GetAllEntries()
-	fmt.Printf("Saving %d AddresseStats...", len(entries))
+	entries := result.GetAllTopAddressStats()
+	fmt.Printf("Saving %d AddresseStats...\n", len(entries))
 	for _, addr := range entries {
 		addressInfoQueue <- addr
 	}
