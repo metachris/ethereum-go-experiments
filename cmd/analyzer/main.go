@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
@@ -37,6 +38,8 @@ import (
 // }
 
 func main() {
+	timestampMainStart := time.Now() // for measuring execution time
+
 	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
 	hourPtr := flag.Int("hour", 0, "hour (UTC)")
 	minPtr := flag.Int("min", 0, "hour (UTC)")
@@ -119,7 +122,9 @@ func main() {
 		fmt.Printf("endTime:   %d / %v ... ", endTimestamp, time.Unix(endTimestamp, 0).UTC())
 		endBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
 		endBlockHeight = endBlockHeader.Number.Int64() - 1
-	} else {
+	}
+
+	if endBlockHeight < startBlockHeight {
 		endBlockHeight = startBlockHeight
 	}
 
@@ -129,6 +134,9 @@ func main() {
 	result := ethtools.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
 	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
+
+	timeNeeded := time.Since(timestampMainStart)
+	fmt.Printf("\nAll done in %.2fs\n", timeNeeded.Seconds())
 
 	// if *addToDbPtr {
 	// 	// Add to database (and log execution time)
@@ -150,8 +158,21 @@ func main() {
 	// }
 }
 
-func printTopTx(msg string, txList []ethtools.TxStats) {
+func printH1(msg string) {
+	m := strings.Trim(msg, "\n")
+	fmt.Println(strings.Repeat("=", utf8.RuneCountInString(m)))
+	fmt.Println(m)
+	fmt.Println(strings.Repeat("=", utf8.RuneCountInString(m)))
+}
+
+func printH2(msg string) {
+	m := strings.Trim(msg, "\n")
 	fmt.Println(msg)
+	fmt.Println(strings.Repeat("-", utf8.RuneCountInString(m)))
+}
+
+func printTopTx(msg string, txList []ethtools.TxStats) {
+	printH2(msg)
 	for _, v := range txList {
 		fmt.Println(v)
 	}
@@ -163,7 +184,7 @@ func addressWithName(address string) string {
 }
 
 func printTopAddr(msg string, list []ethtools.AddressStats, max int) {
-	fmt.Println(msg)
+	printH2(msg)
 	for i, v := range list {
 		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethtools.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethtools.WeiBigIntToEthString(v.ValueSentWei, 2), ethtools.WeiBigIntToEthString(v.GasFeeTotal, 2), ethtools.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
 		if max > 0 && i == max {
@@ -196,16 +217,16 @@ func printResult(result *ethtools.AnalysisResult) {
 		return
 	}
 
-	fmt.Println("\nTransactions")
-	fmt.Println("------------")
+	fmt.Println("")
+	printH1("Transactions")
 	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
 	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
 	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
 
-	fmt.Println("\nSmart Contracts")
-	fmt.Println("--------------")
+	fmt.Println("")
+	printH1("\nSmart Contracts")
 
-	fmt.Printf("\nERC20: most token tranfers\n")
+	printH2("\nERC20: most token tranfers")
 	for _, v := range result.TopAddresses.NumTxErc20Received {
 		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
@@ -218,13 +239,13 @@ func printResult(result *ethtools.AnalysisResult) {
 	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \n", addressWithName(v.Address), v.NumTxErc20Sent, v.NumTxSentSuccess)
 	// }
 
-	fmt.Printf("\nERC721: most token transfers\n")
+	printH2("\nERC721: most token transfers")
 	for _, v := range result.TopAddresses.NumTxErc721Received {
 		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
-	fmt.Println("\nAddresses")
-	fmt.Println("---------")
+	fmt.Println("")
+	printH1("\nAddresses")
 
 	printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
 	printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)

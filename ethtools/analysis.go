@@ -111,14 +111,19 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	}
 
 	// Gas used is paid and counted no matter if transaction failed or succeeded
-	txGasUsed := big.NewInt(int64(receipt.GasUsed))
+	txSuccess := true
+	txGasUsed := common.Big1
+	if receipt != nil {
+		txSuccess = receipt.Status == 1
+		txGasUsed = big.NewInt(int64(receipt.GasUsed))
+	}
+
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
 	fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, txGasUsed)
 	fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
 	result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
 
-	txSuccessful := receipt.Status == 1
-	if !txSuccessful {
+	if !txSuccess {
 		result.NumTransactionsFailed += 1
 		fromAddrStats.NumTxSentFailed += 1
 		toAddrStats.NumTxReceivedFailed += 1
@@ -208,13 +213,11 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 
 // AddTxToTopList builds the top transactions list
 func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *types.Receipt) {
-	txnSuccess := true
+	txSuccess := true
 	txGasUsed := common.Big1
 	if receipt != nil {
-		txnSuccess = receipt.Status == 1
+		txSuccess = receipt.Status == 1
 		txGasUsed = big.NewInt(int64(receipt.GasUsed))
-	} else {
-		fmt.Println("xtx", tx.Hash())
 	}
 
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
@@ -235,7 +238,7 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 		GasUsed:  txGasUsed,
 		Value:    tx.Value(),
 		DataSize: len(tx.Data()),
-		Success:  txnSuccess,
+		Success:  txSuccess,
 		FromAddr: from,
 		ToAddr:   to,
 	}

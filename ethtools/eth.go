@@ -168,9 +168,9 @@ func GetBlockHeaderAtTimestamp(client *ethclient.Client, targetTimestamp int64, 
 		DebugPrintf("%d \t blockTime: %d / %v \t secDiff: %5d\n", currentBlockNumber, header.Time, time.Unix(int64(header.Time), 0).UTC(), secDiff)
 
 		// Check if this secDiff was already seen (avoid circular endless loop)
-		if lastSecDiffsIncludes(secDiff) {
+		if lastSecDiffsIncludes(secDiff) && blockSecAvg < 25 {
 			blockSecAvg += 1
-			// DebugPrintln("- Increase blockSecAvg to", blockSecAvg)
+			DebugPrintln("- Increase blockSecAvg to", blockSecAvg)
 		}
 
 		// Pop & add secDiff to array of last values
@@ -178,7 +178,7 @@ func GetBlockHeaderAtTimestamp(client *ethclient.Client, targetTimestamp int64, 
 		lastSecDiffs = append(lastSecDiffs, secDiff)
 		// DebugPrintln("lastSecDiffs:", lastSecDiffs)
 
-		if Abs(secDiff) < 60 || isNarrowingDownFromBelow { // getting close
+		if Abs(secDiff) < 80 || isNarrowingDownFromBelow { // getting close
 			if secDiff < 0 {
 				// still before wanted startTime. Increase by 1 from here...
 				isNarrowingDownFromBelow = true

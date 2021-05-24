@@ -98,7 +98,7 @@ func (stats TxStats) String() string {
 	if !stats.Success {
 		failedMsg = " (failed)"
 	}
-	return fmt.Sprintf("%s%s \t gasfee: %8s ETH  \t  val: %14v \t datasize: %-8d \t\t %s %-20s -> %s %s", stats.Hash, failedMsg, WeiBigIntToEthString(stats.GasFee, 4), WeiBigIntToEthString(stats.Value, 4), stats.DataSize, stats.FromAddr.Address, stats.FromAddr.Name, stats.ToAddr.Address, stats.ToAddr.Name)
+	return fmt.Sprintf("%s%s \t gasfee: %8s ETH  \t  val: %14v \t datasize: %-8d \t\t %s -> %s", stats.Hash, failedMsg, WeiBigIntToEthString(stats.GasFee, 4), WeiBigIntToEthString(stats.Value, 4), stats.DataSize, stats.FromAddr.Address, stats.ToAddr.Address)
 }
 
 type TopTransactionData struct {

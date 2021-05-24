@@ -34,6 +34,7 @@ go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-20 -len 2h
 go run cmd/analyzer/main.go -date 2021-05-20 -len 1d
 go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at supplied date
+DEBUG=1 go run cmd/analyzer/main.go -date 2020-05-20 -hour 10 -min 5 -len 1m  # lots of long block times around this time
 
 # Run addresstool to get info about an address
 go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
