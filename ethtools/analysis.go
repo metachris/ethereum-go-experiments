@@ -4,7 +4,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"os"
 	"sort"
+	"text/template"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -401,4 +403,16 @@ func (result *AnalysisResult) UpdateTxAddressDetails(client *ethclient.Client) {
 		result.TopTransactions.DataSize[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
 		result.TopTransactions.DataSize[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
 	}
+}
+
+// UpdateTxAddressDetails gets the address details from cache for each top transaction
+func (result *AnalysisResult) ToHtml(filename string) {
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
+	Perror(err)
+	err = f.Truncate(0)
+	Perror(err)
+	defer f.Close()
+
+	t, _ := template.ParseFiles("templates/stats.html")
+	t.Execute(f, result)
 }

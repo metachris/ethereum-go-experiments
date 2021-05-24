@@ -138,6 +138,7 @@ func main() {
 	timeNeeded := time.Since(timestampMainStart)
 	fmt.Printf("\nAll done in %.2fs\n", timeNeeded.Seconds())
 
+	// result.ToHtml("/tmp/x.html")
 	// if *addToDbPtr {
 	// 	// Add to database (and log execution time)
 	// 	fmt.Printf("\nAdding analysis to database...\n")
