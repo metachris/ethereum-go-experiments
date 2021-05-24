@@ -37,17 +37,26 @@ CREATE TABLE IF NOT EXISTS analysis (
     EndBlockNumber      integer NOT NULL,
     EndBlockTimestamp   integer NOT NULL,
 
-    NumBlocks                        integer NOT NULL,
-    NumBlocksWithoutTx               integer NOT NULL,
+    NumBlocks           integer NOT NULL,
+    NumBlocksWithoutTx  integer NOT NULL,
+
+    GasUsed             bigint NOT NULL,
+    GasFeeTotal         bigint NOT NULL,
+    GasFeeFailedTx      bigint NOT NULL,
+
     NumTransactions                  integer NOT NULL,
     NumTransactionsFailed            integer NOT NULL,
     NumTransactionsWithZeroValue     integer NOT NULL,
     NumTransactionsWithData          integer NOT NULL,
-    NumTransactionsWithTokenTransfer integer NOT NULL,
-    TotalAddresses                   integer NOT NULL,
 
-    ValueTotalEth   NUMERIC(24, 8) NOT NULL,
-    GasUsed         bigint NOT NULL
+    NumTransactionsErc20Transfer     integer NOT NULL,
+    NumTransactionsErc721Transfer    integer NOT NULL,
+
+    NumFlashbotsTransactionsSuccess   integer NOT NULL,
+    NumFlashbotsTransactionsFailed    integer NOT NULL,
+
+    ValueTotalEth     NUMERIC(24, 8) NOT NULL,
+	TotalAddresses    integer NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS analysis_address_stat (
@@ -56,23 +65,33 @@ CREATE TABLE IF NOT EXISTS analysis_address_stat (
     Analysis_id int REFERENCES analysis (id) NOT NULL,
     Address     text REFERENCES address (address) NOT NULL,
 
-	NumTxSent                    int NOT NULL,
-	NumTxReceived                int NOT NULL,
-	NumFailedTxSent              int NOT NULL,
-	NumFailedTxReceived          int NOT NULL,
-	GasUsed                      bigint NOT NULL,
+	NumTxSentSuccess       int NOT NULL,
+	NumTxSentFailed        int NOT NULL,
+	NumTxReceivedSuccess   int NOT NULL,
+	NumTxReceivedFailed    int NOT NULL,
 
-	NumTxWithData                int NOT NULL,
-	NumTxTokenTransfer           int NOT NULL,
-	NumTxTokenMethodTransfer     int NOT NULL,
-	NumTxTokenMethodTransferFrom int NOT NULL,
+	NumTxFlashbotsSent       int NOT NULL,
+	NumTxFlashbotsReceived   int NOT NULL,
+	NumTxWithDataSent        int NOT NULL,
+	NumTxWithDataReceived    int NOT NULL,
+
+	NumTxErc20Sent         int NOT NULL,
+	NumTxErc721Sent        int NOT NULL,
+	NumTxErc20Received     int NOT NULL,
+	NumTxErc721Received    int NOT NULL,
+	NumTxErc20Transfer     int NOT NULL,
+	NumTxErc721Transfer    int NOT NULL,
 
 	ValueSentEth       NUMERIC(32, 8) NOT NULL,
 	ValueReceivedEth   NUMERIC(32, 8) NOT NULL,
-	TokensTransferred  NUMERIC(48, 0) NOT NULL,
 
+	Erc20TokensTransferred  NUMERIC(48, 0) NOT NULL,
     TokensTransferredInUnit  NUMERIC(56, 8) NOT NULL,
-    TokensTransferredSymbol  text NOT NULL
+    TokensTransferredSymbol  text NOT NULL,
+
+	GasUsed         bigint NOT NULL,
+	GasFeeTotal     bigint NOT NULL,
+	GasFeeFailedTx  bigint NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS block (
@@ -99,17 +118,26 @@ type AnalysisEntry struct {
 	EndBlockNumber      int
 	EndBlockTimestamp   int
 
-	NumBlocks                        int
-	NumBlocksWithoutTx               int
-	NumTransactions                  int
-	NumTransactionsFailed            int
-	NumTransactionsWithZeroValue     int
-	NumTransactionsWithData          int
-	NumTransactionsWithTokenTransfer int
-	TotalAddresses                   int
+	NumBlocks          int
+	NumBlocksWithoutTx int
 
-	ValueTotalEth string
-	GasUsed       uint64
+	GasUsed        uint64
+	GasFeeTotal    uint64
+	GasFeeFailedTx uint64
+
+	NumTransactions              int
+	NumTransactionsFailed        int
+	NumTransactionsWithZeroValue int
+	NumTransactionsWithData      int
+
+	NumTransactionsErc20Transfer  int
+	NumTransactionsErc721Transfer int
+
+	NumFlashbotsTransactionsSuccess int
+	NumFlashbotsTransactionsFailed  int
+
+	ValueTotalEth  string
+	TotalAddresses int
 }
 
 var db *sqlx.DB
@@ -201,9 +229,55 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
 	// Insert Analysis
 	analysisId := 0
-	err := db.QueryRow(
-		"INSERT INTO analysis (date, hour, minute, sec, durationsec, StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, ValueTotalEth, NumBlocks, NumBlocksWithoutTx, NumTransactions, NumTransactionsFailed, NumTransactionsWithZeroValue, NumTransactionsWithData, NumTransactionsWithTokenTransfer, TotalAddresses, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id",
-		date, hour, minute, sec, durationSec, result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp, result.ValueTotalEth, result.NumBlocks, result.NumBlocksWithoutTx, result.NumTransactions, result.NumTransactionsFailed, result.NumTransactionsWithZeroValue, result.NumTransactionsWithData, result.NumTransactionsErc20Transfer, len(result.Addresses), result.GasUsed).Scan(&analysisId)
+	// fmt.Println("valTotal", result.ValueTotalEth)
+	err := db.QueryRow(`
+		INSERT INTO analysis (
+			date, hour, minute, sec, durationsec, 
+			StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, 
+
+			NumBlocks, 
+			NumBlocksWithoutTx, 
+
+			GasUsed,
+			GasFeeTotal,
+			GasFeeFailedTx,
+
+			NumTransactions,
+			NumTransactionsFailed,
+			NumTransactionsWithZeroValue,
+			NumTransactionsWithData,
+
+			NumTransactionsErc20Transfer,
+			NumTransactionsErc721Transfer,
+
+			NumFlashbotsTransactionsSuccess,
+			NumFlashbotsTransactionsFailed,
+
+			ValueTotalEth,
+			TotalAddresses
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) 
+		RETURNING id
+		`, date, hour, minute, sec, durationSec,
+		result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp,
+		result.NumBlocks, result.NumBlocksWithoutTx,
+
+		result.GasUsed.Uint64(),
+		result.GasFeeTotal.Uint64(),
+		result.GasFeeFailedTx.Uint64(),
+
+		result.NumTransactions,
+		result.NumTransactionsFailed,
+		result.NumTransactionsWithZeroValue,
+		result.NumTransactionsWithData,
+
+		result.NumTransactionsErc20Transfer,
+		result.NumTransactionsErc721Transfer,
+
+		result.NumFlashbotsTransactionsSuccess,
+		result.NumFlashbotsTransactionsFailed,
+
+		WeiToEth(result.ValueTotalWei).Text('f', 2),
+		len(result.Addresses)).Scan(&analysisId)
 	Perror(err)
 	fmt.Println("Analysis ID:", analysisId)
 

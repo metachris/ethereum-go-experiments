@@ -139,14 +139,14 @@ func main() {
 	fmt.Printf("\nAll done in %.2fs\n", timeNeeded.Seconds())
 
 	// result.ToHtml("/tmp/x.html")
-	// if *addToDbPtr {
-	// 	// Add to database (and log execution time)
-	// 	fmt.Printf("\nAdding analysis to database...\n")
-	// 	timeStartAddToDb := time.Now()
-	// 	ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
-	// 	timeNeededAddToDb := time.Since(timeStartAddToDb)
-	// 	fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
-	// }
+	if *addToDbPtr {
+		// Add to database
+		fmt.Printf("\nAdding analysis to database...\n")
+		timeStartAddToDb := time.Now()
+		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+		timeNeededAddToDb := time.Since(timeStartAddToDb)
+		fmt.Printf("Saved to database (%.3fs)\n", timeNeededAddToDb.Seconds())
+	}
 
 	// if len(*outJsonPtr) > 0 {
 	// 	j, err := json.MarshalIndent(exportData, "", " ")
@@ -206,7 +206,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Printf("- with data:      %7d \t %.2f%%\n", result.NumTransactionsWithData, (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc20 transfer: %7d \t %.2f%%\n", result.NumTransactionsErc20Transfer, (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
 	fmt.Printf("- erc721 transfer:%7d \t %.2f%%\n", result.NumTransactionsErc721Transfer, (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- flashbots:       %d ok, %d failed \n", result.NumMevTransactionsSuccess, result.NumMevTransactionsFailed)
+	fmt.Printf("- flashbots:       %d ok, %d failed \n", result.NumFlashbotsTransactionsSuccess, result.NumFlashbotsTransactionsFailed)
 	fmt.Println("")
 
 	fmt.Println("Total addresses:", len(result.Addresses))

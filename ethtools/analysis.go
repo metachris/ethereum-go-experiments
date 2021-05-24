@@ -26,7 +26,6 @@ type AnalysisResult struct {
 
 	TxTypes       map[uint8]int
 	ValueTotalWei *big.Int
-	ValueTotalEth string
 
 	NumBlocks          int
 	NumBlocksWithoutTx int
@@ -42,8 +41,8 @@ type AnalysisResult struct {
 	NumTransactionsErc20Transfer  int
 	NumTransactionsErc721Transfer int
 
-	NumMevTransactionsSuccess int
-	NumMevTransactionsFailed  int
+	NumFlashbotsTransactionsSuccess int
+	NumFlashbotsTransactionsFailed  int
 }
 
 func NewResult() *AnalysisResult {
@@ -132,11 +131,11 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		result.GasFeeFailedTx = new(big.Int).Add(result.GasFeeFailedTx, txGasFee)
 		txFromAddrStats.GasFeeFailedTx = new(big.Int).Add(txFromAddrStats.GasFeeFailedTx, txGasFee)
 
-		// Count failed MEV tx
+		// Count failed flashbots tx
 		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
-			result.NumMevTransactionsFailed += 1
-			if GetConfig().DebugPrintMevTx {
-				fmt.Printf("MEV fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
+			result.NumFlashbotsTransactionsFailed += 1
+			if GetConfig().DebugPrintFlashbotsTx {
+				fmt.Printf("Flashbots fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
 		}
 
@@ -166,12 +165,12 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 
 		// If no gas price, then it's probably a MEV/Flashbots tx
 		if tx.GasPrice().Uint64() == 0 {
-			result.NumMevTransactionsSuccess += 1
-			txFromAddrStats.NumTxMevSent += 1
-			txToAddrStats.NumTxMevReceived += 1
+			result.NumFlashbotsTransactionsSuccess += 1
+			txFromAddrStats.NumTxFlashbotsSent += 1
+			txToAddrStats.NumTxFlashbotsReceived += 1
 
-			if GetConfig().DebugPrintMevTx {
-				fmt.Printf("MEV ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
+			if GetConfig().DebugPrintFlashbotsTx {
+				fmt.Printf("Flashbots ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
 		}
 

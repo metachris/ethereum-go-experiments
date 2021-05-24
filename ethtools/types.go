@@ -23,15 +23,15 @@ type AddressStats struct {
 	NumTxReceivedSuccess int
 	NumTxReceivedFailed  int
 
-	NumTxMevSent          int
-	NumTxMevReceived      int
-	NumTxWithDataSent     int
-	NumTxWithDataReceived int
+	NumTxFlashbotsSent     int
+	NumTxFlashbotsReceived int
+	NumTxWithDataSent      int
+	NumTxWithDataReceived  int
 
 	NumTxErc20Sent      int // sender wallet
 	NumTxErc721Sent     int // sender wallet
-	NumTxErc20Received  int // receiver wallet
-	NumTxErc721Received int // receiver wallet
+	NumTxErc20Received  int // receiver wallet (counted tx receiver and transfer receiver)
+	NumTxErc721Received int // receiver wallet (counted tx receiver and transfer receiver)
 	NumTxErc20Transfer  int // smart contract
 	NumTxErc721Transfer int // smart contract
 

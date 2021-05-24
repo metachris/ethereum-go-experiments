@@ -39,6 +39,9 @@ DEBUG=1 go run cmd/analyzer/main.go -date 2020-05-20 -hour 10 -min 5 -len 1m  # 
 # Run addresstool to get info about an address
 go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 
+# Reset the database
+go run cmd/dbtool/main.go -reset
+
 # Webserver
 go run cmd/webserver/main.go
 curl localhost:8090/analysis/1
@@ -56,7 +59,8 @@ Notes:
 * Save output as HTML
 * Search for "todo"
 
-?
+
+Maybe
 
 * Count failed ERC token transfers?
 
@@ -68,6 +72,7 @@ Interesting, high effort
 
 Maybe, low impact
 
+* Option to only see events from 1 SC.
 * Low-API-call mode (disable receipts, unnecessary SC lookups)
 
 

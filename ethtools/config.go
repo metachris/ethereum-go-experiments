@@ -21,9 +21,9 @@ type Config struct {
 	NumTopTransactions   int
 
 	// Debug helpers
-	Debug           bool
-	HideOutput      bool
-	DebugPrintMevTx bool
+	Debug                 bool
+	HideOutput            bool
+	DebugPrintFlashbotsTx bool
 }
 
 func (c Config) String() string {
@@ -97,9 +97,9 @@ func GetConfig() *Config {
 		NumTopAddressesLarge: getEnvInt("NUM_TOP_ADDR_L", 100),
 		NumTopTransactions:   getEnvInt("NUM_TOP_TX", 20),
 
-		Debug:           getEnvBool("DEBUG", false),
-		HideOutput:      getEnvBool("HIDE_OUTPUT", false),
-		DebugPrintMevTx: getEnvBool("MEV", false),
+		Debug:                 getEnvBool("DEBUG", false),
+		HideOutput:            getEnvBool("HIDE_OUTPUT", false),
+		DebugPrintFlashbotsTx: getEnvBool("MEV", false),
 	}
 
 	if len(config.EthNode) == 0 {
