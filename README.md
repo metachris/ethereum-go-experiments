@@ -52,7 +52,6 @@ Notes:
 
 ## To do
 
-* Result: Gas fee of failed transactions
 * For ERC20 and ERC721 token transfers: count sender, SC and receiver (currently only sender and SC is counted)
 * MEV/flashbots tx: some pay miners, some not?
   * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be

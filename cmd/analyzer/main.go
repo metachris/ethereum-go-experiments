@@ -211,6 +211,7 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("Total addresses:", len(result.Addresses))
 	fmt.Println("Total value transferred:", ethtools.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
 	fmt.Println("Total gas fees:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
+	fmt.Println("Gas for failed tx:", ethtools.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
 
 	if ethtools.GetConfig().HideOutput {
 		fmt.Println("End because of config.HideOutput")

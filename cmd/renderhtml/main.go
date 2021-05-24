@@ -23,7 +23,7 @@ func main() {
 	config := ethtools.GetConfig()
 	fmt.Println(config)
 
-	db := ethtools.NewDatabaseConnection(ethtools.GetConfig())
+	db := ethtools.NewDatabaseConnection(ethtools.GetConfig().Database)
 
 	if *idPtr > 0 {
 		entry, found := ethtools.DbGetAnalysisById(db, *idPtr)

@@ -29,6 +29,7 @@ type AnalysisResult struct {
 	NumBlocksWithoutTx int
 	GasUsed            *big.Int
 	GasFeeTotal        *big.Int
+	GasFeeFailedTx     *big.Int
 
 	NumTransactions              int
 	NumTransactionsFailed        int
@@ -44,11 +45,12 @@ type AnalysisResult struct {
 
 func NewResult() *AnalysisResult {
 	return &AnalysisResult{
-		ValueTotalWei: new(big.Int),
-		TxTypes:       make(map[uint8]int),
-		Addresses:     make(map[string]*AddressStats),
-		GasUsed:       new(big.Int),
-		GasFeeTotal:   new(big.Int),
+		ValueTotalWei:  new(big.Int),
+		TxTypes:        make(map[uint8]int),
+		Addresses:      make(map[string]*AddressStats),
+		GasUsed:        new(big.Int),
+		GasFeeTotal:    new(big.Int),
+		GasFeeFailedTx: new(big.Int),
 
 		TopTransactions: TopTransactionData{
 			GasFee:   make([]TxStats, 0, GetConfig().NumTopTransactions),
@@ -127,6 +129,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		result.NumTransactionsFailed += 1
 		fromAddrStats.NumTxSentFailed += 1
 		toAddrStats.NumTxReceivedFailed += 1
+		result.GasFeeFailedTx = new(big.Int).Add(result.GasFeeFailedTx, txGasFee)
 		fromAddrStats.GasFeeFailedTx = new(big.Int).Add(fromAddrStats.GasFeeFailedTx, txGasFee)
 
 		// Count failed MEV tx
