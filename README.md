@@ -52,17 +52,31 @@ Notes:
 
 ## To do
 
-* For ERC20 and ERC721 token transfers: count sender, SC and receiver (currently only sender and SC is counted)
-* MEV/flashbots tx: some pay miners, some not?
-  * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
-  * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
 * Save result to database
 * Save output as HTML
 * Search for "todo"
 
-Maybe - Low Impact
+?
+
+* Count failed ERC token transfers?
+
+
+Interesting, high effort
+
+* Trace SC calls between SCs
+
+
+Maybe, low impact
 
 * Low-API-call mode (disable receipts, unnecessary SC lookups)
+
+
+Questions
+
+* MEV/flashbots tx: some pay miners, some not?
+  * miner value: https://etherscan.io/tx/0xb8223568daf5d85a13f9218655ddd59674a7b6c60c0b61f45bcdf1b27db0d6be
+  * none: https://etherscan.io/tx/0x6e2b7ca3d56df95ce9682a5002233db0afd0b7dcf90d4a565b7828b4ee2ba7f1
+
 
 Maybe?
 

@@ -109,7 +109,7 @@ func GetErc20TokensInUnit(numTokens *big.Int, addrDetail AddressDetail) (amount 
 	return amount, addrDetail.Symbol
 }
 
-func GetTxFromAddress(tx *types.Transaction) (from common.Address, err error) {
+func GetTxSender(tx *types.Transaction) (from common.Address, err error) {
 	from, err = types.Sender(types.NewEIP155Signer(tx.ChainId()), tx)
 	if err != nil {
 		from, err = types.Sender(types.HomesteadSigner{}, tx)

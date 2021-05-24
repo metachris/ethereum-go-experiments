@@ -28,16 +28,19 @@ type AddressStats struct {
 	NumTxWithDataSent     int
 	NumTxWithDataReceived int
 
-	NumTxErc20Sent      int
-	NumTxErc20Received  int
-	NumTxErc721Sent     int
-	NumTxErc721Received int
+	NumTxErc20Sent      int // sender wallet
+	NumTxErc721Sent     int // sender wallet
+	NumTxErc20Received  int // receiver wallet
+	NumTxErc721Received int // receiver wallet
+	NumTxErc20Transfer  int // smart contract
+	NumTxErc721Transfer int // smart contract
 
 	ValueSentWei     *big.Int
 	ValueReceivedWei *big.Int
 
-	Erc20TokensSent     *big.Int
-	Erc20TokensReceived *big.Int
+	Erc20TokensSent        *big.Int
+	Erc20TokensReceived    *big.Int
+	Erc20TokensTransferred *big.Int // smart contract
 
 	GasUsed        *big.Int
 	GasFeeTotal    *big.Int
@@ -52,15 +55,16 @@ func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
 
 func NewAddressStats(address string) *AddressStats {
 	return &AddressStats{
-		Address:             address,
-		AddressDetail:       NewAddressDetail(address),
-		ValueSentWei:        new(big.Int),
-		ValueReceivedWei:    new(big.Int),
-		Erc20TokensSent:     new(big.Int),
-		Erc20TokensReceived: new(big.Int),
-		GasUsed:             new(big.Int),
-		GasFeeTotal:         new(big.Int),
-		GasFeeFailedTx:      new(big.Int),
+		Address:                address,
+		AddressDetail:          NewAddressDetail(address),
+		ValueSentWei:           new(big.Int),
+		ValueReceivedWei:       new(big.Int),
+		Erc20TokensSent:        new(big.Int),
+		Erc20TokensReceived:    new(big.Int),
+		Erc20TokensTransferred: new(big.Int),
+		GasUsed:                new(big.Int),
+		GasFeeTotal:            new(big.Int),
+		GasFeeFailedTx:         new(big.Int),
 	}
 }
 
@@ -73,10 +77,12 @@ type TopAddressData struct {
 	NumTxReceivedSuccess []AddressStats
 	NumTxReceivedFailed  []AddressStats
 
-	NumTxErc20Sent      []AddressStats
-	NumTxErc20Received  []AddressStats
-	NumTxErc721Sent     []AddressStats
-	NumTxErc721Received []AddressStats
+	NumTxErc20Sent       []AddressStats
+	NumTxErc721Sent      []AddressStats
+	NumTxErc20Received   []AddressStats
+	NumTxErc721Received  []AddressStats
+	NumTxErc20Transfers  []AddressStats // SC
+	NumTxErc721Transfers []AddressStats // SC
 
 	GasFeeTotal    []AddressStats
 	GasFeeFailedTx []AddressStats

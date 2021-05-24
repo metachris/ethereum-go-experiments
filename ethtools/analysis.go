@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -62,6 +63,21 @@ func NewResult() *AnalysisResult {
 	}
 }
 
+func (result *AnalysisResult) GetOrCreateAddressStats(address *common.Address) *AddressStats {
+	if address == nil {
+		return NewAddressStats("")
+	}
+
+	addr := strings.ToLower(address.String())
+	addrStats, isAddressKnown := result.Addresses[addr]
+	if !isAddressKnown {
+		addrStats = NewAddressStats(addr)
+		result.Addresses[addr] = addrStats
+	}
+
+	return addrStats
+}
+
 func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client) {
 	if result.StartBlockTimestamp == 0 {
 		result.StartBlockTimestamp = block.block.Time()
@@ -87,52 +103,34 @@ func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, c
 }
 
 func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt) {
-	// Count receiver stats
-	var toAddrStats *AddressStats = NewAddressStats("")   // might not exist
-	var fromAddrStats *AddressStats = NewAddressStats("") // might not exist
-	var isAddressKnown bool
-
 	result.AddTxToTopList(tx, receipt)
 
-	// Prepare address stats for receiver
-	if tx.To() != nil {
-		recAddr := tx.To().String()
-		toAddrStats, isAddressKnown = result.Addresses[recAddr]
-		if !isAddressKnown {
-			toAddrStats = NewAddressStats(recAddr)
-			result.Addresses[recAddr] = toAddrStats
-		}
-	}
-
-	// Prepare address stats for sender
-	if from, err := GetTxFromAddress(tx); err == nil {
-		fromAddressString := from.Hex()
-		fromAddrStats, isAddressKnown = result.Addresses[fromAddressString]
-		if !isAddressKnown {
-			fromAddrStats = NewAddressStats(fromAddressString)
-			result.Addresses[fromAddressString] = fromAddrStats
-		}
+	// Get the address stats instance for receiver and sender
+	txToAddrStats := result.GetOrCreateAddressStats(tx.To())
+	txFromAddrStats := result.GetOrCreateAddressStats(nil)
+	if from, err := GetTxSender(tx); err == nil {
+		txFromAddrStats = result.GetOrCreateAddressStats(&from)
 	}
 
 	// Gas used is paid and counted no matter if transaction failed or succeeded
-	txSuccess := true
-	txGasUsed := common.Big1
+	txSuccess := true        // default, used if no receipt
+	txGasUsed := common.Big1 // default, used if no receipt
 	if receipt != nil {
 		txSuccess = receipt.Status == 1
 		txGasUsed = big.NewInt(int64(receipt.GasUsed))
 	}
 
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
-	fromAddrStats.GasUsed = new(big.Int).Add(fromAddrStats.GasUsed, txGasUsed)
-	fromAddrStats.GasFeeTotal = new(big.Int).Add(fromAddrStats.GasFeeTotal, txGasFee)
+	txFromAddrStats.GasUsed = new(big.Int).Add(txFromAddrStats.GasUsed, txGasUsed)
+	txFromAddrStats.GasFeeTotal = new(big.Int).Add(txFromAddrStats.GasFeeTotal, txGasFee)
 	result.GasFeeTotal = new(big.Int).Add(result.GasFeeTotal, txGasFee)
 
 	if !txSuccess {
 		result.NumTransactionsFailed += 1
-		fromAddrStats.NumTxSentFailed += 1
-		toAddrStats.NumTxReceivedFailed += 1
+		txFromAddrStats.NumTxSentFailed += 1
+		txToAddrStats.NumTxReceivedFailed += 1
 		result.GasFeeFailedTx = new(big.Int).Add(result.GasFeeFailedTx, txGasFee)
-		fromAddrStats.GasFeeFailedTx = new(big.Int).Add(fromAddrStats.GasFeeFailedTx, txGasFee)
+		txFromAddrStats.GasFeeFailedTx = new(big.Int).Add(txFromAddrStats.GasFeeFailedTx, txGasFee)
 
 		// Count failed MEV tx
 		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
@@ -149,11 +147,11 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	result.ValueTotalWei = result.ValueTotalWei.Add(result.ValueTotalWei, tx.Value())
 	result.TxTypes[tx.Type()] += 1
 
-	fromAddrStats.NumTxSentSuccess += 1
-	fromAddrStats.ValueSentWei = new(big.Int).Add(fromAddrStats.ValueSentWei, tx.Value())
+	txFromAddrStats.NumTxSentSuccess += 1
+	txFromAddrStats.ValueSentWei = new(big.Int).Add(txFromAddrStats.ValueSentWei, tx.Value())
 
-	toAddrStats.NumTxReceivedSuccess += 1
-	toAddrStats.ValueReceivedWei = new(big.Int).Add(toAddrStats.ValueReceivedWei, tx.Value())
+	txToAddrStats.NumTxReceivedSuccess += 1
+	txToAddrStats.ValueReceivedWei = new(big.Int).Add(txToAddrStats.ValueReceivedWei, tx.Value())
 
 	if isBigIntZero(tx.Value()) {
 		result.NumTransactionsWithZeroValue += 1
@@ -163,14 +161,14 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	data := tx.Data()
 	if len(data) > 0 {
 		result.NumTransactionsWithData += 1
-		fromAddrStats.NumTxWithDataSent += 1
-		toAddrStats.NumTxWithDataReceived += 1
+		txFromAddrStats.NumTxWithDataSent += 1
+		txToAddrStats.NumTxWithDataReceived += 1
 
 		// If no gas price, then it's probably a MEV/Flashbots tx
 		if tx.GasPrice().Uint64() == 0 {
 			result.NumMevTransactionsSuccess += 1
-			fromAddrStats.NumTxMevSent += 1
-			toAddrStats.NumTxMevReceived += 1
+			txFromAddrStats.NumTxMevSent += 1
+			txToAddrStats.NumTxMevReceived += 1
 
 			if GetConfig().DebugPrintMevTx {
 				fmt.Printf("MEV ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
@@ -181,35 +179,72 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 			methodId := hex.EncodeToString(data[:4])
 			// fmt.Println(methodId)
 			if methodId == "a9059cbb" || methodId == "23b872dd" {
-				fromAddrStats.EnsureAddressDetails(client)
-				toAddrStats.EnsureAddressDetails(client)
+				txFromAddrStats.EnsureAddressDetails(client)
+				txToAddrStats.EnsureAddressDetails(client)
 
 				// Calculate and store the number of tokens transferred
+				valueSenderStats := txFromAddrStats
+				valueReceiverStats := txToAddrStats
 				var value string
 				switch methodId {
 				case "a9059cbb": // transfer
-					// targetAddr = hex.EncodeToString(data[4:36])
+					_receiverAddrString := hex.EncodeToString(data[4:36])
+					_receiverAddr := common.HexToAddress(_receiverAddrString)
+					// fmt.Println("transfer. to", _receiverAddr, "\t .. tx from:", txFromAddrStats.Address)
+					valueReceiverStats = result.GetOrCreateAddressStats(&_receiverAddr)
+
 					value = hex.EncodeToString(data[36:68])
+
 				case "23b872dd": // transferFrom
-					// targetAddr = hex.EncodeToString(data[36:68])
+					_senderAddrString := hex.EncodeToString(data[4:36])
+					_senderAddr := common.HexToAddress(_senderAddrString)
+					valueSenderStats = result.GetOrCreateAddressStats(&_senderAddr)
+
+					_receiverAddrString := hex.EncodeToString(data[36:68])
+					_receiverAddr := common.HexToAddress(_receiverAddrString)
+					valueReceiverStats = result.GetOrCreateAddressStats(&_receiverAddr)
+
 					value = hex.EncodeToString(data[68:100])
+					// fmt.Println("transferFrom. from", _senderAddr, ", tx", txFromAddrStats.Address, "... to", _receiverAddr)
 				}
 
 				valBigInt := new(big.Int)
 				valBigInt.SetString(value, 16)
 
-				if toAddrStats.AddressDetail.IsErc20() {
+				// If ERC2 SC call
+				if txToAddrStats.AddressDetail.IsErc20() {
 					result.NumTransactionsErc20Transfer += 1
 
-					fromAddrStats.NumTxErc20Sent += 1
-					fromAddrStats.Erc20TokensSent = new(big.Int).Add(fromAddrStats.Erc20TokensSent, valBigInt)
+					// Count sender
+					txFromAddrStats.NumTxErc20Sent += 1
+					txFromAddrStats.Erc20TokensSent = new(big.Int).Add(txFromAddrStats.Erc20TokensSent, valBigInt)
+					if txFromAddrStats.Address != valueSenderStats.Address {
+						valueSenderStats.NumTxErc20Sent += 1
+						valueSenderStats.Erc20TokensSent = new(big.Int).Add(valueSenderStats.Erc20TokensSent, valBigInt)
+					}
 
-					toAddrStats.NumTxErc20Received += 1
-					toAddrStats.Erc20TokensReceived = new(big.Int).Add(toAddrStats.Erc20TokensReceived, valBigInt)
-				} else if toAddrStats.AddressDetail.IsErc721() {
+					// Count SC transfer calls
+					txToAddrStats.NumTxErc20Transfer += 1
+					txToAddrStats.Erc20TokensTransferred = new(big.Int).Add(txToAddrStats.Erc20TokensTransferred, valBigInt)
+
+					// Count token transfer receiver
+					valueReceiverStats.NumTxErc20Received += 1
+					valueReceiverStats.Erc20TokensReceived = new(big.Int).Add(valueReceiverStats.Erc20TokensReceived, valBigInt)
+
+				} else if txToAddrStats.AddressDetail.IsErc721() {
 					result.NumTransactionsErc721Transfer += 1
-					fromAddrStats.NumTxErc721Sent += 1
-					toAddrStats.NumTxErc721Received += 1
+
+					// Count sender
+					txFromAddrStats.NumTxErc721Sent += 1
+					if txFromAddrStats.Address != valueSenderStats.Address {
+						valueSenderStats.NumTxErc721Sent += 1
+					}
+
+					// Count SC
+					txToAddrStats.NumTxErc721Transfer += 1
+
+					// Count token receiver
+					valueReceiverStats.NumTxErc721Received += 1
 				}
 			}
 		}
@@ -233,7 +268,7 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 	}
 
 	from := NewAddressDetail("")
-	if fromAddr, err := GetTxFromAddress(tx); err == nil {
+	if fromAddr, err := GetTxSender(tx); err == nil {
 		from = NewAddressDetail(fromAddr.Hex())
 	}
 
@@ -312,6 +347,17 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 		}
 	}
 
+	// erc20-tx transferred
+	sort.SliceStable(_addresses, func(i, j int) bool {
+		return _addresses[i].NumTxErc20Transfer > _addresses[j].NumTxErc20Transfer
+	})
+	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
+		if _addresses[i].NumTxErc20Transfer > 0 {
+			_addresses[i].EnsureAddressDetails(client)
+			result.TopAddresses.NumTxErc20Transfers = append(result.TopAddresses.NumTxErc20Transfers, _addresses[i])
+		}
+	}
+
 	// tx sent:success
 	sort.SliceStable(_addresses, func(i, j int) bool { return _addresses[i].NumTxSentSuccess > _addresses[j].NumTxSentSuccess })
 	for i := 0; i < len(_addresses) && i < config.NumTopAddresses; i++ {
@@ -367,6 +413,17 @@ func (result *AnalysisResult) SortTopAddresses(client *ethclient.Client) {
 		if _addresses[i].NumTxErc721Received > 0 {
 			_addresses[i].EnsureAddressDetails(client)
 			result.TopAddresses.NumTxErc721Received = append(result.TopAddresses.NumTxErc721Received, _addresses[i])
+		}
+	}
+
+	// erc721 transferred
+	sort.SliceStable(_addresses, func(i, j int) bool {
+		return _addresses[i].NumTxErc721Transfer > _addresses[j].NumTxErc721Transfer
+	})
+	for i := 0; i < len(_addresses) && i < config.NumTopAddressesLarge; i++ {
+		if _addresses[i].NumTxErc721Transfer > 0 {
+			_addresses[i].EnsureAddressDetails(client)
+			result.TopAddresses.NumTxErc721Transfers = append(result.TopAddresses.NumTxErc721Transfers, _addresses[i])
 		}
 	}
 

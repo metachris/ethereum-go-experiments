@@ -229,10 +229,10 @@ func printResult(result *ethtools.AnalysisResult) {
 	printH1("\nSmart Contracts")
 
 	printH2("\nERC20: most token tranfers")
-	for _, v := range result.TopAddresses.NumTxErc20Received {
-		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensReceived, v.AddressDetail)
+	for _, v := range result.TopAddresses.NumTxErc20Transfers {
+		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Received, v.NumTxReceivedSuccess, tokenAmount)
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
 	}
 
 	// fmt.Println("")
@@ -242,8 +242,8 @@ func printResult(result *ethtools.AnalysisResult) {
 	// }
 
 	printH2("\nERC721: most token transfers")
-	for _, v := range result.TopAddresses.NumTxErc721Received {
-		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Received, v.NumTxReceivedSuccess, v.AddressDetail.Type)
+	for _, v := range result.TopAddresses.NumTxErc721Transfers {
+		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
 	fmt.Println("")
