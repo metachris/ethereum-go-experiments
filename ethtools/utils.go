@@ -56,6 +56,7 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 	return
 }
 
+// Returns bigint wei amount as comma-separated, human-readable string (eg. 1,435,332.71)
 func WeiBigIntToEthString(wei *big.Int, decimals int) string {
 	output := WeiToEth(wei).Text('f', decimals)
 	// return s

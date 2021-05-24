@@ -234,7 +234,6 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 	err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, _addr).Scan(&count)
 	Perror(err)
 	if count > 0 {
-		fmt.Println("skip1", analysisId, _addr)
 		return
 	}
 
@@ -252,11 +251,69 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 	}
 
 	// Add address-stats entry now
-	// valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
-	// valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
-	// tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
-	// db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
-	// 	analysisId, strings.ToLower(addr.Address), addr.NumTxSentSuccess, addr.NumTxReceivedSuccess, addr.NumTxSentFailed, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
+	tokensTransferredInUnit, tokenSymbol := GetErc20TokensInUnit(addr.Erc20TokensTransferred, addr.AddressDetail)
+	db.MustExec(`INSERT INTO analysis_address_stat (
+		Analysis_id, 
+		Address, 
+
+		NumTxSentSuccess,
+		NumTxSentFailed,
+		NumTxReceivedSuccess,
+		NumTxReceivedFailed,
+
+		NumTxFlashbotsSent,
+		NumTxFlashbotsReceived,
+		NumTxWithDataSent,
+		NumTxWithDataReceived,
+
+		NumTxErc20Sent,
+		NumTxErc721Sent,
+		NumTxErc20Received,
+		NumTxErc721Received,
+		NumTxErc20Transfer,
+		NumTxErc721Transfer,
+
+		ValueSentEth,
+		ValueReceivedEth,
+
+		Erc20TokensTransferred,
+		TokensTransferredInUnit,
+		TokensTransferredSymbol,
+
+		GasUsed,
+		GasFeeTotal,
+		GasFeeFailedTx
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+		analysisId,
+		_addr,
+
+		addr.NumTxSentSuccess,
+		addr.NumTxSentFailed,
+		addr.NumTxReceivedSuccess,
+		addr.NumTxReceivedFailed,
+
+		addr.NumTxFlashbotsSent,
+		addr.NumTxFlashbotsReceived,
+		addr.NumTxWithDataSent,
+		addr.NumTxWithDataReceived,
+
+		addr.NumTxErc20Sent,
+		addr.NumTxErc721Sent,
+		addr.NumTxErc20Received,
+		addr.NumTxErc721Received,
+		addr.NumTxErc20Transfer,
+		addr.NumTxErc721Transfer,
+
+		WeiToEth(addr.ValueSentWei).Text('f', 4),
+		WeiToEth(addr.ValueReceivedWei).Text('f', 4),
+
+		addr.Erc20TokensTransferred.String(),
+		tokensTransferredInUnit.Text('f', 8),
+		tokenSymbol,
+
+		addr.GasUsed.Uint64(),
+		addr.GasFeeTotal.Uint64(),
+		addr.GasFeeFailedTx.Uint64())
 }
 
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
