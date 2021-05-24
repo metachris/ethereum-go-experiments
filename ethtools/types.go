@@ -88,6 +88,29 @@ type TopAddressData struct {
 	GasFeeFailedTx []AddressStats
 }
 
+// GetAllEntries returns all AddressStats entries
+func (topAddrData *TopAddressData) GetAllEntries() []AddressStats {
+	ret := make([]AddressStats, 0, 0)
+	_add := func(entries []AddressStats) {
+		ret = append(ret, entries...)
+	}
+	_add(topAddrData.ValueSent)
+	_add(topAddrData.ValueReceived)
+	_add(topAddrData.NumTxSentSuccess)
+	_add(topAddrData.NumTxSentFailed)
+	_add(topAddrData.NumTxReceivedSuccess)
+	_add(topAddrData.NumTxReceivedFailed)
+	_add(topAddrData.NumTxErc20Sent)
+	_add(topAddrData.NumTxErc721Sent)
+	_add(topAddrData.NumTxErc20Received)
+	_add(topAddrData.NumTxErc721Received)
+	_add(topAddrData.NumTxErc20Transfers)
+	_add(topAddrData.NumTxErc721Transfers)
+	_add(topAddrData.GasFeeTotal)
+	_add(topAddrData.GasFeeFailedTx)
+	return ret
+}
+
 type TxStats struct {
 	Hash     string
 	FromAddr AddressDetail

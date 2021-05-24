@@ -226,6 +226,39 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 	db.MustExec("INSERT INTO block (Number, Time, NumTx, GasUsed, GasLimit) VALUES ($1, $2, $3, $4, $5)", block.Number().String(), block.Header().Time, len(block.Transactions()), block.GasUsed(), block.GasLimit())
 }
 
+func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId int, addr AddressStats) {
+	_addr := strings.ToLower(addr.Address)
+
+	// Ensure any address is added only once per analysis
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, _addr).Scan(&count)
+	Perror(err)
+	if count > 0 {
+		fmt.Println("skip1", analysisId, _addr)
+		return
+	}
+
+	// Make sure address details are loaded
+	addr.EnsureAddressDetails(client)
+	detail := addr.AddressDetail
+
+	// fmt.Println("+ stats:", addr)
+	addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
+	if !foundInDb { // Not in DB, add now
+		db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+
+	} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
+		db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+	}
+
+	// Add address-stats entry now
+	// valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
+	// valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
+	// tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
+	// db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
+	// 	analysisId, strings.ToLower(addr.Address), addr.NumTxSentSuccess, addr.NumTxReceivedSuccess, addr.NumTxSentFailed, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
+}
+
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
 	// Insert Analysis
 	analysisId := 0
@@ -281,88 +314,29 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	Perror(err)
 	fmt.Println("Analysis ID:", analysisId)
 
-	addAddressAndStats := func(addr AddressStats) {
-		// Ensure any address is added only once per analysis
-		var count int
-		err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, strings.ToLower(addr.Address)).Scan(&count)
-		Perror(err)
-		if count > 0 {
-			return
-		}
+	// Setup DB worker pool
+	numWorkers := 10
 
-		// Make sure address details are loaded
-		addr.EnsureAddressDetails(client)
-		detail := addr.AddressDetail
-
-		// fmt.Println("+ stats:", addr)
-		addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
-		if !foundInDb { // Not in DB, add now
-			db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-
-		} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
-			db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-		}
-
-		// Add address-stats entry now
-		// valRecEth := WeiBigIntToEthString(addr.ValueReceivedWei, 2)
-		// valSentEth := WeiBigIntToEthString(addr.ValueSentWei, 2)
-		// tokensTransferredInUnit, tokenSymbol := addr.TokensTransferredInUnit(client)
-		// db.MustExec("INSERT INTO analysis_address_stat (analysis_id, address, numtxsent, numtxreceived, NumFailedTxSent, NumFailedTxReceived, NumTxWithData, NumTxTokenTransfer, NumTxTokenMethodTransfer, NumTxTokenMethodTransferFrom, valuesenteth, valuereceivedeth, tokenstransferred, tokenstransferredinunit, tokenstransferredsymbol, GasUsed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)",
-		// 	analysisId, strings.ToLower(addr.Address), addr.NumTxSentSuccess, addr.NumTxReceivedSuccess, addr.NumTxSentFailed, addr.NumFailedTxReceived, addr.NumTxWithData, addr.NumTxTokenTransfer, addr.NumTxTokenMethodTransfer, addr.NumTxTokenMethodTransferFrom, valSentEth, valRecEth, addr.TokensTransferred.String(), tokensTransferredInUnit.Text('f', 8), tokenSymbol, addr.GasUsed)
-	}
-
-	// Setup worker pool
 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
 	addressInfoQueue := make(chan AddressStats, 50)
 	saveAddrStatToDbWorker := func() {
 		defer wg.Done()
 		for addr := range addressInfoQueue {
-			addAddressAndStats(addr)
+			AddAddressStatsToDatabase(db, client, analysisId, addr)
 		}
 	}
 
 	// Start workers for adding address-stats to database (using 1 sqlx instance)
-	numWorkers := 10
 	for w := 1; w <= numWorkers; w++ {
 		wg.Add(1)
 		go saveAddrStatToDbWorker()
 	}
 
-	fmt.Println("Saving addresses and stats...")
-	// fmt.Printf("- Tokens transferred: %d\n", len(result.TopAddresses.NumTokenTransfers))
-	// for _, addr := range result.TopAddresses.NumTokenTransfers {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Num tx received: %d\n", len(result.TopAddresses.NumTxReceived))
-	// for _, addr := range result.TopAddresses.NumTxReceived {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Num tx sent: %d\n", len(result.TopAddresses.NumTxSent))
-	// for _, addr := range result.TopAddresses.NumTxSent {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Value received: %d\n", len(result.TopAddresses.ValueReceived))
-	// for _, addr := range result.TopAddresses.ValueReceived {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Value sent: %d\n", len(result.TopAddresses.ValueSent))
-	// for _, addr := range result.TopAddresses.ValueSent {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Failed tx received: %d\n", len(result.TopAddresses.NumFailedTxReceived))
-	// for _, addr := range result.TopAddresses.NumFailedTxReceived {
-	// 	addressInfoQueue <- addr
-	// }
-
-	// fmt.Printf("- Failed tx sent: %d\n", len(result.TopAddresses.NumFailedTxSent))
-	// for _, addr := range result.TopAddresses.NumFailedTxSent {
-	// 	addressInfoQueue <- addr
-	// }
+	entries := result.TopAddresses.GetAllEntries()
+	fmt.Printf("Saving %d AddresseStats...", len(entries))
+	for _, addr := range entries {
+		addressInfoQueue <- addr
+	}
 
 	fmt.Println("Waiting for workers to finish...")
 	close(addressInfoQueue)
