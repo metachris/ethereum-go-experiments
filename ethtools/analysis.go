@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -207,7 +208,15 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 
 // AddTxToTopList builds the top transactions list
 func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *types.Receipt) {
-	txGasUsed := big.NewInt(int64(receipt.GasUsed))
+	txnSuccess := true
+	txGasUsed := common.Big1
+	if receipt != nil {
+		txnSuccess = receipt.Status == 1
+		txGasUsed = big.NewInt(int64(receipt.GasUsed))
+	} else {
+		fmt.Println("xtx", tx.Hash())
+	}
+
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
 
 	to := NewAddressDetail("")
@@ -226,7 +235,7 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 		GasUsed:  txGasUsed,
 		Value:    tx.Value(),
 		DataSize: len(tx.Data()),
-		Success:  receipt.Status == 1,
+		Success:  txnSuccess,
 		FromAddr: from,
 		ToAddr:   to,
 	}

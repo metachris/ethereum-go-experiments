@@ -102,7 +102,8 @@ func main() {
 		startTime := ethtools.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
-		startBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
+		startBlockHeader, err := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
+		ethtools.Perror(err)
 		startBlockHeight = startBlockHeader.Number.Int64()
 	}
 

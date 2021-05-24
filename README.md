@@ -60,6 +60,10 @@ Notes:
 * Save output as HTML
 * Search for "todo"
 
+Maybe - Low Impact
+
+* Low-API-call mode (disable receipts, unnecessary SC lookups)
+
 Maybe?
 
 * Analyze receipt SC logs for more event stats (eg. Uniswap 'swap')
@@ -75,7 +79,7 @@ Maybe?
 
 Interesting public functions
 
-* Get block at timestamp
+* GetBlockHeaderAtTimestamp (eth.go)
 
 ---
 

@@ -84,10 +84,6 @@ func GetConfig() *Config {
 		DisableTLS: len(getEnvStr("DB_DISABLE_TLS", "")) > 0,
 	}
 
-	if len(dbConfig.Host) == 0 {
-		panic("Error: no DB_HOST environment variable set! Please check if you've set all environment variables.")
-	}
-
 	config = &Config{
 		Database: dbConfig,
 
@@ -104,6 +100,11 @@ func GetConfig() *Config {
 		Debug:           getEnvBool("DEBUG", false),
 		HideOutput:      getEnvBool("HIDE_OUTPUT", false),
 		DebugPrintMevTx: getEnvBool("MEV", false),
+	}
+
+	if len(config.EthNode) == 0 {
+		panic("ETH_NODE environment variable not found")
+		// panic("Error: no DB_HOST environment variable set! Please check if you've set all environment variables.")
 	}
 
 	return config

@@ -257,15 +257,18 @@ func GetAddressDetailFromBlockchain(address string, client *ethclient.Client) (d
 
 // GetAddressDetail returns the AddressDetail from JSON. If not exists then query the Blockchain
 func GetAddressDetail(address string, client *ethclient.Client) (detail AddressDetail, found bool) {
+	// Check in Cache
 	addr, found := AddressDetailCache[strings.ToLower(address)]
 	if found {
 		return addr, true
 	}
 
+	// Without connection, return Detail with just address
 	if client == nil {
 		return NewAddressDetail(address), false
 	}
 
+	// Look up in Blockchain
 	detail, found = GetAddressDetailFromBlockchain(address, client)
 	if found {
 		AddAddressDetailToCache(detail)
