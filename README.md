@@ -25,16 +25,15 @@ docker-compose up
 # Load the environment variables
 source .env.example
 
-# Run analyzer for specific block
+# Run analyzer for specific block(s)
 go run cmd/analyzer/main.go -block 12381372
 go run cmd/analyzer/main.go -block 12381372 -len 10
 
 # Run analyzer for certain timespan
 go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
 go run cmd/analyzer/main.go -date 2021-05-20 -len 2h
-go run cmd/analyzer/main.go -date 2021-05-20 -len 1d
-go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at supplied date
-DEBUG=1 go run cmd/analyzer/main.go -date 2020-05-20 -hour 10 -min 5 -len 1m  # lots of long block times around this time
+go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at date
+go run cmd/analyzer/main.go -date 2021-05-20 -len 1d -addDb  # add to database
 
 # Run addresstool to get info about an address
 go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
@@ -55,7 +54,6 @@ Notes:
 
 ## To do
 
-* Save result to database
 * Save output as HTML
 * Search for "todo"
 
@@ -72,8 +70,9 @@ Interesting, high effort
 
 Maybe, low impact
 
-* Option to only see events from 1 SC.
 * Low-API-call mode (disable receipts, unnecessary SC lookups)
+* Option to only see events from 1 SC.
+* Refactor top addresses - don't keep all addresses around but rather collect top addresses on the fly
 
 
 Questions
@@ -85,12 +84,8 @@ Questions
 
 Maybe?
 
-* Analyze receipt SC logs for more event stats (eg. Uniswap 'swap')
 * Save results for 1h granularity, add up for daily stats?
-* Speeding up things?
-  * Maybe paralellize processing single blocks, and merging the individual results.
-* Gas fees per transaction?
-* Add blocks in own goroutine (not in main routine and not one per block)
+* Analyze receipt SC logs for more event stats (eg. Uniswap 'swap')
 * Tests
   * contract type detection
 
@@ -111,6 +106,12 @@ Interesting public functions
 * Build a set of top addresses for this stat in `AnalysisResult.BuildTopAddresses`
 * Now you can access the top addresses for this stat after the analysis is done
 * Add it to the database (db.go): Update the schema and insert the value
+
+## Special times in Eth
+
+```bash
+DEBUG=1 go run cmd/analyzer/main.go -date 2020-05-20 -hour 10 -min 5 -len 1m  # lots of long block times around this time
+```
 
 ## Token Analytics
 

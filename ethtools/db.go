@@ -121,9 +121,9 @@ type AnalysisEntry struct {
 	NumBlocks          int
 	NumBlocksWithoutTx int
 
-	GasUsed        uint64
-	GasFeeTotal    uint64
-	GasFeeFailedTx uint64
+	GasUsed        []uint8
+	GasFeeTotal    []uint8
+	GasFeeFailedTx []uint8
 
 	NumTransactions              int
 	NumTransactionsFailed        int
@@ -244,7 +244,11 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 	// fmt.Println("+ stats:", addr)
 	addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
 	if !foundInDb { // Not in DB, add now
-		db.MustExec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+		_, err = db.Exec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+		if err != nil {
+			fmt.Println("Error inserting address", _addr, strings.ToLower(detail.Address))
+			panic(err)
+		}
 
 	} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
 		db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
@@ -403,6 +407,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 func DbGetAnalysisById(db *sqlx.DB, analysisId int) (entry AnalysisEntry, found bool) {
 	err := db.Get(&entry, "SELECT * FROM analysis WHERE id=$1", analysisId)
 	if err != nil {
+		// fmt.Println(err)
 		return entry, false
 	}
 	return entry, true
@@ -411,6 +416,7 @@ func DbGetAnalysisById(db *sqlx.DB, analysisId int) (entry AnalysisEntry, found 
 func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, found bool) {
 	err := db.Select(&analyses, "SELECT * FROM analysis WHERE date=$1", date)
 	if err != nil {
+		fmt.Println(err)
 		return analyses, false
 	}
 	return analyses, true

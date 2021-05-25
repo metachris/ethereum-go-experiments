@@ -4,12 +4,10 @@ import (
 	"ethstats/ethtools"
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
+	"os"
 )
-
-func ProcessAnalysis(analysis ethtools.AnalysisEntry) {
-	fmt.Println(analysis)
-}
 
 func main() {
 	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
@@ -30,7 +28,7 @@ func main() {
 		if !found {
 			log.Fatal("Analysis with ID ", *idPtr, " not found")
 		}
-		ProcessAnalysis(entry)
+		SaveAnalysisToHtml(entry, "/tmp/foo.html")
 		return
 	}
 
@@ -41,4 +39,19 @@ func main() {
 		}
 		fmt.Println(entries)
 	}
+}
+
+func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, filename string) {
+	fmt.Println(analysis)
+
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
+	ethtools.Perror(err)
+	err = f.Truncate(0)
+	ethtools.Perror(err)
+	defer f.Close()
+
+	t, _ := template.ParseFiles("templates/stats.html")
+	t.Execute(f, analysis)
+
+	fmt.Println("Saved HTML to", filename)
 }

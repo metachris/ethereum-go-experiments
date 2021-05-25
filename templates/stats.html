@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="no-js">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
@@ -35,10 +36,20 @@
 </head>
 
 <body>
-    Hello
-    {{ .StartBlockNumber }}
+  <h1>Ethereum Stats - {{ .Date }}</h1>
+
+  <p>
+  <ul>
+    <li>Blocks {{ .StartBlockNumber }} -> {{ .EndBlockNumber }}</li>
+    <li>Total blocks: {{ .NumBlocks }} - without tx: {{ .NumBlocksWithoutTx }} </li>
+  </ul>
+
+  </p>
+
+
   <!-- Content -->
   <!-- <script src="/assets/js/xy-polyfill.js" nomodule></script> -->
   <!-- <script src="/assets/js/script.js" type="module"></script> -->
 </body>
+
 </html>
