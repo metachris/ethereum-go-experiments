@@ -70,22 +70,24 @@
 
     <table>
         <tr>
+            <td>#</td>
             <th>Address</th>
             <th>Name</th>
-            <th># tx</th>
-            <th># erc20 tx</th>
+            <th>erc20 tx</th>
+            <th>tx total</th>
             <th># tokens transferred</th>
             <th>Symbol</th>
         </tr>
 
-        {{- range topErc20 100 }}
+        {{- range $i, $e := topErc20 100 }}
         <tr>
-            <td>{{ .Address }}</td>
-            <td>{{ .Name }}</td>
-            <td>{{ numberFormat .NumTxReceivedSuccess 0 }}</td>
-            <td>{{ numberFormat .NumTxErc20Transfer 0 }}</td>
-            <td>{{ numberFormat .TokensTransferredInUnit 2 }}</td>
-            <td>{{ .Symbol }}</td>
+            <td>{{ add $i 1 }}</td>
+            <td>{{ $e.Address }}</td>
+            <td>{{ $e.Name }}</td>
+            <td>{{ numberFormat $e.NumTxReceivedSuccess 0 }}</td>
+            <td>{{ numberFormat $e.NumTxErc20Transfer 0 }}</td>
+            <td>{{ numberFormat $e.TokensTransferredInUnit 2 }}</td>
+            <td>{{ $e.Symbol }}</td>
         </tr>
         {{- end }}
 
@@ -100,6 +102,7 @@
 
     <table>
         <tr>
+            <td>#</td>
             <th>Address</th>
             <th>Name</th>
             <th>Symbol</th>
@@ -107,13 +110,14 @@
             <th># tx</th>
         </tr>
 
-        {{- range topErc721 100 }}
+        {{- range $i, $e := topErc721 100 }}
         <tr>
-            <td>{{ .Address }}</td>
-            <td>{{ .Name }}</td>
-            <td>{{ .Symbol }}</td>
-            <td>{{ numberFormat .NumTxErc721Transfer 0 }}</td>
-            <td>{{ numberFormat .NumTxReceivedSuccess 0 }}</td>
+            <td>{{ add $i 1 }}</td>
+            <td>{{ $e.Address }}</td>
+            <td>{{ $e.Name }}</td>
+            <td>{{ $e.Symbol }}</td>
+            <td>{{ numberFormat $e.NumTxErc721Transfer 0 }}</td>
+            <td>{{ numberFormat $e.NumTxReceivedSuccess 0 }}</td>
         </tr>
         {{- end }}
 

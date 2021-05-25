@@ -473,14 +473,14 @@ func DbGetAnalysisById(db *sqlx.DB, analysisId int) (entry AnalysisEntry, found 
 	return entry, true
 }
 
-func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, found bool) {
-	err := db.Select(&analyses, "SELECT * FROM analysis WHERE date=$1", date)
-	if err != nil {
-		fmt.Println(err)
-		return analyses, false
-	}
-	return analyses, true
-}
+// func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, found bool) {
+// 	err := db.Select(&analyses, "SELECT * FROM analysis WHERE date=$1", date)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return analyses, false
+// 	}
+// 	return analyses, true
+// }
 
 func DbGetAddressStatEntriesForAnalysisId(db *sqlx.DB, analysisId int) (entries *[]AnalysisAddressStatsEntryWithAddress, err error) {
 	// entries := make([]AnalysisAddressStatsEntry, 0)
