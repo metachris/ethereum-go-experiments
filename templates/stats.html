@@ -2,20 +2,20 @@
 <html lang="en" class="no-js">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
 
-  <title>Stats - My Site</title>
+    <title>Stats - My Site</title>
 
-  <script type="module">
-    document.documentElement.classList.remove('no-js');
-    document.documentElement.classList.add('js');
-  </script>
+    <script type="module">
+        document.documentElement.classList.remove('no-js');
+        document.documentElement.classList.add('js');
+    </script>
 
-  <!-- <link rel="stylesheet" href="/assets/css/styles.css"> -->
-  <!-- <link rel="stylesheet" href="/assets/css/print.css" media="print"> -->
+    <!-- <link rel="stylesheet" href="/assets/css/styles.css"> -->
+    <!-- <link rel="stylesheet" href="/assets/css/print.css" media="print"> -->
 
-  <!--
+    <!--
   <meta name="description" content="Page description">
   <meta property="og:title" content="Unique page title - My Site">
   <meta property="og:description" content="Page description">
@@ -36,20 +36,37 @@
 </head>
 
 <body>
-  <h1>Ethereum Stats - {{ .Date }}</h1>
+    <h1>Ethereum Stats - {{ .Date }}</h1>
 
-  <p>
-  <ul>
-    <li>Blocks {{ .StartBlockNumber }} -> {{ .EndBlockNumber }}</li>
-    <li>Total blocks: {{ .NumBlocks }} - without tx: {{ .NumBlocksWithoutTx }} </li>
-  </ul>
+    <p>{{ .Date }} {{ .Hour }}:{{ .Minute }}:{{ .Sec }}, duration: {{ .DurationSec }}</p>
 
-  </p>
+    <p>
+    <ul>
+        <li>Blocks {{ .StartBlockNumber }} -> {{ .EndBlockNumber }}</li>
+        <li>Total blocks: {{ numberFormat .NumBlocks 0 }} - without tx: {{ numberFormat .NumBlocksWithoutTx 0 }} </li>
+        <li>Total addresses: {{ numberFormat .TotalAddresses 0 }}</li>
+        <li>Value transferred: {{ .ValueTotalEth }} ETH</li>
+        <li>Total gas fee: {{ .GasFeeTotalEth }} ETH (for failed tx: {{ .GasFeeFailedTxEth }} ETH)</li>
+    </ul>
+    </p>
 
+    <p>
+    <h3>Transactions</h3>
+    <ul>
+        <li>Total: {{ numberFormat .NumTransactions 0 }} </li>
+        <li>Failed: {{ numberFormat .NumTransactionsFailed 0 }}</li>
+        <li>Zero value: {{ numberFormat .NumTransactionsWithZeroValue 0 }}</li>
+        <li>With data: {{ numberFormat .NumTransactionsWithData 0 }}</li>
+        <li>erc20 transfer: {{ numberFormat .NumTransactionsErc20Transfer 0 }}</li>
+        <li>erc721 transfer: {{ numberFormat .NumTransactionsErc721Transfer 0 }}</li>
+        <li>flashbots ok: {{ numberFormat .NumFlashbotsTransactionsSuccess 0 }}</li>
+        <li>flashbots failed: {{ numberFormat .NumFlashbotsTransactionsFailed 0 }}</li>
+    </ul>
+    </p>
 
-  <!-- Content -->
-  <!-- <script src="/assets/js/xy-polyfill.js" nomodule></script> -->
-  <!-- <script src="/assets/js/script.js" type="module"></script> -->
+    <!-- Content -->
+    <!-- <script src="/assets/js/xy-polyfill.js" nomodule></script> -->
+    <!-- <script src="/assets/js/script.js" type="module"></script> -->
 </body>
 
 </html>

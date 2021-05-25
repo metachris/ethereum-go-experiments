@@ -2,6 +2,7 @@ package ethtools
 
 import (
 	"fmt"
+	"math/big"
 	"net/url"
 	"strings"
 	"sync"
@@ -121,9 +122,9 @@ type AnalysisEntry struct {
 	NumBlocks          int
 	NumBlocksWithoutTx int
 
-	GasUsed        []uint8
-	GasFeeTotal    []uint8
-	GasFeeFailedTx []uint8
+	GasUsed        string
+	GasFeeTotal    string
+	GasFeeFailedTx string
 
 	NumTransactions              int
 	NumTransactionsFailed        int
@@ -138,6 +139,24 @@ type AnalysisEntry struct {
 
 	ValueTotalEth  string
 	TotalAddresses int
+
+	// Calculated after fetching from DB:
+	GasFeeTotalEth    string
+	GasFeeFailedTxEth string
+}
+
+func (entry *AnalysisEntry) CalcNumbers() {
+	gasFeeTotal := new(big.Int)
+	gasFeeTotal.SetString(entry.GasFeeTotal, 10)
+	entry.GasFeeTotalEth = WeiBigIntToEthString(gasFeeTotal, 2)
+
+	gasFeeFailed := new(big.Int)
+	gasFeeFailed.SetString(entry.GasFeeFailedTx, 10)
+	entry.GasFeeFailedTxEth = WeiBigIntToEthString(gasFeeFailed, 2)
+
+	val := new(big.Float)
+	val.SetString(entry.ValueTotalEth)
+	entry.ValueTotalEth = BigFloatToHumanNumberString(val, 2)
 }
 
 var db *sqlx.DB
@@ -257,8 +276,8 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 	// Add address-stats entry now
 	tokensTransferredInUnit, tokenSymbol := GetErc20TokensInUnit(addr.Erc20TokensTransferred, addr.AddressDetail)
 	db.MustExec(`INSERT INTO analysis_address_stat (
-		Analysis_id, 
-		Address, 
+		Analysis_id,
+		Address,
 
 		NumTxSentSuccess,
 		NumTxSentFailed,
@@ -326,11 +345,11 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	// fmt.Println("valTotal", result.ValueTotalEth)
 	err := db.QueryRow(`
 		INSERT INTO analysis (
-			date, hour, minute, sec, durationsec, 
-			StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp, 
+			date, hour, minute, sec, durationsec,
+			StartBlockNumber, StartBlockTimestamp, EndBlockNumber, EndBlockTimestamp,
 
-			NumBlocks, 
-			NumBlocksWithoutTx, 
+			NumBlocks,
+			NumBlocksWithoutTx,
 
 			GasUsed,
 			GasFeeTotal,
@@ -349,7 +368,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 
 			ValueTotalEth,
 			TotalAddresses
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) 
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
 		RETURNING id
 		`, date, hour, minute, sec, durationSec,
 		result.StartBlockNumber, result.StartBlockTimestamp, result.EndBlockNumber, result.EndBlockTimestamp,

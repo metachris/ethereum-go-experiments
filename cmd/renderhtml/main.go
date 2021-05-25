@@ -28,6 +28,7 @@ func main() {
 		if !found {
 			log.Fatal("Analysis with ID ", *idPtr, " not found")
 		}
+		entry.CalcNumbers()
 		SaveAnalysisToHtml(entry, "/tmp/foo.html")
 		return
 	}
@@ -50,8 +51,12 @@ func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, filename string) {
 	ethtools.Perror(err)
 	defer f.Close()
 
-	t, _ := template.ParseFiles("templates/stats.html")
-	t.Execute(f, analysis)
+	funcs := template.FuncMap{"numberFormat": ethtools.NumberToHumanReadableString}
+	tmpl, err := template.New("stats.html").Funcs(funcs).ParseFiles("templates/stats.html")
+	// t, err := template.ParseFiles("templates/stats.html")
+	ethtools.Perror(err)
+	err = tmpl.Execute(f, analysis)
+	ethtools.Perror(err)
 
 	fmt.Println("Saved HTML to", filename)
 }

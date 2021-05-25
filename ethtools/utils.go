@@ -56,12 +56,26 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 	return
 }
 
+func WeiUintToEth(wei uint64) (ethValue float64) {
+	// wei / 10^18
+	return float64(wei) / math.Pow10(18)
+}
+
 // Returns bigint wei amount as comma-separated, human-readable string (eg. 1,435,332.71)
 func WeiBigIntToEthString(wei *big.Int, decimals int) string {
-	output := WeiToEth(wei).Text('f', decimals)
-	// return s
+	return BigFloatToHumanNumberString(WeiToEth(wei), decimals)
+}
 
+func BigIntToHumanNumberString(i *big.Int, decimals int) string {
+	return BigFloatToHumanNumberString(new(big.Float).SetInt(i), decimals)
+}
+
+func BigFloatToHumanNumberString(f *big.Float, decimals int) string {
+	output := f.Text('f', decimals)
 	dotIndex := strings.Index(output, ".")
+	if dotIndex == -1 {
+		dotIndex = len(output)
+	}
 	for outputIndex := dotIndex; outputIndex > 3; {
 		outputIndex -= 3
 		output = output[:outputIndex] + "," + output[outputIndex:]
@@ -69,9 +83,20 @@ func WeiBigIntToEthString(wei *big.Int, decimals int) string {
 	return output
 }
 
-func WeiUintToEth(wei uint64) (ethValue float64) {
-	// wei / 10^18
-	return float64(wei) / math.Pow10(18)
+func NumberToHumanReadableString(value interface{}, decimals int) string {
+	switch v := value.(type) {
+	case int:
+		i := big.NewInt(int64(v))
+		return BigIntToHumanNumberString(i, decimals)
+	case big.Int:
+		return BigIntToHumanNumberString(&v, decimals)
+	case big.Float:
+		return BigFloatToHumanNumberString(&v, decimals)
+	case string:
+		return v
+	default:
+		return "XXX"
+	}
 }
 
 func printBlock(block *types.Block) {
