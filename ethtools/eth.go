@@ -50,8 +50,12 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 	client, err := ethclient.Dial(GetConfig().EthNode)
 	Perror(err)
 
+	db := NewDatabaseConnection(GetConfig().Database)
+	defer db.Close()
+
 	for blockHeight := range blockHeightChan {
 		res := GetBlockWithTxReceipts(client, blockHeight)
+		AddBlockToDatabase(db, res.block)
 		blockChan <- &res
 	}
 }

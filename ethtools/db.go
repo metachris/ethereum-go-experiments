@@ -395,7 +395,7 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 		addressInfoQueue <- addr
 	}
 
-	fmt.Println("Waiting for workers to finish...")
+	fmt.Println("Waiting for db workers to finish...")
 	close(addressInfoQueue)
 	wg.Wait()
 }

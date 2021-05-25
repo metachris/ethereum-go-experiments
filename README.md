@@ -104,6 +104,14 @@ Interesting public functions
 
 # Documentation
 
+## Adding new address stats
+
+* Create a new field on `types.AddressStats`, initialize it in `NewAddressStats`
+* Collect your metrics as appropriate
+* Build a set of top addresses for this stat in `AnalysisResult.BuildTopAddresses`
+* Now you can access the top addresses for this stat after the analysis is done
+* Add it to the database (db.go): Update the schema and insert the value
+
 ## Token Analytics
 
 Smart Contract Types:
