@@ -68,14 +68,56 @@
 
     <h3>ERC20: most token transfers</h3>
 
+    <table>
+        <tr>
+            <th>Address</th>
+            <th>Name</th>
+            <th># tx</th>
+            <th># erc20 tx</th>
+            <th># tokens transferred</th>
+            <th>Symbol</th>
+        </tr>
 
-    <ul>
         {{- range topErc20 100 }}
-        <li>{{ .Address }}, {{ .NumTxErc20Transfer }}</li>
+        <tr>
+            <td>{{ .Address }}</td>
+            <td>{{ .Name }}</td>
+            <td>{{ numberFormat .NumTxReceivedSuccess 0 }}</td>
+            <td>{{ numberFormat .NumTxErc20Transfer 0 }}</td>
+            <td>{{ numberFormat .TokensTransferredInUnit 2 }}</td>
+            <td>{{ .Symbol }}</td>
+        </tr>
         {{- end }}
-    </ul>
+
+    </table>
+    <!-- <ul>
+        {{- range topErc20 100 }}
+        <li>{{ .Address }} {{ .Name }} {{ .Symbol }}, {{ numberFormat .NumTxErc20Transfer 0 }}</li>
+        {{- end }}
+    </ul> -->
 
     <h3>ERC721: most token transfers</h3>
+
+    <table>
+        <tr>
+            <th>Address</th>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th># erc721 tx</th>
+            <th># tx</th>
+        </tr>
+
+        {{- range topErc721 100 }}
+        <tr>
+            <td>{{ .Address }}</td>
+            <td>{{ .Name }}</td>
+            <td>{{ .Symbol }}</td>
+            <td>{{ numberFormat .NumTxErc721Transfer 0 }}</td>
+            <td>{{ numberFormat .NumTxReceivedSuccess 0 }}</td>
+        </tr>
+        {{- end }}
+
+    </table>
 
 </body>
 

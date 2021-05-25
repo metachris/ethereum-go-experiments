@@ -51,11 +51,11 @@ func main() {
 
 type TemplateVar struct {
 	Analysis     ethtools.AnalysisEntry
-	AddressStats *[]ethtools.AnalysisAddressStatsEntry
+	AddressStats *[]ethtools.AnalysisAddressStatsEntryWithAddress
 }
 
-func (tv *TemplateVar) GetTopErc20Transfer(maxEntries int) *[]ethtools.AnalysisAddressStatsEntry {
-	res := make([]ethtools.AnalysisAddressStatsEntry, 0)
+func (tv *TemplateVar) GetTopErc20Transfer(maxEntries int) *[]ethtools.AnalysisAddressStatsEntryWithAddress {
+	res := make([]ethtools.AnalysisAddressStatsEntryWithAddress, 0)
 
 	// Sort list
 	sort.SliceStable(*tv.AddressStats, func(i, j int) bool {
@@ -72,7 +72,25 @@ func (tv *TemplateVar) GetTopErc20Transfer(maxEntries int) *[]ethtools.AnalysisA
 	return &res
 }
 
-func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, stats *[]ethtools.AnalysisAddressStatsEntry, filename string) {
+func (tv *TemplateVar) GetTopErc721Transfer(maxEntries int) *[]ethtools.AnalysisAddressStatsEntryWithAddress {
+	res := make([]ethtools.AnalysisAddressStatsEntryWithAddress, 0)
+
+	// Sort list
+	sort.SliceStable(*tv.AddressStats, func(i, j int) bool {
+		return (*tv.AddressStats)[i].NumTxErc721Transfer > (*tv.AddressStats)[j].NumTxErc721Transfer
+	})
+
+	// Add to result
+	for i := 0; i < maxEntries && i < len(*tv.AddressStats); i++ {
+		if (*tv.AddressStats)[i].NumTxErc721Transfer > 0 {
+			res = append(res, (*tv.AddressStats)[i])
+		}
+	}
+
+	return &res
+}
+
+func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, stats *[]ethtools.AnalysisAddressStatsEntryWithAddress, filename string) {
 	fmt.Println(analysis)
 
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
@@ -89,6 +107,7 @@ func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, stats *[]ethtools.Analy
 	funcs := template.FuncMap{
 		"numberFormat": ethtools.NumberToHumanReadableString,
 		"topErc20":     tmplData.GetTopErc20Transfer,
+		"topErc721":    tmplData.GetTopErc721Transfer,
 	}
 	tmpl, err := template.New("stats.html").Funcs(funcs).ParseFiles("templates/stats.html")
 	// t, err := template.ParseFiles("templates/stats.html")

@@ -35,6 +35,9 @@ go run cmd/analyzer/main.go -date 2021-05-20 -len 2h
 go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at date
 go run cmd/analyzer/main.go -date 2021-05-20 -len 1d -addDb  # add to database
 
+# Render HTML for an analysis in the database
+go run cmd/renderhtml/main.go -id 3
+
 # Run addresstool to get info about an address
 go run cmd/addresstool/main.go -addr 0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074
 

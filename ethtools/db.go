@@ -159,7 +159,7 @@ func (entry *AnalysisEntry) CalcNumbers() {
 	entry.ValueTotalEth = BigFloatToHumanNumberString(val, 2)
 }
 
-type AnalysisAddressStatsEntry struct {
+type AnalysisAddressStatsEntryWithAddress struct {
 	Id int
 
 	Analysis_id int
@@ -192,6 +192,12 @@ type AnalysisAddressStatsEntry struct {
 	GasUsed        string
 	GasFeeTotal    string
 	GasFeeFailedTx string
+
+	// Fields from joined address
+	Type     AddressType
+	Name     string
+	Symbol   string
+	Decimals uint8
 }
 
 var db *sqlx.DB
@@ -476,17 +482,17 @@ func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, fo
 	return analyses, true
 }
 
-func DbGetAddressStatEntriesForAnalysisId(db *sqlx.DB, analysisId int) (entries *[]AnalysisAddressStatsEntry, err error) {
+func DbGetAddressStatEntriesForAnalysisId(db *sqlx.DB, analysisId int) (entries *[]AnalysisAddressStatsEntryWithAddress, err error) {
 	// entries := make([]AnalysisAddressStatsEntry, 0)
-	rows, err := db.Queryx("SELECT * FROM analysis_address_stat WHERE Analysis_id=$1", analysisId)
+	rows, err := db.Queryx("SELECT * FROM analysis_address_stat INNER JOIN address ON (address.address = analysis_address_stat.address) WHERE Analysis_id=$1", analysisId)
 	if err != nil {
 		fmt.Println(err)
 		return entries, err
 	}
 
-	_entries := make([]AnalysisAddressStatsEntry, 0)
+	_entries := make([]AnalysisAddressStatsEntryWithAddress, 0)
 	for rows.Next() {
-		var row AnalysisAddressStatsEntry
+		var row AnalysisAddressStatsEntryWithAddress
 		err = rows.StructScan(&row)
 		Perror(err)
 		_entries = append(_entries, row)

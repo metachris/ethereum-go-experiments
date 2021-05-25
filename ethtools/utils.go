@@ -93,7 +93,11 @@ func NumberToHumanReadableString(value interface{}, decimals int) string {
 	case big.Float:
 		return BigFloatToHumanNumberString(&v, decimals)
 	case string:
-		return v
+		f, ok := new(big.Float).SetString(v)
+		if !ok {
+			return v
+		}
+		return BigFloatToHumanNumberString(f, decimals)
 	default:
 		return "XXX"
 	}
