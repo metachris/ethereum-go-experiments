@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -24,12 +25,18 @@ func main() {
 	db := ethtools.NewDatabaseConnection(ethtools.GetConfig().Database)
 
 	if *idPtr > 0 {
-		entry, found := ethtools.DbGetAnalysisById(db, *idPtr)
+		analysis, found := ethtools.DbGetAnalysisById(db, *idPtr)
 		if !found {
 			log.Fatal("Analysis with ID ", *idPtr, " not found")
 		}
-		entry.CalcNumbers()
-		SaveAnalysisToHtml(entry, "/tmp/foo.html")
+		analysis.CalcNumbers()
+
+		fmt.Println("Getting stats entries...")
+		entries, err := ethtools.DbGetAddressStatEntriesForAnalysisId(db, *idPtr)
+		ethtools.Perror(err)
+		fmt.Println(len(*entries))
+
+		SaveAnalysisToHtml(analysis, entries, "/tmp/foo.html")
 		return
 	}
 
@@ -42,7 +49,30 @@ func main() {
 	}
 }
 
-func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, filename string) {
+type TemplateVar struct {
+	Analysis     ethtools.AnalysisEntry
+	AddressStats *[]ethtools.AnalysisAddressStatsEntry
+}
+
+func (tv *TemplateVar) GetTopErc20Transfer(maxEntries int) *[]ethtools.AnalysisAddressStatsEntry {
+	res := make([]ethtools.AnalysisAddressStatsEntry, 0)
+
+	// Sort list
+	sort.SliceStable(*tv.AddressStats, func(i, j int) bool {
+		return (*tv.AddressStats)[i].NumTxErc20Transfer > (*tv.AddressStats)[j].NumTxErc20Transfer
+	})
+
+	// Add to result
+	for i := 0; i < maxEntries && i < len(*tv.AddressStats); i++ {
+		if (*tv.AddressStats)[i].NumTxErc20Transfer > 0 {
+			res = append(res, (*tv.AddressStats)[i])
+		}
+	}
+
+	return &res
+}
+
+func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, stats *[]ethtools.AnalysisAddressStatsEntry, filename string) {
 	fmt.Println(analysis)
 
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
@@ -51,11 +81,19 @@ func SaveAnalysisToHtml(analysis ethtools.AnalysisEntry, filename string) {
 	ethtools.Perror(err)
 	defer f.Close()
 
-	funcs := template.FuncMap{"numberFormat": ethtools.NumberToHumanReadableString}
+	tmplData := TemplateVar{
+		Analysis:     analysis,
+		AddressStats: stats,
+	}
+
+	funcs := template.FuncMap{
+		"numberFormat": ethtools.NumberToHumanReadableString,
+		"topErc20":     tmplData.GetTopErc20Transfer,
+	}
 	tmpl, err := template.New("stats.html").Funcs(funcs).ParseFiles("templates/stats.html")
 	// t, err := template.ParseFiles("templates/stats.html")
 	ethtools.Perror(err)
-	err = tmpl.Execute(f, analysis)
+	err = tmpl.Execute(f, tmplData)
 	ethtools.Perror(err)
 
 	fmt.Println("Saved HTML to", filename)

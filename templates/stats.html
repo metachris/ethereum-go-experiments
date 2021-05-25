@@ -36,37 +36,47 @@
 </head>
 
 <body>
-    <h1>Ethereum Stats - {{ .Date }}</h1>
+    <h1>Ethereum Stats - {{ .Analysis.Date }}</h1>
 
-    <p>{{ .Date }} {{ .Hour }}:{{ .Minute }}:{{ .Sec }}, duration: {{ .DurationSec }}</p>
+    <p>{{ .Analysis.Date }} {{ .Analysis.Hour }}:{{ .Analysis.Minute }}:{{ .Analysis.Sec }}, duration: {{ .Analysis.DurationSec }}</p>
 
     <p>
     <ul>
-        <li>Blocks {{ .StartBlockNumber }} -> {{ .EndBlockNumber }}</li>
-        <li>Total blocks: {{ numberFormat .NumBlocks 0 }} - without tx: {{ numberFormat .NumBlocksWithoutTx 0 }} </li>
-        <li>Total addresses: {{ numberFormat .TotalAddresses 0 }}</li>
-        <li>Value transferred: {{ .ValueTotalEth }} ETH</li>
-        <li>Total gas fee: {{ .GasFeeTotalEth }} ETH (for failed tx: {{ .GasFeeFailedTxEth }} ETH)</li>
+        <li>Blocks {{ .Analysis.StartBlockNumber }} -> {{ .Analysis.EndBlockNumber }}</li>
+        <li>Total blocks: {{ numberFormat .Analysis.NumBlocks 0 }} - without tx: {{ numberFormat .Analysis.NumBlocksWithoutTx 0 }} </li>
+        <li>Total addresses: {{ numberFormat .Analysis.TotalAddresses 0 }}</li>
+        <li>Value transferred: {{ .Analysis.ValueTotalEth }} ETH</li>
+        <li>Total gas fee: {{ .Analysis.GasFeeTotalEth }} ETH (for failed tx: {{ .Analysis.GasFeeFailedTxEth }} ETH)</li>
     </ul>
     </p>
 
     <p>
     <h3>Transactions</h3>
     <ul>
-        <li>Total: {{ numberFormat .NumTransactions 0 }} </li>
-        <li>Failed: {{ numberFormat .NumTransactionsFailed 0 }}</li>
-        <li>Zero value: {{ numberFormat .NumTransactionsWithZeroValue 0 }}</li>
-        <li>With data: {{ numberFormat .NumTransactionsWithData 0 }}</li>
-        <li>erc20 transfer: {{ numberFormat .NumTransactionsErc20Transfer 0 }}</li>
-        <li>erc721 transfer: {{ numberFormat .NumTransactionsErc721Transfer 0 }}</li>
-        <li>flashbots ok: {{ numberFormat .NumFlashbotsTransactionsSuccess 0 }}</li>
-        <li>flashbots failed: {{ numberFormat .NumFlashbotsTransactionsFailed 0 }}</li>
+        <li>Total: {{ numberFormat .Analysis.NumTransactions 0 }} </li>
+        <li>Failed: {{ numberFormat .Analysis.NumTransactionsFailed 0 }}</li>
+        <li>Zero value: {{ numberFormat .Analysis.NumTransactionsWithZeroValue 0 }}</li>
+        <li>With data: {{ numberFormat .Analysis.NumTransactionsWithData 0 }}</li>
+        <li>erc20 transfer: {{ numberFormat .Analysis.NumTransactionsErc20Transfer 0 }}</li>
+        <li>erc721 transfer: {{ numberFormat .Analysis.NumTransactionsErc721Transfer 0 }}</li>
+        <li>flashbots ok: {{ numberFormat .Analysis.NumFlashbotsTransactionsSuccess 0 }}</li>
+        <li>flashbots failed: {{ numberFormat .Analysis.NumFlashbotsTransactionsFailed 0 }}</li>
     </ul>
     </p>
 
-    <!-- Content -->
-    <!-- <script src="/assets/js/xy-polyfill.js" nomodule></script> -->
-    <!-- <script src="/assets/js/script.js" type="module"></script> -->
+    <h2>Smart Contracts</h2>
+
+    <h3>ERC20: most token transfers</h3>
+
+
+    <ul>
+        {{- range topErc20 100 }}
+        <li>{{ .Address }}, {{ .NumTxErc20Transfer }}</li>
+        {{- end }}
+    </ul>
+
+    <h3>ERC721: most token transfers</h3>
+
 </body>
 
 </html>

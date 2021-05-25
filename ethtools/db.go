@@ -159,6 +159,41 @@ func (entry *AnalysisEntry) CalcNumbers() {
 	entry.ValueTotalEth = BigFloatToHumanNumberString(val, 2)
 }
 
+type AnalysisAddressStatsEntry struct {
+	Id int
+
+	Analysis_id int
+	Address     string
+
+	NumTxSentSuccess     int
+	NumTxSentFailed      int
+	NumTxReceivedSuccess int
+	NumTxReceivedFailed  int
+
+	NumTxFlashbotsSent     int
+	NumTxFlashbotsReceived int
+	NumTxWithDataSent      int
+	NumTxWithDataReceived  int
+
+	NumTxErc20Sent      int
+	NumTxErc721Sent     int
+	NumTxErc20Received  int
+	NumTxErc721Received int
+	NumTxErc20Transfer  int
+	NumTxErc721Transfer int
+
+	ValueSentEth     string
+	ValueReceivedEth string
+
+	Erc20TokensTransferred  string
+	TokensTransferredInUnit string
+	TokensTransferredSymbol string
+
+	GasUsed        string
+	GasFeeTotal    string
+	GasFeeFailedTx string
+}
+
 var db *sqlx.DB
 
 // GetDatabase returns an already existing DB connection. If not exists then creates it
@@ -439,4 +474,23 @@ func DbGetAnalysesByDate(db *sqlx.DB, date string) (analyses []AnalysisEntry, fo
 		return analyses, false
 	}
 	return analyses, true
+}
+
+func DbGetAddressStatEntriesForAnalysisId(db *sqlx.DB, analysisId int) (entries *[]AnalysisAddressStatsEntry, err error) {
+	// entries := make([]AnalysisAddressStatsEntry, 0)
+	rows, err := db.Queryx("SELECT * FROM analysis_address_stat WHERE Analysis_id=$1", analysisId)
+	if err != nil {
+		fmt.Println(err)
+		return entries, err
+	}
+
+	_entries := make([]AnalysisAddressStatsEntry, 0)
+	for rows.Next() {
+		var row AnalysisAddressStatsEntry
+		err = rows.StructScan(&row)
+		Perror(err)
+		_entries = append(_entries, row)
+	}
+
+	return &_entries, nil
 }
