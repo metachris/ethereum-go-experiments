@@ -1,19 +1,12 @@
-package ethtools
+package ethstats
 
 import (
 	"fmt"
 	"math/big"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
-
-type BlockWithTxReceipts struct {
-	block      *types.Block
-	txReceipts map[common.Hash]*types.Receipt
-}
 
 type AddressStats struct {
 	Address       string

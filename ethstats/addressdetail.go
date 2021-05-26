@@ -1,5 +1,5 @@
 // Tools for dealing with Ethereum addresses: AddressDetail struct, read & write token JSON, get from DB
-package ethtools
+package ethstats
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	erc20 "github.com/metachris/ethereum-go-experiments/ethtools/contracts/erc20"
-	erc721 "github.com/metachris/ethereum-go-experiments/ethtools/contracts/erc721"
+	"github.com/metachris/ethereum-go-experiments/contracts/erc20"
+	"github.com/metachris/ethereum-go-experiments/contracts/erc721"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

@@ -1,4 +1,4 @@
-package ethtools
+package ethstats
 
 import (
 	"context"
@@ -14,6 +14,11 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
 )
+
+type BlockWithTxReceipts struct {
+	block      *types.Block
+	txReceipts map[common.Hash]*types.Receipt
+}
 
 // GetBlockWithTxReceipts downloads a block and receipts for all transactions
 func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {

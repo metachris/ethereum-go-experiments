@@ -1,4 +1,4 @@
-package ethtools
+package ethstats
 
 import (
 	"fmt"

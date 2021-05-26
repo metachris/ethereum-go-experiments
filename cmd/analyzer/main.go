@@ -10,26 +10,25 @@ import (
 	"time"
 	"unicode/utf8"
 
-	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
-
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
+	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
 // Raw AnalysisResult extended with a few interesting fields
 // type ExportData struct {
-// 	Data ethtools.AnalysisResult
+// 	Data ethstats.AnalysisResult
 
 // 	TopAddressData TopAddressData
 // }
 
-// func NewExportData(result ethtools.AnalysisResult) *ExportData {
+// func NewExportData(result ethstats.AnalysisResult) *ExportData {
 // 	topAddressData := TopAddressData{
-// 		NumTxReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-// 		NumTxSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-// 		ValueReceived:  make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-// 		ValueSent:      make([]ethtools.AddressStats, TOP_ADDRESS_COUNT),
-// 		TokenTransfers: make([]ethtools.AddressStats, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
+// 		NumTxReceived:  make([]ethstats.AddressStats, TOP_ADDRESS_COUNT),
+// 		NumTxSent:      make([]ethstats.AddressStats, TOP_ADDRESS_COUNT),
+// 		ValueReceived:  make([]ethstats.AddressStats, TOP_ADDRESS_COUNT),
+// 		ValueSent:      make([]ethstats.AddressStats, TOP_ADDRESS_COUNT),
+// 		TokenTransfers: make([]ethstats.AddressStats, TOP_ADDRESS_TOKEN_TRANSFER_COUNT),
 // 	}
 
 // 	return &ExportData{
@@ -77,12 +76,12 @@ func main() {
 		numBlocks, _ = strconv.Atoi(*timespanPtr)
 	}
 
-	config := ethtools.GetConfig()
+	config := ethstats.GetConfig()
 	// fmt.Println(config)
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethtools.NewDatabaseConnection(config.Database)
+		db = ethstats.NewDatabaseConnection(config.Database)
 	}
 
 	_ = numBlocks
@@ -91,9 +90,9 @@ func main() {
 	fmt.Println("Connecting to Ethereum node at", config.EthNode)
 	fmt.Println("")
 	client, err := ethclient.Dial(config.EthNode)
-	ethtools.Perror(err)
+	ethstats.Perror(err)
 
-	// var result *ethtools.AnalysisResult
+	// var result *ethstats.AnalysisResult
 	date := *datePtr
 	hour := *hourPtr
 	min := *minPtr
@@ -103,11 +102,11 @@ func main() {
 
 	startBlockHeight := int64(*blockHeightPtr)
 	if *blockHeightPtr == 0 { // start at timestamp
-		startTime := ethtools.MakeTime(date, hour, min)
+		startTime := ethstats.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
-		startBlockHeader, err := ethtools.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
-		ethtools.Perror(err)
+		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
+		ethstats.Perror(err)
 		startBlockHeight = startBlockHeader.Number.Int64()
 	}
 
@@ -117,11 +116,11 @@ func main() {
 	if numBlocks > 0 {
 		endBlockHeight = startBlockHeight + int64(numBlocks)
 	} else if numBlocks == 0 && timespanSec > 0 {
-		startTime := ethtools.MakeTime(date, hour, min)
+		startTime := ethstats.MakeTime(date, hour, min)
 		startTimestamp := startTime.Unix()
 		endTimestamp := startTimestamp + int64(timespanSec)
 		fmt.Printf("endTime:   %d / %v ... ", endTimestamp, time.Unix(endTimestamp, 0).UTC())
-		endBlockHeader, _ := ethtools.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
+		endBlockHeader, _ := ethstats.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
 		endBlockHeight = endBlockHeader.Number.Int64() - 1
 	}
 
@@ -132,7 +131,7 @@ func main() {
 	fmt.Printf("  endBlock: %d \n", endBlockHeight)
 	fmt.Println("")
 
-	result := ethtools.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
+	result := ethstats.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
 	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 	printResult(result)
 
@@ -144,7 +143,7 @@ func main() {
 		// Add to database
 		fmt.Printf("\nSaving to database...\n")
 		timeStartAddToDb := time.Now()
-		ethtools.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+		ethstats.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
 		timeNeededAddToDb := time.Since(timeStartAddToDb)
 		fmt.Printf("Saved to database (%.2fs)\n", timeNeededAddToDb.Seconds())
 	}
@@ -173,7 +172,7 @@ func printH2(msg string) {
 	fmt.Println(strings.Repeat("-", utf8.RuneCountInString(m)))
 }
 
-func printTopTx(msg string, txList []ethtools.TxStats) {
+func printTopTx(msg string, txList []ethstats.TxStats) {
 	printH2(msg)
 	for _, v := range txList {
 		fmt.Println(v)
@@ -181,14 +180,14 @@ func printTopTx(msg string, txList []ethtools.TxStats) {
 }
 
 func addressWithName(address string) string {
-	detail, _ := ethtools.GetAddressDetail(address, nil)
+	detail, _ := ethstats.GetAddressDetail(address, nil)
 	return fmt.Sprintf("%s %-28s", detail.Address, detail.Name)
 }
 
-func printTopAddr(msg string, list []ethtools.AddressStats, max int) {
+func printTopAddr(msg string, list []ethstats.AddressStats, max int) {
 	printH2(msg)
 	for i, v := range list {
-		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethtools.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethtools.WeiBigIntToEthString(v.ValueSentWei, 2), ethtools.WeiBigIntToEthString(v.GasFeeTotal, 2), ethtools.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
+		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethstats.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethstats.WeiBigIntToEthString(v.ValueSentWei, 2), ethstats.WeiBigIntToEthString(v.GasFeeTotal, 2), ethstats.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
 		if max > 0 && i == max {
 			break
 		}
@@ -196,7 +195,7 @@ func printTopAddr(msg string, list []ethtools.AddressStats, max int) {
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
-func printResult(result *ethtools.AnalysisResult) {
+func printResult(result *ethstats.AnalysisResult) {
 	fmt.Println("Total blocks:", result.NumBlocks)
 	fmt.Println("- without tx:", result.NumBlocksWithoutTx)
 	fmt.Println("")
@@ -211,11 +210,11 @@ func printResult(result *ethtools.AnalysisResult) {
 	fmt.Println("")
 
 	fmt.Println("Total addresses:", len(result.Addresses))
-	fmt.Println("Total value transferred:", ethtools.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
-	fmt.Println("Total gas fees:", ethtools.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
-	fmt.Println("Gas for failed tx:", ethtools.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
+	fmt.Println("Total value transferred:", ethstats.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
+	fmt.Println("Total gas fees:", ethstats.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
+	fmt.Println("Gas for failed tx:", ethstats.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
 
-	if ethtools.GetConfig().HideOutput {
+	if ethstats.GetConfig().HideOutput {
 		fmt.Println("End because of config.HideOutput")
 		return
 	}
@@ -231,7 +230,7 @@ func printResult(result *ethtools.AnalysisResult) {
 
 	printH2("\nERC20: most token tranfers")
 	for _, v := range result.TopAddresses["NumTxErc20Transfer"] {
-		tokensTransferredInUnit, tokenSymbol := ethtools.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
+		tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
 		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
 	}

@@ -18,7 +18,7 @@ package main
 // 		log.Fatal("Not a valid address")
 // 	}
 
-// 	info, err := ethtools.FetchTokenInfo(address)
+// 	info, err := ethstats.FetchTokenInfo(address)
 // 	if err != nil {
 // 		log.Println(err)
 // 		return
@@ -27,8 +27,8 @@ package main
 // 	fmt.Println(info)
 
 // 	if saveToJson {
-// 		ethtools.AddEthplorerokenToFullJson(&info)
-// 		ethtools.AddTokenToJson(info.ToAddressDetail())
+// 		ethstats.AddEthplorerokenToFullJson(&info)
+// 		ethstats.AddTokenToJson(info.ToAddressDetail())
 // 	}
 // }
 
@@ -40,7 +40,7 @@ package main
 // 	}
 // 	defer file.Close()
 
-// 	addressMap := ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
+// 	addressMap := ethstats.GetAddressDetailMap(ethstats.DATASET_BOTH)
 
 // 	scanner := bufio.NewScanner(file)
 // 	for scanner.Scan() {
@@ -58,7 +58,7 @@ package main
 
 // 			getTokenFromEthplorerAndSaveToJson(address, saveToJson)
 // 			fmt.Println("")
-// 			time.Sleep(ethtools.ETHPLORER_TIMEOUT)
+// 			time.Sleep(ethstats.ETHPLORER_TIMEOUT)
 // 		}
 // 	}
 // }
@@ -74,7 +74,7 @@ package main
 
 // 	// List addresses
 // 	if *listPtr {
-// 		addressMap := ethtools.GetAddressDetailMap(ethtools.DATASET_BOTH)
+// 		addressMap := ethstats.GetAddressDetailMap(ethstats.DATASET_BOTH)
 // 		for _, v := range addressMap {
 // 			fmt.Printf("%s \t %-10v \t %-30v %s \t %d\n", v.Address, v.Type, v.Name, v.Symbol, v.Decimals)
 // 		}
@@ -84,7 +84,7 @@ package main
 
 // 	// List Ethplorer Tokens
 // 	if *listEthplorerPtr {
-// 		addressMap := ethtools.GetEthplorerTokenInfolMap()
+// 		addressMap := ethstats.GetEthplorerTokenInfolMap()
 // 		for _, v := range addressMap {
 // 			fmt.Printf("%s \t %-30v %s \t %s\n", v.Address, v.Name, v.Symbol, v.Decimals)
 // 		}
@@ -102,9 +102,9 @@ package main
 // 		getTokenFromEthplorerAndSaveToJson(*addressPtr, *addPtr)
 // 	} else {
 // 		fmt.Println("Getting address details from Ethereum node...")
-// 		config := ethtools.GetConfig()
+// 		config := ethstats.GetConfig()
 // 		client, err := ethclient.Dial(config.EthNode)
-// 		ethtools.Perror(err)
+// 		ethstats.Perror(err)
 
 // 		// address := "0xa1a55063d81696a7f3e94c84b323c792d2501bea" // wallet
 // 		// address := "0x629a673a8242c2ac4b7b8c5d8735fbeac21a6205" // nft (sorare)
@@ -116,7 +116,7 @@ package main
 // 		// address := "0xC46E0E7eCb3EfCC417f6F89b940FFAFf72556382" // other contract
 
 // 		// a := GetAddressType(address, client)
-// 		a, _ := ethtools.GetAddressDetailFromBlockchain(*addressPtr, client)
+// 		a, _ := ethstats.GetAddressDetailFromBlockchain(*addressPtr, client)
 // 		fmt.Println(a)
 // 		return
 // 	}

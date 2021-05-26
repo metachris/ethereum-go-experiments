@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
+	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
 func main() {
@@ -12,9 +12,9 @@ func main() {
 	flag.Parse()
 
 	if *resetPtr {
-		cfg := ethtools.GetConfig()
-		db := ethtools.GetDatabase(cfg.Database)
-		ethtools.ResetDatabase(db)
+		cfg := ethstats.GetConfig()
+		db := ethstats.GetDatabase(cfg.Database)
+		ethstats.ResetDatabase(db)
 		return
 	}
 

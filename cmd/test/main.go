@@ -6,45 +6,44 @@ import (
 	"math"
 	"sort"
 
-	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
 func TxTest() {
-	config := ethtools.GetConfig()
+	config := ethstats.GetConfig()
 	client, err := ethclient.Dial(config.EthNode)
-	ethtools.Perror(err)
+	ethstats.Perror(err)
 
 	txHash := common.HexToHash("0x3308ca87b00911f3b4aac572f526d41d7786c8b4d845950e83020ac8596353c0")
 	tx, _, err := client.TransactionByHash(context.Background(), txHash)
-	ethtools.Perror(err)
+	ethstats.Perror(err)
 	// fmt.Println(isPending)
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-	ethtools.Perror(err)
+	ethstats.Perror(err)
 	fee := float64((receipt.GasUsed * tx.GasPrice().Uint64())) / math.Pow10(18)
 	fmt.Println(receipt.GasUsed, tx.GasPrice(), fee)
 	fmt.Println(tx.Hash().Hex())
 }
 
-// func GetBlockWithTxReceipts(client *ethclient.Client, wg *sync.WaitGroup, height *big.Int) (res ethtools.BlockWithTxReceipts) {
+// func GetBlockWithTxReceipts(client *ethclient.Client, wg *sync.WaitGroup, height *big.Int) (res ethstats.BlockWithTxReceipts) {
 // 	fmt.Println("getBlockWithTxReceipts", height)
 // 	defer wg.Done()
 
 // 	var err error
 // 	if client == nil {
-// 		client, err = ethclient.Dial(ethtools.GetConfig().EthNode)
-// 		ethtools.Perror(err)
+// 		client, err = ethclient.Dial(ethstats.GetConfig().EthNode)
+// 		ethstats.Perror(err)
 // 	}
 // 	res.block, err = client.BlockByNumber(context.Background(), height)
-// 	ethtools.Perror(err)
+// 	ethstats.Perror(err)
 
 // 	res.txReceipts = make(map[common.Hash]*types.Receipt)
 // 	for _, tx := range res.block.Transactions() {
 // 		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-// 		ethtools.Perror(err)
+// 		ethstats.Perror(err)
 // 		res.txReceipts[tx.Hash()] = receipt
 // 	}
 
@@ -61,7 +60,7 @@ func TxTest() {
 // 	numBlocks := 10
 
 // 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
-// 	// client, _ := ethclient.Dial(ethtools.GetConfig().EthNode)
+// 	// client, _ := ethclient.Dial(ethstats.GetConfig().EthNode)
 
 // 	timeStart := time.Now()
 // 	for i := 0; i < numBlocks; i++ {
