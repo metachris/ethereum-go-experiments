@@ -1,7 +1,6 @@
 package main
 
 import (
-	"ethstats/ethtools"
 	"flag"
 	"fmt"
 	"log"
@@ -10,6 +9,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"

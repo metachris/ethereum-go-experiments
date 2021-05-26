@@ -1,10 +1,11 @@
 package main
 
 import (
-	"ethstats/ethtools"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/metachris/ethereum-go-experiments/ethtools"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -57,7 +58,7 @@ func main() {
 
 	// Routes
 	e.GET("/", hello)
-	e.GET("/analysis/:id", getAnalysis)
+	e.GET("/api/analysis/:id", getAnalysis)
 
 	// Start server
 	e.Logger.Fatal(e.Start(listenAddr))

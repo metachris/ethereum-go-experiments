@@ -2,7 +2,7 @@ package main
 
 // import (
 // 	"bufio"
-// 	"ethstats/ethtools"
+// 	"github.com/metachris/ethereum-go-experiments/ethtools"
 // 	"flag"
 // 	"fmt"
 // 	"log"

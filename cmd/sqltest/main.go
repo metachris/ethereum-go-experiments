@@ -1,6 +1,6 @@
 package main
 
-import "ethstats/ethtools"
+import ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
 
 func main() {
 	db := ethtools.NewDatabaseConnection(ethtools.GetConfig().Database)

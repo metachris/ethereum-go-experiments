@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"ethstats/ethtools"
 	"fmt"
 	"math"
 	"sort"
+
+	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

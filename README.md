@@ -64,7 +64,8 @@ Notes:
 Maybe
 
 * Count failed ERC token transfers?
-
+* Webserver: Consider a cache for DB responses - eg.
+https://github.com/SporkHubr/echo-http-cache/blob/master/adapter/memory/memory.go
 
 Interesting, high effort
 

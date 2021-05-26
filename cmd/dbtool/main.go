@@ -1,9 +1,10 @@
 package main
 
 import (
-	"ethstats/ethtools"
 	"flag"
 	"fmt"
+
+	ethtools "github.com/metachris/ethereum-go-experiments/ethtools"
 )
 
 func main() {

@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	erc20 "ethstats/ethtools/contracts/erc20"
-	erc721 "ethstats/ethtools/contracts/erc721"
+	erc20 "github.com/metachris/ethereum-go-experiments/ethtools/contracts/erc20"
+	erc721 "github.com/metachris/ethereum-go-experiments/ethtools/contracts/erc721"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
