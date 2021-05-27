@@ -366,18 +366,18 @@ func (result *AnalysisResult) GetAllTopAddressStats() []AddressStats {
 	return ret
 }
 
-// UpdateTxAddressDetails gets the address details from cache for each top transaction
-func (result *AnalysisResult) UpdateTxAddressDetails(client *ethclient.Client) {
-	for i, v := range result.TopTransactions.Value {
-		result.TopTransactions.Value[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
-		result.TopTransactions.Value[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
-	}
-	for i, v := range result.TopTransactions.GasFee {
-		result.TopTransactions.GasFee[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
-		result.TopTransactions.GasFee[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
-	}
-	for i, v := range result.TopTransactions.DataSize {
-		result.TopTransactions.DataSize[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
-		result.TopTransactions.DataSize[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
-	}
-}
+// // UpdateTxAddressDetails gets the address details from cache for each top transaction
+// func (result *AnalysisResult) UpdateTxAddressDetails(client *ethclient.Client) {
+// 	for i, v := range result.TopTransactions.Value {
+// 		result.TopTransactions.Value[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
+// 		result.TopTransactions.Value[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
+// 	}
+// 	for i, v := range result.TopTransactions.GasFee {
+// 		result.TopTransactions.GasFee[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
+// 		result.TopTransactions.GasFee[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
+// 	}
+// 	for i, v := range result.TopTransactions.DataSize {
+// 		result.TopTransactions.DataSize[i].FromAddr, _ = GetAddressDetail(v.FromAddr.Address, client)
+// 		result.TopTransactions.DataSize[i].ToAddr, _ = GetAddressDetail(v.ToAddr.Address, client)
+// 	}
+// }

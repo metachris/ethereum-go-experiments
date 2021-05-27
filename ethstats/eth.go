@@ -31,6 +31,10 @@ func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWi
 	Perror(err)
 
 	res.txReceipts = make(map[common.Hash]*types.Receipt)
+	if GetConfig().LowApiCallMode {
+		return res
+	}
+
 	for _, tx := range res.block.Transactions() {
 		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 		if err != nil {

@@ -6,28 +6,28 @@ import (
 	"strconv"
 )
 
-//go:generate stringer -type=Config
 type Config struct {
-	Database PostgresConfig
+	EthNode string
 
-	EthNode         string
-	EthplorerApiKey string
+	Database PostgresConfig
 
 	WebserverHost string
 	WebserverPort int
 
-	NumTopAddresses      int
-	NumTopAddressesLarge int
-	NumTopTransactions   int
+	NumTopAddresses    int
+	NumTopTransactions int
+
+	EthplorerApiKey string // not needed
 
 	// Debug helpers
 	Debug                 bool
 	HideOutput            bool
 	DebugPrintFlashbotsTx bool
+	LowApiCallMode        bool
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d/%d, debug=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumTopAddresses, c.NumTopAddressesLarge, c.Debug)
+	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d, numTx:%d, debug=%t, lowApiCall=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumTopAddresses, c.NumTopTransactions, c.Debug, c.LowApiCallMode)
 }
 
 type PostgresConfig struct {
@@ -93,13 +93,13 @@ func GetConfig() *Config {
 		EthNode:         getEnvStr("ETH_NODE", ""),
 		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
-		NumTopAddresses:      getEnvInt("NUM_TOP_ADDR", 25),
-		NumTopAddressesLarge: getEnvInt("NUM_TOP_ADDR_L", 100),
-		NumTopTransactions:   getEnvInt("NUM_TOP_TX", 20),
+		NumTopAddresses:    getEnvInt("NUM_TOP_ADDR", 25),
+		NumTopTransactions: getEnvInt("NUM_TOP_TX", 20),
 
 		Debug:                 getEnvBool("DEBUG", false),
 		HideOutput:            getEnvBool("HIDE_OUTPUT", false),
 		DebugPrintFlashbotsTx: getEnvBool("MEV", false),
+		LowApiCallMode:        getEnvBool("LOW_API", false),
 	}
 
 	if len(config.EthNode) == 0 {

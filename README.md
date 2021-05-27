@@ -1,25 +1,27 @@
-Generate Ethereum stats for blocks, transactions and addresses.
+# Analyze Ethereum blocks and transactions
 
-Example: [Analysis output for 2021-05-20](https://gist.githubusercontent.com/metachris/ee2b0163e3ba7cf2602d58a2eacadcd7/raw/c2e7cdb1e787314e45fa69cd859456e90d49ce66/eth-2021-05-20.txt)
+Collect statistics about addresses, transactions, smart contracts and more.
 
-Features
+[Example output analyzing 24h of 2021-05-20](https://gist.githubusercontent.com/metachris/ee2b0163e3ba7cf2602d58a2eacadcd7/raw/c2e7cdb1e787314e45fa69cd859456e90d49ce66/eth-2021-05-20.txt)
+
+Notes:
+
+* This code is a prototype and changes frequently.
+* You should have direct IPC access to a geth node, because of the large amount of API calls (at least one per block and one per transaction to get the receipt).
+* You can enter low-api-call mode with env var `LOW_API=1`, which counts all tx as success and gas fee as 1, and doesn't look up smart contract details (no erc20/721 stats). Then it only does 1 API call per block.
+* I'm not yet a Go expert and this codebase probably doesn't follow many best practices. I'm open to suggestions and improvements.
+
+Features:
 
 * Iterates over block ranges and date ranges
 * Collects statistics for top addresses and transactions (by ETH value sent, gas fees, failed transactions, erc20 transfers, ...)
 * Output analysis as text, JSON, and Postgres database
 
-Notes
-
-* Loading blocks with receipts for each transaction does a lot of API calls to the Ethereum node (1 per block and 1 for each transaction).
-  For full statistics, you should run this code on the same machine as the geth instance and use the IPC interface.
-* This code is a prototype and changes frequently. Also, I'm not a Go expert and this codebase probably doesn't follow many best practices.
-  I'm open to suggestions and improvements!
-
 
 ## Geting started
 
 ```bash
-# Start DB
+# Start database
 docker-compose up
 
 # Load the environment variables

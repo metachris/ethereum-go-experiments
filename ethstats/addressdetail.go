@@ -269,6 +269,10 @@ func GetAddressDetail(address string, client *ethclient.Client) (detail AddressD
 	}
 
 	// Look up in Blockchain
+	if GetConfig().LowApiCallMode {
+		return detail, found
+	}
+
 	detail, found = GetAddressDetailFromBlockchain(address, client)
 	if found {
 		AddAddressDetailToCache(detail)
