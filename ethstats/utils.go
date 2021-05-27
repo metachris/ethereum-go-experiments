@@ -2,7 +2,6 @@ package ethstats
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 	"strings"
@@ -16,12 +15,8 @@ var One = big.NewInt(1)
 
 func MakeTime(dayString string, hour int, min int) time.Time {
 	dateString := fmt.Sprintf("%sT%02d:%02d:00Z", dayString, hour, min)
-	// fmt.Println(ts)
 	t, err := time.Parse(time.RFC3339, dateString)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// fmt.Println(t)
+	Perror(err)
 	return t
 }
 

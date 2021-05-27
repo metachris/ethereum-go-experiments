@@ -28,14 +28,20 @@ docker-compose up
 source .env.example
 
 # Run analyzer for specific block(s)
-go run cmd/analyzer/main.go -block 12381372
-go run cmd/analyzer/main.go -block 12381372 -len 10
+go run cmd/analyzer/main.go -block 12381372          # process this one block
+go run cmd/analyzer/main.go -block 12381372 -len 10  # process 10 blocks starting with 12381372 (last will be 12381381)
+go run cmd/analyzer/main.go -block 12381372 -len 5m  # process all blocks with timestamp < 5 minutes after block 12381372
 
-# Run analyzer for certain timespan
-go run cmd/analyzer/main.go -date 2021-05-20 -len 5m
+# Run analyzer for certain start date
+go run cmd/analyzer/main.go -date 2021-05-20 -len 5m  # 2021-05-20 00:00:00 UTC -> 2021-05-20 00:05:00 UTC
 go run cmd/analyzer/main.go -date 2021-05-20 -len 2h
-go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check 100 blocks starting at date
-go run cmd/analyzer/main.go -date 2021-05-20 -len 1d -addDb  # add to database
+go run cmd/analyzer/main.go -date 2021-05-20 -len 1d
+go run cmd/analyzer/main.go -date 2021-05-20 -hour 4 -min 52 -len 2h
+go run cmd/analyzer/main.go -date 2021-05-20 -len 100  # check first 100 blocks starting at 2021-05-20 00:00:00 UTC
+go run cmd/analyzer/main.go -date -1d -len 5m # first 5 min of yesterday
+
+# Add analysis to database
+go run cmd/analyzer/main.go -date 2021-05-20 -len 1h -addDb
 
 # Render HTML for an analysis in the database
 go run cmd/renderhtml/main.go -id 3

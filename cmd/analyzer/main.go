@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -40,10 +41,10 @@ import (
 func main() {
 	timestampMainStart := time.Now() // for measuring execution time
 
-	datePtr := flag.String("date", "", "date (yyyy-mm-dd)")
+	datePtr := flag.String("date", "", "date (yyyy-mm-dd or -1d)")
 	hourPtr := flag.Int("hour", 0, "hour (UTC)")
 	minPtr := flag.Int("min", 0, "hour (UTC)")
-	timespanPtr := flag.String("len", "", "num blocks or timespan (4s, 5m, 1h, ...)")
+	lenPtr := flag.String("len", "", "num blocks or timespan (4s, 5m, 1h, ...)")
 	outJsonPtr := flag.String("out", "", "filename to store JSON output")
 	blockHeightPtr := flag.Int("block", 0, "specific block to check")
 	addToDbPtr := flag.Bool("addDb", false, "add to database")
@@ -53,27 +54,25 @@ func main() {
 		log.Fatal("Date or block missing, add with -date <yyyy-mm-dd> or -block <blockNum>")
 	}
 
-	if *blockHeightPtr == 0 && len(*timespanPtr) == 0 {
-		log.Fatal("Timespan missing, -len")
-	}
-
 	numBlocks := 0
 	timespanSec := 0
 	switch {
-	case strings.HasSuffix(*timespanPtr, "s"):
-		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "s"))
-	case strings.HasSuffix(*timespanPtr, "m"):
-		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "m"))
+	case strings.HasSuffix(*lenPtr, "s"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*lenPtr, "s"))
+	case strings.HasSuffix(*lenPtr, "m"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*lenPtr, "m"))
 		timespanSec *= 60
-	case strings.HasSuffix(*timespanPtr, "h"):
-		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "h"))
+	case strings.HasSuffix(*lenPtr, "h"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*lenPtr, "h"))
 		timespanSec *= 60 * 60
-	case strings.HasSuffix(*timespanPtr, "d"):
-		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*timespanPtr, "d"))
+	case strings.HasSuffix(*lenPtr, "d"):
+		timespanSec, _ = strconv.Atoi(strings.TrimSuffix(*lenPtr, "d"))
 		timespanSec *= 60 * 60 * 24
+	case len(*lenPtr) == 0:
+		numBlocks = 1
 	default:
 		// No suffix: number of blocks
-		numBlocks, _ = strconv.Atoi(*timespanPtr)
+		numBlocks, _ = strconv.Atoi(*lenPtr)
 	}
 
 	config := ethstats.GetConfig()
@@ -101,9 +100,35 @@ func main() {
 	_ = outJsonPtr
 
 	startBlockHeight := int64(*blockHeightPtr)
-	if *blockHeightPtr == 0 { // start at timestamp
-		startTime := ethstats.MakeTime(date, hour, min)
-		startTimestamp := startTime.Unix()
+	var startTimestamp int64
+
+	if *blockHeightPtr > 0 { // start at timestamp
+		startBlockHeader, err := client.HeaderByNumber(context.Background(), big.NewInt(int64(*blockHeightPtr)))
+		ethstats.Perror(err)
+		startTimestamp = int64(startBlockHeader.Time)
+
+	} else {
+		var startTime time.Time
+
+		// Negative date prefix (-1d, -2m, -1y)
+		if strings.HasPrefix(*datePtr, "-") {
+			if strings.HasSuffix(*datePtr, "d") {
+				t := time.Now().AddDate(0, 0, -1)
+				startTime = t.Truncate(24 * time.Hour)
+			} else if strings.HasSuffix(*datePtr, "m") {
+				t := time.Now().AddDate(0, -1, 0)
+				startTime = t.Truncate(24 * time.Hour)
+			} else if strings.HasSuffix(*datePtr, "y") {
+				t := time.Now().AddDate(-1, 0, 0)
+				startTime = t.Truncate(24 * time.Hour)
+			} else {
+				panic(fmt.Sprintf("Not a valid date: %s", *datePtr))
+			}
+		} else {
+			startTime = ethstats.MakeTime(date, hour, min)
+		}
+
+		startTimestamp = startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
 		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
 		ethstats.Perror(err)
@@ -114,14 +139,14 @@ func main() {
 
 	var endBlockHeight int64
 	if numBlocks > 0 {
-		endBlockHeight = startBlockHeight + int64(numBlocks)
-	} else if numBlocks == 0 && timespanSec > 0 {
-		startTime := ethstats.MakeTime(date, hour, min)
-		startTimestamp := startTime.Unix()
+		endBlockHeight = startBlockHeight + int64(numBlocks-1)
+	} else if timespanSec > 0 {
 		endTimestamp := startTimestamp + int64(timespanSec)
 		fmt.Printf("endTime:   %d / %v ... ", endTimestamp, time.Unix(endTimestamp, 0).UTC())
 		endBlockHeader, _ := ethstats.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
 		endBlockHeight = endBlockHeader.Number.Int64() - 1
+	} else {
+		panic("No valid block range")
 	}
 
 	if endBlockHeight < startBlockHeight {
@@ -132,8 +157,10 @@ func main() {
 	fmt.Println("")
 
 	result := ethstats.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
-	fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
-	printResult(result)
+	if !ethstats.GetConfig().HideOutput {
+		fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
+		printResult(result)
+	}
 
 	timeNeeded := time.Since(timestampMainStart)
 	fmt.Printf("\nAnalysis finished (%.2fs)\n", timeNeeded.Seconds())
