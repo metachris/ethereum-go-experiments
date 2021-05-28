@@ -11,19 +11,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/metachris/ethereum-go-experiments/contracts/erc20"
-	"github.com/metachris/ethereum-go-experiments/contracts/erc721"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-)
-
-var (
-	INTERFACEID_ERC165            = [4]byte{1, 255, 201, 167}  // 0x01ffc9a7
-	INTERFACEID_ERC721            = [4]byte{128, 172, 88, 205} // 0x80ac58cd
-	INTERFACEID_ERC721_METADATA   = [4]byte{91, 94, 19, 159}   // 0x5b5e139f
-	INTERFACEID_ERC721_ENUMERABLE = [4]byte{120, 14, 157, 99}  // 0x780e9d63
-	INTERFACEID_ERC1155           = [4]byte{217, 182, 122, 38} // 0xd9b67a26
+	"github.com/metachris/eth-go-bindings/erc165"
+	"github.com/metachris/eth-go-bindings/erc20"
+	"github.com/metachris/eth-go-bindings/erc721"
 )
 
 type AddressType string
@@ -159,9 +151,9 @@ func IsContract(address string, client *ethclient.Client) bool {
 
 func SmartContractSupportsInterface(address string, interfaceId [4]byte, client *ethclient.Client) bool {
 	addr := common.HexToAddress(address)
-	instance, err := erc721.NewErc721(addr, client) // the SupportsInterface signature is the same for all contract types, so we can just use the ERC721 interface
+	instance, err := erc165.NewErc165(addr, client) // the SupportsInterface signature is the same for all contract types, so we can just use the ERC721 interface
 	Perror(err)
-	isSupported, err := instance.SupportsInterface(nil, INTERFACEID_ERC721)
+	isSupported, err := instance.SupportsInterface(nil, erc165.InterfaceIdErc721)
 	return err == nil && isSupported
 }
 
@@ -175,7 +167,7 @@ func IsErc721(address string, client *ethclient.Client) (isErc721 bool, detail A
 	instance, err := erc721.NewErc721(addr, client)
 	Perror(err)
 
-	isErc721, err = instance.SupportsInterface(nil, INTERFACEID_ERC165)
+	isErc721, err = instance.SupportsInterface(nil, erc165.InterfaceIdErc165)
 	if err != nil || !isErc721 {
 		return false, detail
 	}
