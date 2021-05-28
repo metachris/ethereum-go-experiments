@@ -269,14 +269,14 @@ func printResult(result *ethstats.AnalysisResult) {
 	// }
 
 	printH2("\nERC721: most token transfers")
-	for _, v := range result.TopAddresses["NumTxErc721Transfers"] {
+	for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
 		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
 	}
 
 	fmt.Println("")
 	printH1("\nAddresses")
 
-	interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", "ValueReceived", "ValueSent", "NumTxReceivedFailed", "NumTxSentFailed"}
+	interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", ethstats.TopAddressValueReceived, ethstats.TopAddressValueSent, "NumTxReceivedFailed", "NumTxSentFailed"}
 	for _, key := range interesting {
 		fmt.Println("")
 		printTopAddr(key, result.TopAddresses[key], 0)

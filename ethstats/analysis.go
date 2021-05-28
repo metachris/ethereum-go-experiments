@@ -12,6 +12,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// Keys for top addresses
+var (
+	TopAddressValueSent     string = "ValueSent"
+	TopAddressValueReceived        = "ValueReceived"
+)
+
 type AnalysisResult struct {
 	StartBlockNumber    int64
 	StartBlockTimestamp uint64
@@ -230,6 +236,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 					valueReceiverStats.Erc20TokensReceived = new(big.Int).Add(valueReceiverStats.Erc20TokensReceived, valBigInt)
 
 				} else if txToAddrStats.AddressDetail.IsErc721() {
+					// fmt.Println("ERC721 transfer", tx.Hash())
 					result.NumTransactionsErc721Transfer += 1
 
 					// Count sender
@@ -324,8 +331,8 @@ func (result *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
 	}
 
 	// bigint
-	result.TopAddresses["ValueSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 }, func(a AddressStats) bool { return a.ValueSentWei.Cmp(common.Big0) == 1 })
-	result.TopAddresses["ValueReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 }, func(a AddressStats) bool { return a.ValueReceivedWei.Cmp(common.Big0) == 1 })
+	result.TopAddresses[TopAddressValueSent] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueSentWei.Cmp(_addresses[j].ValueSentWei) == 1 }, func(a AddressStats) bool { return a.ValueSentWei.Cmp(common.Big0) == 1 })
+	result.TopAddresses[TopAddressValueReceived] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].ValueReceivedWei.Cmp(_addresses[j].ValueReceivedWei) == 1 }, func(a AddressStats) bool { return a.ValueReceivedWei.Cmp(common.Big0) == 1 })
 	result.TopAddresses["Erc20TokensSent"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool { return _addresses[i].Erc20TokensSent.Cmp(_addresses[j].Erc20TokensSent) == 1 }, func(a AddressStats) bool { return a.Erc20TokensSent.Cmp(common.Big0) == 1 })
 	result.TopAddresses["Erc20TokensReceived"] = NewTopAddressList(&_addresses, client, numEntries, func(i, j int) bool {
 		return _addresses[i].Erc20TokensReceived.Cmp(_addresses[j].Erc20TokensReceived) == 1
