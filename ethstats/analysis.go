@@ -366,7 +366,7 @@ func (result *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
 }
 
 func (result *AnalysisResult) GetAllTopAddressStats() []AddressStats {
-	ret := make([]AddressStats, 0, 0)
+	ret := make([]AddressStats, 0)
 	for k := range result.TopAddresses {
 		ret = append(ret, result.TopAddresses[k]...)
 	}
