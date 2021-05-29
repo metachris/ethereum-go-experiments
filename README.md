@@ -2,7 +2,7 @@
 
 Collect statistics about addresses, transactions, smart contracts and more.
 
-[Example output analyzing 24h of 2021-05-20](https://gist.githubusercontent.com/metachris/ee2b0163e3ba7cf2602d58a2eacadcd7/raw/c2e7cdb1e787314e45fa69cd859456e90d49ce66/eth-2021-05-20.txt)
+[Example output analyzing 24h of 2021-05-28 (UTC)](https://gist.github.com/metachris/2e4d10d57f8f675f69a075d4fbd1926d)
 
 Notes:
 

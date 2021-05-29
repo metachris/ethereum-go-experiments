@@ -2,6 +2,7 @@ package ethstats
 
 import (
 	"fmt"
+	"log"
 	"math/big"
 	"net/url"
 	"strings"
@@ -316,7 +317,7 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 
 	// Add address-stats entry now
 	tokensTransferredInUnit, tokenSymbol := GetErc20TokensInUnit(addr.Erc20TokensTransferred, addr.AddressDetail)
-	db.MustExec(`INSERT INTO analysis_address_stat (
+	_, err = db.Exec(`INSERT INTO analysis_address_stat (
 		Analysis_id,
 		Address,
 
@@ -378,6 +379,10 @@ func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId
 		addr.GasUsed.String(),
 		addr.GasFeeTotal.String(),
 		addr.GasFeeFailedTx.String())
+
+	if err != nil {
+		log.Println("database: Error inserting stats for", addr)
+	}
 }
 
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
