@@ -20,7 +20,8 @@ func MakeTime(dayString string, hour int, min int) time.Time {
 	return t
 }
 
-func estimateTargetBlocknumber(utcTimestamp int64) int64 {
+// Roughly estimate a block number by target timestamp (might be off by a lot)
+func EstimateTargetBlocknumber(utcTimestamp int64) int64 {
 	// Calculate block-difference from reference block
 	referenceBlockNumber := int64(12323940)
 	referenceBlockTimestamp := int64(1619546404) // 2021-04-27 19:49:13 +0200 CEST

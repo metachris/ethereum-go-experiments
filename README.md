@@ -27,6 +27,10 @@ docker-compose up
 # Load the environment variables
 source .env.example
 
+#
+# ANALYZER
+#
+
 # Run analyzer for specific block(s)
 go run cmd/analyzer/main.go -block 12381372          # process this one block
 go run cmd/analyzer/main.go -block 12381372 -len 10  # process 10 blocks starting with 12381372 (last will be 12381381)
@@ -42,6 +46,13 @@ go run cmd/analyzer/main.go -date -1d -len 5m # first 5 min of yesterday
 
 # Add analysis to database
 go run cmd/analyzer/main.go -date 2021-05-20 -len 1h -addDb
+
+# Run analysis for full day yesterday, and save output to database and a text file
+go run cmd/analyzer/main.go -date -1d -len 1d -addDb | tee output/`date --date=' 1 days ago' '+%Y-%m-%d'`.txt
+
+#
+# OTHER COMMANDS
+#
 
 # Render HTML for an analysis in the database
 go run cmd/renderhtml/main.go -id 3
@@ -75,7 +86,8 @@ Maybe
 * Webserver: Consider a cache for DB responses - eg.
 https://github.com/SporkHubr/echo-http-cache/blob/master/adapter/memory/memory.go
 
-Interesting, high effort
+
+Interesting, higher effort
 
 * Trace SC calls between SCs
 

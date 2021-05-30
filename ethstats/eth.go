@@ -143,7 +143,7 @@ func GetBlockHeaderAtTimestamp(client *ethclient.Client, targetTimestamp int64, 
 	}
 
 	// Estimate a target block number
-	currentBlockNumber := estimateTargetBlocknumber(targetTimestamp)
+	currentBlockNumber := EstimateTargetBlocknumber(targetTimestamp)
 
 	// If estimation later than latest block, then use latest block as estimation base
 	if currentBlockNumber > latestBlockHeader.Number.Int64() {
