@@ -76,8 +76,17 @@ Notes:
 
 ## To do
 
+bugs
+
+* run with `-1d` lands as "date" in database
+
+
+features
+
 * Save output as HTML (in progress)
-* Top data: sender of flashbots tx
+* Top data:
+  * sender of flashbots tx
+  * addr with highest failed gas fee paid
 * Count ERC777, ERC1155 transfers
 * Trace calls between SCs within 1tx
 * Search for "todo"
