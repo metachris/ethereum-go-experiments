@@ -76,8 +76,10 @@ Notes:
 
 ## To do
 
-* Count ERC777, ERC1155 
-* Save output as HTML
+* Save output as HTML (in progress)
+* Top data: sender of flashbots tx
+* Count ERC777, ERC1155 transfers
+* Trace calls between SCs within 1tx
 * Search for "todo"
 
 
@@ -87,10 +89,6 @@ Maybe
 * Webserver: Consider a cache for DB responses - eg.
 https://github.com/SporkHubr/echo-http-cache/blob/master/adapter/memory/memory.go
 
-
-Interesting, higher effort
-
-* Trace SC calls between SCs
 
 
 Maybe, low impact

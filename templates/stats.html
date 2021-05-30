@@ -153,7 +153,7 @@
             {{- range $i, $e := topErc20 0 50 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
-                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="data/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
+                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>{{ $e.Symbol }}</td>
                 <td>{{ $e.Name }}</td>
                 <td class="td-right">{{ numberFormat $e.NumTxReceivedSuccess 0 }}</td>
@@ -182,7 +182,7 @@
             {{- range $i, $e := topErc721 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
-                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="data/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
+                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>{{ $e.Name }}</td>
                 <td>{{ $e.Symbol }}</td>
                 <td class="td-right">{{ numberFormat $e.NumTxErc721Transfer 0 }}</td>
@@ -220,7 +220,7 @@
             {{- range $i, $e := getTopFailedTxReceivers 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
-                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="data/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
+                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>{{ $e.Name }}</td>
                 <td class="td-right">{{ numberFormat $e.NumTxReceivedSuccess 0 }}</td>
                 <td class="td-right"><b>{{ numberFormat $e.NumTxReceivedFailed 0 }}</b></td>
@@ -254,7 +254,7 @@
             {{- range $i, $e := getTopFailedTxSender 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
-                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="data/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
+                <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>{{ $e.Name }}</td>
                 <td class="td-right">{{ numberFormat $e.NumTxReceivedSuccess 0 }}</td>
                 <td class="td-right">{{ numberFormat $e.NumTxReceivedFailed 0 }}</td>
