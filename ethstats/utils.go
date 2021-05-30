@@ -48,13 +48,13 @@ func WeiToEth(wei *big.Int) (ethValue *big.Float) {
 	// wei / 10^18
 	fbalance := new(big.Float)
 	fbalance.SetString(wei.String())
-	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(1e18))
 	return
 }
 
 func WeiUintToEth(wei uint64) (ethValue float64) {
 	// wei / 10^18
-	return float64(wei) / math.Pow10(18)
+	return float64(wei) / 1e18
 }
 
 // Returns bigint wei amount as comma-separated, human-readable string (eg. 1,435,332.71)

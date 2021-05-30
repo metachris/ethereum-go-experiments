@@ -441,21 +441,19 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 	fmt.Println("Analysis ID:", analysisId)
 
 	// Setup DB worker pool
-	numWorkers := 10
-
 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
 	addressInfoQueue := make(chan AddressStats, 50)
-	saveAddrStatToDbWorker := func() {
-		defer wg.Done()
-		for addr := range addressInfoQueue {
-			AddAddressStatsToDatabase(db, client, analysisId, addr)
-		}
-	}
 
 	// Start workers for adding address-stats to database (using 1 sqlx instance)
-	for w := 1; w <= numWorkers; w++ {
+	numWorker := 1
+	for w := 1; w <= numWorker; w++ {
 		wg.Add(1)
-		go saveAddrStatToDbWorker()
+		go func() {
+			defer wg.Done()
+			for addr := range addressInfoQueue {
+				AddAddressStatsToDatabase(db, client, analysisId, addr)
+			}
+		}()
 	}
 
 	entries := result.GetAllTopAddressStats()
@@ -496,11 +494,18 @@ func DbGetAddressStatEntriesForAnalysisId(db *sqlx.DB, analysisId int) (entries 
 	}
 
 	_entries := make([]AnalysisAddressStatsEntryWithAddress, 0)
+	_entryAddressMap := make(map[string]bool) // helper to find repeated entries (bug: concurrent DB connections save two stats concurrently)
+
 	for rows.Next() {
 		var row AnalysisAddressStatsEntryWithAddress
 		err = rows.StructScan(&row)
 		Perror(err)
+		if _entryAddressMap[row.Address] {
+			fmt.Println("Getting stats: got repeated addressstat for", row.Address)
+			continue
+		}
 		_entries = append(_entries, row)
+		_entryAddressMap[row.Address] = true
 	}
 
 	return &_entries, nil
