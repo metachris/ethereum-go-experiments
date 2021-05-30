@@ -76,6 +76,7 @@ Notes:
 
 ## To do
 
+* Count ERC777, ERC1155 
 * Save output as HTML
 * Search for "todo"
 
