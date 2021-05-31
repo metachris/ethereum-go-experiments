@@ -37,7 +37,7 @@
 <body>
     <h1>Ethereum Stats: {{ .Analysis.Date }}</h1>
 
-    <p>{{ .Analysis.Date }} {{ .Analysis.Hour }}:{{ .Analysis.Minute }}:{{ .Analysis.Sec }}, duration: {{ .Analysis.DurationSec }}</p>
+    <p>{{ .Analysis.Date }} {{ .Analysis.Hour }}:{{ .Analysis.Minute }}:{{ .Analysis.Sec }}, duration: {{ .Analysis.DurationSec }}s</p>
     <p>Blocks <a href="https://etherscan.io/block/{{ .Analysis.StartBlockNumber }}">{{ .Analysis.StartBlockNumber }}</a> .. <a href="https://etherscan.io/block/{{ .Analysis.EndBlockNumber }}">{{ .Analysis.EndBlockNumber }}</a></p>
     <p><a href="https://github.com/metachris/ethereum-go-experiments">github.com/metachris/ethereum-go-experiments</a></p>
 
@@ -187,7 +187,7 @@
             </tr>
         </thead>
         <tbody>
-            {{- range $i, $e := topErc721 100 }}
+            {{- range $i, $e := topErc721 0 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
                 <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
@@ -225,7 +225,7 @@
             </tr>
         </thead>
         <tbody>
-            {{- range $i, $e := getTopFailedTxReceivers 100 }}
+            {{- range $i, $e := getTopFailedTxReceivers 0 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
                 <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
@@ -259,7 +259,7 @@
             </tr>
         </thead>
         <tbody>
-            {{- range $i, $e := getTopFailedTxSender 100 }}
+            {{- range $i, $e := getTopFailedTxSender 0 100 }}
             <tr>
                 <td>{{ add $i 1 }}</td>
                 <td><tt>{{ $e.Address }}</tt> <a target="_blank" href="https://etherscan.io/address/{{ $e.Address }}"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
