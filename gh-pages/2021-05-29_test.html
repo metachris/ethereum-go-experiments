@@ -20,8 +20,12 @@
             margin: 40px;
         }
 
-        .pure-table-hover tr:hover td {
-            background: #c4c4ea;
+        .pure-table-hover tbody tr:hover td {
+            background: #E7F2F8;
+        }
+
+        .pure-table thead {
+            background: #FFA384;
         }
 
         .td-right {
@@ -31,9 +35,8 @@
 </head>
 
 <body>
-    <h1>Ethereum Stats - 2021-05-29</h1>
+    <h1>Ethereum Stats: 2021-05-29</h1>
 
-    <p>2021-05-29 00:00:00, duration: 24h</p>
     <p><a href="https://github.com/metachris/ethereum-go-experiments">github.com/metachris/ethereum-go-experiments</a></p>
     <p>Blocks <a href="https://etherscan.io/block/12525912">12525912</a> .. <a href="https://etherscan.io/block/12532376">12532376</a></p>
 
@@ -42,30 +45,32 @@
             <h3>Stats</h3>
             <p>
             <table class="pure-table pure-table-hover">
-                <tr>
-                    <td>Total blocks: </td>
-                    <td class="td-right">6,467</td>
-                </tr>
-                <tr>
-                    <td>Blocks without tx:</td>
-                    <td class="td-right">71 </td>
-                </tr>
-                <tr>
-                    <td>Total addresses: </td>
-                    <td class="td-right"> 652,561</td>
-                </tr>
-                <tr>
-                    <td>Value transferred: </td>
-                    <td class="td-right">3,477,389.34 ETH</td>
-                </tr>
-                <tr>
-                    <td>Total gas fee: </td>
-                    <td class="td-right"> 3,095.52 ETH</td>
-                </tr>
-                <tr>
-                    <td>Gas fee for failed tx: </td>
-                    <td class="td-right">129.62 ETH</td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>Total blocks: </td>
+                        <td class="td-right">6,467</td>
+                    </tr>
+                    <tr>
+                        <td>Blocks without tx:</td>
+                        <td class="td-right">71 </td>
+                    </tr>
+                    <tr>
+                        <td>Total addresses: </td>
+                        <td class="td-right"> 652,561</td>
+                    </tr>
+                    <tr>
+                        <td>Value transferred: </td>
+                        <td class="td-right">3,477,389.34 ETH</td>
+                    </tr>
+                    <tr>
+                        <td>Total gas fee: </td>
+                        <td class="td-right"> 3,095.52 ETH</td>
+                    </tr>
+                    <tr>
+                        <td>Gas fee for failed tx: </td>
+                        <td class="td-right">129.62 ETH</td>
+                    </tr>
+                </tbody>
             </table>
             </p>
         </div>
@@ -73,38 +78,40 @@
             <h3>Transactions</h3>
             <p>
             <table class="pure-table pure-table-hover">
-                <tr>
-                    <td>Total tx:</td>
-                    <td class="td-right">1,293,425 </td>
-                </tr>
-                <tr>
-                    <td>Failed: </td>
-                    <td class="td-right">46,048</td>
-                </tr>
-                <tr>
-                    <td>Zero value: </td>
-                    <td class="td-right">585,850</td>
-                </tr>
-                <tr>
-                    <td>With data: </td>
-                    <td class="td-right">687,761</td>
-                </tr>
-                <tr>
-                    <td>Erc20 transfer: </td>
-                    <td class="td-right">256,983</td>
-                </tr>
-                <tr>
-                    <td>Erc721 transfer: </td>
-                    <td class="td-right">1,356</td>
-                </tr>
-                <tr>
-                    <td>Flashbots ok: </td>
-                    <td class="td-right">9,219</td>
-                </tr>
-                <tr>
-                    <td>Flashbots failed: </td>
-                    <td class="td-right">6</td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>Total tx:</td>
+                        <td class="td-right">1,293,425 </td>
+                    </tr>
+                    <tr>
+                        <td>Failed: </td>
+                        <td class="td-right">46,048</td>
+                    </tr>
+                    <tr>
+                        <td>Zero value: </td>
+                        <td class="td-right">585,850</td>
+                    </tr>
+                    <tr>
+                        <td>With data: </td>
+                        <td class="td-right">687,761</td>
+                    </tr>
+                    <tr>
+                        <td>Erc20 transfer: </td>
+                        <td class="td-right">256,983</td>
+                    </tr>
+                    <tr>
+                        <td>Erc721 transfer: </td>
+                        <td class="td-right">1,356</td>
+                    </tr>
+                    <tr>
+                        <td>Flashbots ok: </td>
+                        <td class="td-right">9,219</td>
+                    </tr>
+                    <tr>
+                        <td>Flashbots failed: </td>
+                        <td class="td-right">6</td>
+                    </tr>
+                </tbody>
             </table>
             </p>
         </div>
@@ -150,8 +157,8 @@
                 <td><tt>0xdac17f958d2ee523a2206206994597c13d831ec7</tt> <a target="_blank" href="https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>USDT</td>
                 <td>Tether USD</td>
-                <td class="td-right">107,063</td>
                 <td class="td-right">102,698</td>
+                <td class="td-right">107,063</td>
                 <td class="td-right">4,092,805,596.80</td>
             </tr>
             <tr>
@@ -159,8 +166,8 @@
                 <td><tt>0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48</tt> <a target="_blank" href="https://etherscan.io/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>USDC</td>
                 <td>USD Coin</td>
-                <td class="td-right">33,494</td>
                 <td class="td-right">29,876</td>
+                <td class="td-right">33,494</td>
                 <td class="td-right">3,565,579,400.46</td>
             </tr>
             <tr>
@@ -168,8 +175,8 @@
                 <td><tt>0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0</tt> <a target="_blank" href="https://etherscan.io/address/0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>MATIC</td>
                 <td>Matic Token</td>
-                <td class="td-right">9,886</td>
                 <td class="td-right">8,431</td>
+                <td class="td-right">9,886</td>
                 <td class="td-right">148,617,030.57</td>
             </tr>
             <tr>
@@ -177,8 +184,8 @@
                 <td><tt>0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce</tt> <a target="_blank" href="https://etherscan.io/address/0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>SHIB</td>
                 <td>SHIBA INU</td>
-                <td class="td-right">7,688</td>
                 <td class="td-right">6,081</td>
+                <td class="td-right">7,688</td>
                 <td class="td-right">4,527,141,418,400.34</td>
             </tr>
             <tr>
@@ -186,8 +193,8 @@
                 <td><tt>0x514910771af9ca656af840dff83e8264ecf986ca</tt> <a target="_blank" href="https://etherscan.io/address/0x514910771af9ca656af840dff83e8264ecf986ca"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>LINK</td>
                 <td>ChainLink Token</td>
-                <td class="td-right">6,369</td>
                 <td class="td-right">5,875</td>
+                <td class="td-right">6,369</td>
                 <td class="td-right">7,997,374.39</td>
             </tr>
             <tr>
@@ -195,8 +202,8 @@
                 <td><tt>0x6b175474e89094c44da98b954eedeac495271d0f</tt> <a target="_blank" href="https://etherscan.io/address/0x6b175474e89094c44da98b954eedeac495271d0f"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>DAI</td>
                 <td>Dai Stablecoin</td>
-                <td class="td-right">6,720</td>
                 <td class="td-right">5,238</td>
+                <td class="td-right">6,720</td>
                 <td class="td-right">246,487,986.07</td>
             </tr>
             <tr>
@@ -204,8 +211,8 @@
                 <td><tt>0x0ec9f76202a7061eb9b3a7d6b59d36215a7e37da</tt> <a target="_blank" href="https://etherscan.io/address/0x0ec9f76202a7061eb9b3a7d6b59d36215a7e37da"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BPT</td>
                 <td>BlackPool Token</td>
-                <td class="td-right">5,407</td>
                 <td class="td-right">4,952</td>
+                <td class="td-right">5,407</td>
                 <td class="td-right">191,167.54</td>
             </tr>
             <tr>
@@ -213,8 +220,8 @@
                 <td><tt>0xa3e059c0b01f07f211c85bf7b4f1d907afb011df</tt> <a target="_blank" href="https://etherscan.io/address/0xa3e059c0b01f07f211c85bf7b4f1d907afb011df"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>eMax</td>
                 <td>EthereumMax</td>
-                <td class="td-right">7,092</td>
                 <td class="td-right">2,816</td>
+                <td class="td-right">7,092</td>
                 <td class="td-right">190,473,801,085,536.10</td>
             </tr>
             <tr>
@@ -222,8 +229,8 @@
                 <td><tt>0x0d8775f648430679a709e98d2b0cb6250d2887ef</tt> <a target="_blank" href="https://etherscan.io/address/0x0d8775f648430679a709e98d2b0cb6250d2887ef"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BAT</td>
                 <td>Basic Attention Token</td>
-                <td class="td-right">2,864</td>
                 <td class="td-right">2,770</td>
+                <td class="td-right">2,864</td>
                 <td class="td-right">22,810,030.27</td>
             </tr>
             <tr>
@@ -231,8 +238,8 @@
                 <td><tt>0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d</tt> <a target="_blank" href="https://etherscan.io/address/0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>CEL</td>
                 <td>Celsius</td>
-                <td class="td-right">2,775</td>
                 <td class="td-right">2,661</td>
+                <td class="td-right">2,775</td>
                 <td class="td-right">2,980,884.34</td>
             </tr>
             <tr>
@@ -240,8 +247,8 @@
                 <td><tt>0xcc8fa225d80b9c7d42f96e9570156c65d6caaa25</tt> <a target="_blank" href="https://etherscan.io/address/0xcc8fa225d80b9c7d42f96e9570156c65d6caaa25"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>SLP</td>
                 <td>Smooth Love Potion</td>
-                <td class="td-right">2,596</td>
                 <td class="td-right">2,412</td>
+                <td class="td-right">2,596</td>
                 <td class="td-right">29,481,062.00</td>
             </tr>
             <tr>
@@ -249,8 +256,8 @@
                 <td><tt>0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9</tt> <a target="_blank" href="https://etherscan.io/address/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>AAVE</td>
                 <td>Aave Token</td>
-                <td class="td-right">2,710</td>
                 <td class="td-right">2,393</td>
+                <td class="td-right">2,710</td>
                 <td class="td-right">326,586.24</td>
             </tr>
             <tr>
@@ -267,8 +274,8 @@
                 <td><tt>0x1f9840a85d5af5bf1d1762f925bdaddc4201f984</tt> <a target="_blank" href="https://etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>UNI</td>
                 <td>Uniswap</td>
-                <td class="td-right">2,871</td>
                 <td class="td-right">2,198</td>
+                <td class="td-right">2,871</td>
                 <td class="td-right">11,170,354.80</td>
             </tr>
             <tr>
@@ -276,8 +283,8 @@
                 <td><tt>0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f</tt> <a target="_blank" href="https://etherscan.io/address/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>SNX</td>
                 <td>Synthetix Network Token</td>
-                <td class="td-right">2,415</td>
                 <td class="td-right">2,080</td>
+                <td class="td-right">2,415</td>
                 <td class="td-right">1,213,812.92</td>
             </tr>
             <tr>
@@ -285,8 +292,8 @@
                 <td><tt>0x15874d65e649880c2614e7a480cb7c9a55787ff6</tt> <a target="_blank" href="https://etherscan.io/address/0x15874d65e649880c2614e7a480cb7c9a55787ff6"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>eMax</td>
                 <td>EthereumMax</td>
-                <td class="td-right">5,880</td>
                 <td class="td-right">1,718</td>
+                <td class="td-right">5,880</td>
                 <td class="td-right">48,435,126,294,761.65</td>
             </tr>
             <tr>
@@ -294,8 +301,8 @@
                 <td><tt>0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c</tt> <a target="_blank" href="https://etherscan.io/address/0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>ENJ</td>
                 <td>Enjin Coin</td>
-                <td class="td-right">1,690</td>
                 <td class="td-right">1,580</td>
+                <td class="td-right">1,690</td>
                 <td class="td-right">39,492,202.29</td>
             </tr>
             <tr>
@@ -312,8 +319,8 @@
                 <td><tt>0xa2b4c0af19cc16a6cfacce81f192b024d625817d</tt> <a target="_blank" href="https://etherscan.io/address/0xa2b4c0af19cc16a6cfacce81f192b024d625817d"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>KISHU</td>
                 <td>Kishu Inu</td>
-                <td class="td-right">2,800</td>
                 <td class="td-right">1,553</td>
+                <td class="td-right">2,800</td>
                 <td class="td-right">1,761,891,857,592,717.00</td>
             </tr>
             <tr>
@@ -321,8 +328,8 @@
                 <td><tt>0x0f5d2fb29fb7d3cfee444a200298f468908cc942</tt> <a target="_blank" href="https://etherscan.io/address/0x0f5d2fb29fb7d3cfee444a200298f468908cc942"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>MANA</td>
                 <td>Decentraland MANA</td>
-                <td class="td-right">1,474</td>
                 <td class="td-right">1,368</td>
+                <td class="td-right">1,474</td>
                 <td class="td-right">26,462,720.71</td>
             </tr>
             <tr>
@@ -330,8 +337,8 @@
                 <td><tt>0x4fabb145d64652a948d72533023f6e7a623c7c53</tt> <a target="_blank" href="https://etherscan.io/address/0x4fabb145d64652a948d72533023f6e7a623c7c53"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BUSD</td>
                 <td>Binance USD</td>
-                <td class="td-right">1,495</td>
                 <td class="td-right">1,337</td>
+                <td class="td-right">1,495</td>
                 <td class="td-right">1,691,381,135.83</td>
             </tr>
             <tr>
@@ -339,8 +346,8 @@
                 <td><tt>0xc00e94cb662c3520282e6f5717214004a7f26888</tt> <a target="_blank" href="https://etherscan.io/address/0xc00e94cb662c3520282e6f5717214004a7f26888"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>COMP</td>
                 <td>Compound</td>
-                <td class="td-right">1,440</td>
                 <td class="td-right">1,290</td>
+                <td class="td-right">1,440</td>
                 <td class="td-right">35,805.30</td>
             </tr>
             <tr>
@@ -348,8 +355,8 @@
                 <td><tt>0x653430560be843c4a3d143d0110e896c2ab8ac0d</tt> <a target="_blank" href="https://etherscan.io/address/0x653430560be843c4a3d143d0110e896c2ab8ac0d"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>MOF</td>
                 <td>Molecular Future</td>
-                <td class="td-right">1,195</td>
                 <td class="td-right">1,194</td>
+                <td class="td-right">1,195</td>
                 <td class="td-right">11,295,301.50</td>
             </tr>
             <tr>
@@ -357,8 +364,8 @@
                 <td><tt>0xc77b230f31b517f1ef362e59c173c2be6540b5e8</tt> <a target="_blank" href="https://etherscan.io/address/0xc77b230f31b517f1ef362e59c173c2be6540b5e8"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>VIDY</td>
                 <td>VidyCoin</td>
-                <td class="td-right">1,154</td>
                 <td class="td-right">1,137</td>
+                <td class="td-right">1,154</td>
                 <td class="td-right">642,503,651.14</td>
             </tr>
             <tr>
@@ -366,8 +373,8 @@
                 <td><tt>0x6b3595068778dd592e39a122f4f5a5cf09c90fe2</tt> <a target="_blank" href="https://etherscan.io/address/0x6b3595068778dd592e39a122f4f5a5cf09c90fe2"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>SUSHI</td>
                 <td>SushiToken</td>
-                <td class="td-right">1,430</td>
                 <td class="td-right">1,024</td>
+                <td class="td-right">1,430</td>
                 <td class="td-right">9,641,427.47</td>
             </tr>
             <tr>
@@ -375,8 +382,8 @@
                 <td><tt>0x3fea51daab1672d3385f6af02980e1462ca0687b</tt> <a target="_blank" href="https://etherscan.io/address/0x3fea51daab1672d3385f6af02980e1462ca0687b"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>EVO</td>
                 <td>EVO</td>
-                <td class="td-right">4,438</td>
                 <td class="td-right">157</td>
+                <td class="td-right">4,438</td>
                 <td class="td-right">27,761.92</td>
             </tr>
             <tr>
@@ -384,8 +391,8 @@
                 <td><tt>0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2</tt> <a target="_blank" href="https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>WETH</td>
                 <td>Wrapped Ether</td>
-                <td class="td-right">3,711</td>
                 <td class="td-right">142</td>
+                <td class="td-right">3,711</td>
                 <td class="td-right">1,013.28</td>
             </tr>
             <tr>
@@ -393,8 +400,8 @@
                 <td><tt>0x88acdd2a6425c3faae4bc9650fd7e27e0bebb7ab</tt> <a target="_blank" href="https://etherscan.io/address/0x88acdd2a6425c3faae4bc9650fd7e27e0bebb7ab"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>⚗️</td>
                 <td>Alchemist</td>
-                <td class="td-right">318</td>
                 <td class="td-right">60</td>
+                <td class="td-right">318</td>
                 <td class="td-right">9,747.95</td>
             </tr>
             <tr>
@@ -402,8 +409,8 @@
                 <td><tt>0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e</tt> <a target="_blank" href="https://etherscan.io/address/0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>KICK</td>
                 <td>KickToken</td>
-                <td class="td-right">143</td>
                 <td class="td-right">38</td>
+                <td class="td-right">143</td>
                 <td class="td-right">634,692,330.41</td>
             </tr>
             <tr>
@@ -411,8 +418,8 @@
                 <td><tt>0xcd19e160ecd44cbf96fcd278e41a0f05ef2c68de</tt> <a target="_blank" href="https://etherscan.io/address/0xcd19e160ecd44cbf96fcd278e41a0f05ef2c68de"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>ETT</td>
                 <td>Entertainment</td>
-                <td class="td-right">13</td>
                 <td class="td-right">10</td>
+                <td class="td-right">13</td>
                 <td class="td-right">9,305,555,555,555,552.00</td>
             </tr>
             <tr>
@@ -420,8 +427,8 @@
                 <td><tt>0x9e1e944000e7da9d8bcda9aa784fe83a2cb5871c</tt> <a target="_blank" href="https://etherscan.io/address/0x9e1e944000e7da9d8bcda9aa784fe83a2cb5871c"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>EMAX</td>
                 <td>EMAX</td>
-                <td class="td-right">8</td>
                 <td class="td-right">6</td>
+                <td class="td-right">8</td>
                 <td class="td-right">1,502,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -429,8 +436,8 @@
                 <td><tt>0x1abcf0eb0134bf147e6fc3507456a8c4470f6424</tt> <a target="_blank" href="https://etherscan.io/address/0x1abcf0eb0134bf147e6fc3507456a8c4470f6424"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>DINGO</td>
                 <td>DINGO INU (t.me/dingoinumeme)</td>
-                <td class="td-right">15</td>
                 <td class="td-right">5</td>
+                <td class="td-right">15</td>
                 <td class="td-right">800,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -438,8 +445,8 @@
                 <td><tt>0x0f34deb1f4c88c31a3f6bfdd6724ee39a32ddce4</tt> <a target="_blank" href="https://etherscan.io/address/0x0f34deb1f4c88c31a3f6bfdd6724ee39a32ddce4"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>PCHULO</td>
                 <td>Papi Chulo</td>
-                <td class="td-right">19</td>
                 <td class="td-right">4</td>
+                <td class="td-right">19</td>
                 <td class="td-right">1,519,999,999,999,999.95</td>
             </tr>
             <tr>
@@ -447,8 +454,8 @@
                 <td><tt>0x40007d9bbf265b101d962719c7f60878aa32ff51</tt> <a target="_blank" href="https://etherscan.io/address/0x40007d9bbf265b101d962719c7f60878aa32ff51"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>HISHIBA</td>
                 <td>HIPPIE SHIBA INU</td>
-                <td class="td-right">7</td>
                 <td class="td-right">3</td>
+                <td class="td-right">7</td>
                 <td class="td-right">1,450,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -456,8 +463,8 @@
                 <td><tt>0xcd76a036dc1bde6a96decccb2226ac35e24b2bbb</tt> <a target="_blank" href="https://etherscan.io/address/0xcd76a036dc1bde6a96decccb2226ac35e24b2bbb"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>CHOPPER</td>
                 <td>ChopperFinance</td>
-                <td class="td-right">41</td>
                 <td class="td-right">3</td>
+                <td class="td-right">41</td>
                 <td class="td-right">526,985,448,986,431.24</td>
             </tr>
             <tr>
@@ -465,8 +472,8 @@
                 <td><tt>0x4b322281c55cc6435654a9a5fbd7f3b5d4bad6b8</tt> <a target="_blank" href="https://etherscan.io/address/0x4b322281c55cc6435654a9a5fbd7f3b5d4bad6b8"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>Golden</td>
                 <td>Golden INU</td>
-                <td class="td-right">7</td>
                 <td class="td-right">3</td>
+                <td class="td-right">7</td>
                 <td class="td-right">1,001,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -474,8 +481,8 @@
                 <td><tt>0x14be9ac7ea388118f7e8ed8062206675da7ae24b</tt> <a target="_blank" href="https://etherscan.io/address/0x14be9ac7ea388118f7e8ed8062206675da7ae24b"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>Hachiko</td>
                 <td>Hachiko INU</td>
-                <td class="td-right">6</td>
                 <td class="td-right">2</td>
+                <td class="td-right">6</td>
                 <td class="td-right">1,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -483,8 +490,8 @@
                 <td><tt>0x61f74780a9860d5d8043b3d8b6888baec66a1cdc</tt> <a target="_blank" href="https://etherscan.io/address/0x61f74780a9860d5d8043b3d8b6888baec66a1cdc"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>TSHIB</td>
                 <td>TopShiba Inu</td>
-                <td class="td-right">9</td>
                 <td class="td-right">2</td>
+                <td class="td-right">9</td>
                 <td class="td-right">1,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -492,8 +499,8 @@
                 <td><tt>0x5f3c1828a1df9863ff4bdc1493ca41a69c82d993</tt> <a target="_blank" href="https://etherscan.io/address/0x5f3c1828a1df9863ff4bdc1493ca41a69c82d993"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BONE</td>
                 <td>Shiba Inu Bone</td>
-                <td class="td-right">34</td>
                 <td class="td-right">2</td>
+                <td class="td-right">34</td>
                 <td class="td-right">515,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -510,8 +517,8 @@
                 <td><tt>0x188f0aa0edffd0aec793c45e2a46c2920ae62fa7</tt> <a target="_blank" href="https://etherscan.io/address/0x188f0aa0edffd0aec793c45e2a46c2920ae62fa7"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BUGG</td>
                 <td>BUGG INU</td>
-                <td class="td-right">11</td>
                 <td class="td-right">2</td>
+                <td class="td-right">11</td>
                 <td class="td-right">1,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -519,8 +526,8 @@
                 <td><tt>0x283ddd7482243f6287b92ef40695c71a9e1dbbde</tt> <a target="_blank" href="https://etherscan.io/address/0x283ddd7482243f6287b92ef40695c71a9e1dbbde"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>SHIBL</td>
                 <td>ShibaLend Inu</td>
-                <td class="td-right">6</td>
                 <td class="td-right">2</td>
+                <td class="td-right">6</td>
                 <td class="td-right">1,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -528,8 +535,8 @@
                 <td><tt>0x17905c5a834831f94e535f64809aa1a7790a5914</tt> <a target="_blank" href="https://etherscan.io/address/0x17905c5a834831f94e535f64809aa1a7790a5914"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BEZOSHIBA</td>
                 <td>Bezoshiba Space</td>
-                <td class="td-right">19</td>
                 <td class="td-right">2</td>
+                <td class="td-right">19</td>
                 <td class="td-right">99,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -537,8 +544,8 @@
                 <td><tt>0xc52083f6ece8284abee49cd4fb7ea522df91dec8</tt> <a target="_blank" href="https://etherscan.io/address/0xc52083f6ece8284abee49cd4fb7ea522df91dec8"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>WOOINU</td>
                 <td>Nature Boy Inu</td>
-                <td class="td-right">3</td>
                 <td class="td-right">2</td>
+                <td class="td-right">3</td>
                 <td class="td-right">15,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -546,8 +553,8 @@
                 <td><tt>0xcbe6a51497e225cce16584b766ecf6602fb8ec8a</tt> <a target="_blank" href="https://etherscan.io/address/0xcbe6a51497e225cce16584b766ecf6602fb8ec8a"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>BGL</td>
                 <td>Beagle Shelter</td>
-                <td class="td-right">4</td>
                 <td class="td-right">2</td>
+                <td class="td-right">4</td>
                 <td class="td-right">1,000,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -555,8 +562,8 @@
                 <td><tt>0x058c9b25f1e898affb72d43c4a126bb1f9e2c775</tt> <a target="_blank" href="https://etherscan.io/address/0x058c9b25f1e898affb72d43c4a126bb1f9e2c775"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>TUNA</td>
                 <td>Tuna Inu</td>
-                <td class="td-right">6</td>
                 <td class="td-right">2</td>
+                <td class="td-right">6</td>
                 <td class="td-right">511,684,415,310,451.52</td>
             </tr>
             <tr>
@@ -564,8 +571,8 @@
                 <td><tt>0x2b7fa291b387f3ce8eb5fd9fc75e27fe1d371961</tt> <a target="_blank" href="https://etherscan.io/address/0x2b7fa291b387f3ce8eb5fd9fc75e27fe1d371961"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>STUINU</td>
                 <td>Stupendous Shiba Inu</td>
-                <td class="td-right">2</td>
                 <td class="td-right">1</td>
+                <td class="td-right">2</td>
                 <td class="td-right">500,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -573,8 +580,8 @@
                 <td><tt>0xd0838231ba08c0473ba44263163efe55adcbe3b1</tt> <a target="_blank" href="https://etherscan.io/address/0xd0838231ba08c0473ba44263163efe55adcbe3b1"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>HORA</td>
                 <td>Hora Inu</td>
-                <td class="td-right">5</td>
                 <td class="td-right">1</td>
+                <td class="td-right">5</td>
                 <td class="td-right">500,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -582,8 +589,8 @@
                 <td><tt>0x505be526097794190863e186c21adcb0dc4649b0</tt> <a target="_blank" href="https://etherscan.io/address/0x505be526097794190863e186c21adcb0dc4649b0"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>ZLK</td>
                 <td>ZLK Token</td>
-                <td class="td-right">5</td>
                 <td class="td-right">1</td>
+                <td class="td-right">5</td>
                 <td class="td-right">500,000,000,000,000.00</td>
             </tr>
             <tr>
@@ -591,8 +598,8 @@
                 <td><tt>0x771a95d0b2c0e6e5dbd8c519186454cf6c948da0</tt> <a target="_blank" href="https://etherscan.io/address/0x771a95d0b2c0e6e5dbd8c519186454cf6c948da0"><img src="static/etherscan-logo-circle.webp" style="width:12px;" /></a></td>
                 <td>WOOINU</td>
                 <td>Nature Boy Inu</td>
-                <td class="td-right">15</td>
                 <td class="td-right">1</td>
+                <td class="td-right">15</td>
                 <td class="td-right">5,000,000,000,000,000.00</td>
             </tr>
         </tbody>
