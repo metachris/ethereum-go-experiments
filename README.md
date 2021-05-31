@@ -76,11 +76,6 @@ Notes:
 
 ## To do
 
-bugs
-
-* run with `-1d` lands as "date" in database
-
-
 features
 
 * Save output as HTML (in progress)

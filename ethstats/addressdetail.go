@@ -258,6 +258,8 @@ func GetAddressDetail(address string, client *ethclient.Client) (detail AddressD
 	// Without connection, return Detail with just address
 	if client == nil {
 		return NewAddressDetail(address), false
+	} else {
+		detail = NewAddressDetail(address) // default
 	}
 
 	// Look up in Blockchain

@@ -101,15 +101,15 @@ func main() {
 
 	startBlockHeight := int64(*blockHeightPtr)
 	var startTimestamp int64
+	var startTime time.Time
 
 	if *blockHeightPtr > 0 { // start at timestamp
 		startBlockHeader, err := client.HeaderByNumber(context.Background(), big.NewInt(int64(*blockHeightPtr)))
 		ethstats.Perror(err)
 		startTimestamp = int64(startBlockHeader.Time)
+		startTime = time.Unix(startTimestamp, 0)
 
 	} else {
-		var startTime time.Time
-
 		// Negative date prefix (-1d, -2m, -1y)
 		if strings.HasPrefix(*datePtr, "-") {
 			if strings.HasSuffix(*datePtr, "d") {
@@ -133,6 +133,7 @@ func main() {
 		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
 		ethstats.Perror(err)
 		startBlockHeight = startBlockHeader.Number.Int64()
+		date = startTime.Format("2006-01-02")
 	}
 
 	fmt.Printf("startBlock: %d \n", startBlockHeight)

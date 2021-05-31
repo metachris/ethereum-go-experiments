@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -114,4 +115,6 @@ func main() {
 	// }
 
 	// fmt.Println(t.lists["foo"])
+	t := time.Now()
+	fmt.Println(t.Format("2006-01-02"))
 }
