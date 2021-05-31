@@ -9,11 +9,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
 func TxTest() {
-	config := ethstats.GetConfig()
+	config := config.GetConfig()
 	client, err := ethclient.Dial(config.EthNode)
 	ethstats.Perror(err)
 
@@ -35,7 +36,7 @@ func TxTest() {
 
 // 	var err error
 // 	if client == nil {
-// 		client, err = ethclient.Dial(ethstats.GetConfig().EthNode)
+// 		client, err = ethclient.Dial(config.GetConfig().EthNode)
 // 		ethstats.Perror(err)
 // 	}
 // 	res.block, err = client.BlockByNumber(context.Background(), height)
@@ -61,7 +62,7 @@ func TxTest() {
 // 	numBlocks := 10
 
 // 	var wg sync.WaitGroup // for waiting until all blocks are written into DB
-// 	// client, _ := ethclient.Dial(ethstats.GetConfig().EthNode)
+// 	// client, _ := ethclient.Dial(config.GetConfig().EthNode)
 
 // 	timeStart := time.Now()
 // 	for i := 0; i < numBlocks; i++ {

@@ -2,7 +2,6 @@ package ethstats
 
 import (
 	"fmt"
-	"log"
 	"math/big"
 	"net/url"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/metachris/ethereum-go-experiments/config"
 )
 
 var schema = `
@@ -204,7 +204,7 @@ type AnalysisAddressStatsEntryWithAddress struct {
 var db *sqlx.DB
 
 // GetDatabase returns an already existing DB connection. If not exists then creates it
-func GetDatabase(cfg PostgresConfig) *sqlx.DB {
+func GetDatabase(cfg config.PostgresConfig) *sqlx.DB {
 	if db != nil {
 		return db
 	}
@@ -225,7 +225,7 @@ func ResetDatabase(db *sqlx.DB) {
 }
 
 // NewDatabaseConnection creates a new sqlx.DB database connection
-func NewDatabaseConnection(cfg PostgresConfig) *sqlx.DB {
+func NewDatabaseConnection(cfg config.PostgresConfig) *sqlx.DB {
 	sslMode := "require"
 	if cfg.DisableTLS {
 		sslMode = "disable"
@@ -288,101 +288,101 @@ func AddBlockToDatabase(db *sqlx.DB, block *types.Block) {
 }
 
 func AddAddressStatsToDatabase(db *sqlx.DB, client *ethclient.Client, analysisId int, addr AddressStats) {
-	_addr := strings.ToLower(addr.Address)
+	// _addr := strings.ToLower(addr.Address)
 
-	// Ensure any address is added only once per analysis
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, _addr).Scan(&count)
-	Perror(err)
-	if count > 0 {
-		return
-	}
+	// // Ensure any address is added only once per analysis
+	// var count int
+	// err := db.QueryRow("SELECT COUNT(*) FROM analysis_address_stat WHERE analysis_id = $1 AND address = $2", analysisId, _addr).Scan(&count)
+	// Perror(err)
+	// if count > 0 {
+	// 	return
+	// }
 
-	// Make sure address details are loaded
-	addr.EnsureAddressDetails(client)
-	detail := addr.AddressDetail
+	// // Make sure address details are loaded
+	// addr.EnsureAddressDetails(client)
+	// detail := addr.AddressDetail
 
-	// fmt.Println("+ stats:", addr)
-	addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
-	if !foundInDb { // Not in DB, add now
-		_, err = db.Exec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-		if err != nil {
-			fmt.Println("Error inserting address", _addr, strings.ToLower(detail.Address))
-			panic(err)
-		}
+	// // fmt.Println("+ stats:", addr)
+	// addrFromDb, foundInDb := GetAddressFromDatabase(db, addr.Address)
+	// if !foundInDb { // Not in DB, add now
+	// 	_, err = db.Exec("INSERT INTO address (address, name, type, symbol, decimals) VALUES ($1, $2, $3, $4, $5)", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+	// 	if err != nil {
+	// 		fmt.Println("Error inserting address", _addr, strings.ToLower(detail.Address))
+	// 		panic(err)
+	// 	}
 
-	} else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
-		db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
-	}
+	// } else if addrFromDb.Name == "" { // in DB but without information. If we have more infos now then update
+	// 	db.MustExec("UPDATE address set name=$2, type=$3, symbol=$4, decimals=$5 WHERE address=$1", strings.ToLower(detail.Address), detail.Name, detail.Type, detail.Symbol, detail.Decimals)
+	// }
 
-	// Add address-stats entry now
-	tokensTransferredInUnit, tokenSymbol := GetErc20TokensInUnit(addr.Erc20TokensTransferred, addr.AddressDetail)
-	_, err = db.Exec(`INSERT INTO analysis_address_stat (
-		Analysis_id,
-		Address,
+	// // Add address-stats entry now
+	// tokensTransferredInUnit, tokenSymbol := GetErc20TokensInUnit(addr.Erc20TokensTransferred, addr.AddressDetail)
+	// _, err = db.Exec(`INSERT INTO analysis_address_stat (
+	// 	Analysis_id,
+	// 	Address,
 
-		NumTxSentSuccess,
-		NumTxSentFailed,
-		NumTxReceivedSuccess,
-		NumTxReceivedFailed,
+	// 	NumTxSentSuccess,
+	// 	NumTxSentFailed,
+	// 	NumTxReceivedSuccess,
+	// 	NumTxReceivedFailed,
 
-		NumTxFlashbotsSent,
-		NumTxFlashbotsReceived,
-		NumTxWithDataSent,
-		NumTxWithDataReceived,
+	// 	NumTxFlashbotsSent,
+	// 	NumTxFlashbotsReceived,
+	// 	NumTxWithDataSent,
+	// 	NumTxWithDataReceived,
 
-		NumTxErc20Sent,
-		NumTxErc721Sent,
-		NumTxErc20Received,
-		NumTxErc721Received,
-		NumTxErc20Transfer,
-		NumTxErc721Transfer,
+	// 	NumTxErc20Sent,
+	// 	NumTxErc721Sent,
+	// 	NumTxErc20Received,
+	// 	NumTxErc721Received,
+	// 	NumTxErc20Transfer,
+	// 	NumTxErc721Transfer,
 
-		ValueSentEth,
-		ValueReceivedEth,
+	// 	ValueSentEth,
+	// 	ValueReceivedEth,
 
-		Erc20TokensTransferred,
-		TokensTransferredInUnit,
-		TokensTransferredSymbol,
+	// 	Erc20TokensTransferred,
+	// 	TokensTransferredInUnit,
+	// 	TokensTransferredSymbol,
 
-		GasUsed,
-		GasFeeTotal,
-		GasFeeFailedTx
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
-		analysisId,
-		_addr,
+	// 	GasUsed,
+	// 	GasFeeTotal,
+	// 	GasFeeFailedTx
+	// ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+	// 	analysisId,
+	// 	_addr,
 
-		addr.NumTxSentSuccess,
-		addr.NumTxSentFailed,
-		addr.NumTxReceivedSuccess,
-		addr.NumTxReceivedFailed,
+	// 	addr.NumTxSentSuccess,
+	// 	addr.NumTxSentFailed,
+	// 	addr.NumTxReceivedSuccess,
+	// 	addr.NumTxReceivedFailed,
 
-		addr.NumTxFlashbotsSent,
-		addr.NumTxFlashbotsReceived,
-		addr.NumTxWithDataSent,
-		addr.NumTxWithDataReceived,
+	// 	addr.NumTxFlashbotsSent,
+	// 	addr.NumTxFlashbotsReceived,
+	// 	addr.NumTxWithDataSent,
+	// 	addr.NumTxWithDataReceived,
 
-		addr.NumTxErc20Sent,
-		addr.NumTxErc721Sent,
-		addr.NumTxErc20Received,
-		addr.NumTxErc721Received,
-		addr.NumTxErc20Transfer,
-		addr.NumTxErc721Transfer,
+	// 	addr.NumTxErc20Sent,
+	// 	addr.NumTxErc721Sent,
+	// 	addr.NumTxErc20Received,
+	// 	addr.NumTxErc721Received,
+	// 	addr.NumTxErc20Transfer,
+	// 	addr.NumTxErc721Transfer,
 
-		WeiToEth(addr.ValueSentWei).Text('f', 4),
-		WeiToEth(addr.ValueReceivedWei).Text('f', 4),
+	// 	WeiToEth(addr.ValueSentWei).Text('f', 4),
+	// 	WeiToEth(addr.ValueReceivedWei).Text('f', 4),
 
-		addr.Erc20TokensTransferred.String(),
-		tokensTransferredInUnit.Text('f', 8),
-		tokenSymbol,
+	// 	addr.Erc20TokensTransferred.String(),
+	// 	tokensTransferredInUnit.Text('f', 8),
+	// 	tokenSymbol,
 
-		addr.GasUsed.String(),
-		addr.GasFeeTotal.String(),
-		addr.GasFeeFailedTx.String())
+	// 	addr.GasUsed.String(),
+	// 	addr.GasFeeTotal.String(),
+	// 	addr.GasFeeFailedTx.String())
 
-	if err != nil {
-		log.Println("database: Error inserting stats for", addr)
-	}
+	// if err != nil {
+	// 	log.Println("database: Error inserting stats for", addr)
+	// }
 }
 
 func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date string, hour int, minute int, sec int, durationSec int, result *AnalysisResult) {
@@ -458,9 +458,9 @@ func AddAnalysisResultToDatabase(db *sqlx.DB, client *ethclient.Client, date str
 
 	entries := result.GetAllTopAddressStats()
 	fmt.Printf("Saving %d AddresseStats...\n", len(entries))
-	for _, addr := range entries {
-		addressInfoQueue <- addr
-	}
+	// for _, addr := range entries {
+	// 	addressInfoQueue <- addr
+	// }
 
 	fmt.Println("Waiting for db workers to finish...")
 	close(addressInfoQueue)

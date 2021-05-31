@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
+	"github.com/metachris/ethereum-go-experiments/config"
 )
 
 type BlockWithTxReceipts struct {
@@ -24,14 +25,14 @@ type BlockWithTxReceipts struct {
 func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {
 	var err error
 	if client == nil {
-		client, err = ethclient.Dial(GetConfig().EthNode)
+		client, err = ethclient.Dial(config.GetConfig().EthNode)
 		Perror(err)
 	}
 	res.block, err = client.BlockByNumber(context.Background(), big.NewInt(height))
 	Perror(err)
 
 	res.txReceipts = make(map[common.Hash]*types.Receipt)
-	if GetConfig().LowApiCallMode {
+	if config.GetConfig().LowApiCallMode {
 		return res
 	}
 
@@ -56,10 +57,10 @@ func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWi
 func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int64, blockChan chan<- *BlockWithTxReceipts) {
 	defer wg.Done()
 
-	client, err := ethclient.Dial(GetConfig().EthNode)
+	client, err := ethclient.Dial(config.GetConfig().EthNode)
 	Perror(err)
 
-	db := NewDatabaseConnection(GetConfig().Database)
+	db := NewDatabaseConnection(config.GetConfig().Database)
 	defer db.Close()
 
 	for blockHeight := range blockHeightChan {
@@ -71,7 +72,7 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
 func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64, endBlockNumber int64) *AnalysisResult {
-	result := NewResult()
+	result := NewAnalysis()
 	result.StartBlockNumber = startBlockNumber
 
 	blockHeightChan := make(chan int64, 100)          // blockHeight to fetch with receipts

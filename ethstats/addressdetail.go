@@ -16,6 +16,7 @@ import (
 	"github.com/metachris/eth-go-bindings/erc165"
 	"github.com/metachris/eth-go-bindings/erc20"
 	"github.com/metachris/eth-go-bindings/erc721"
+	"github.com/metachris/ethereum-go-experiments/config"
 )
 
 type AddressType string
@@ -263,7 +264,7 @@ func GetAddressDetail(address string, client *ethclient.Client) (detail AddressD
 	}
 
 	// Look up in Blockchain
-	if GetConfig().LowApiCallMode {
+	if config.GetConfig().LowApiCallMode {
 		return detail, found
 	}
 

@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 	"github.com/metachris/ethereum-go-experiments/templates"
 )
@@ -22,10 +23,10 @@ func main() {
 		log.Fatal("Missing -id argument")
 	}
 
-	config := ethstats.GetConfig()
-	fmt.Println(config)
+	cfg := config.GetConfig()
+	fmt.Println(cfg)
 
-	db := ethstats.NewDatabaseConnection(ethstats.GetConfig().Database)
+	db := ethstats.NewDatabaseConnection(cfg.Database)
 
 	analysis, found := ethstats.DbGetAnalysisById(db, *idPtr)
 	if !found {

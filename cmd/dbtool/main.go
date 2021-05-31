@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	flag.Parse()
 
 	if *resetPtr {
-		cfg := ethstats.GetConfig()
+		cfg := config.GetConfig()
 		db := ethstats.GetDatabase(cfg.Database)
 		ethstats.ResetDatabase(db)
 		return

@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
@@ -24,7 +25,7 @@ func getAnalysis(c echo.Context) (err error) {
 	}
 
 	// Get entry from DB
-	db := ethstats.GetDatabase(ethstats.GetConfig().Database)
+	db := ethstats.GetDatabase(config.GetConfig().Database)
 	entry, found := ethstats.DbGetAnalysisById(db, id)
 	if !found {
 		return echo.NewHTTPError(http.StatusNotFound)
@@ -40,7 +41,7 @@ func hello(c echo.Context) error {
 }
 
 func main() {
-	config := ethstats.GetConfig()
+	config := config.GetConfig()
 	listenAddr := fmt.Sprintf("%s:%d", config.WebserverHost, config.WebserverPort)
 
 	// Echo instance

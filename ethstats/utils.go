@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/metachris/ethereum-go-experiments/config"
 )
 
 var One = big.NewInt(1)
@@ -112,13 +113,13 @@ func Perror(err error) {
 }
 
 func DebugPrintf(format string, a ...interface{}) {
-	if GetConfig().Debug {
+	if config.GetConfig().Debug {
 		_, _ = fmt.Printf(format, a...)
 	}
 }
 
 func DebugPrintln(a ...interface{}) {
-	if GetConfig().Debug {
+	if config.GetConfig().Debug {
 		_, _ = fmt.Println(a...)
 	}
 }

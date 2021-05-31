@@ -102,7 +102,7 @@ package main
 // 		getTokenFromEthplorerAndSaveToJson(*addressPtr, *addPtr)
 // 	} else {
 // 		fmt.Println("Getting address details from Ethereum node...")
-// 		config := ethstats.GetConfig()
+// 		config := config.GetConfig()
 // 		client, err := ethclient.Dial(config.EthNode)
 // 		ethstats.Perror(err)
 

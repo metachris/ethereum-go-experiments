@@ -13,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
+	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
@@ -75,20 +76,20 @@ func main() {
 		numBlocks, _ = strconv.Atoi(*lenPtr)
 	}
 
-	config := ethstats.GetConfig()
+	cfg := config.GetConfig()
 	// fmt.Println(config)
 
 	var db *sqlx.DB
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethstats.NewDatabaseConnection(config.Database)
+		db = ethstats.NewDatabaseConnection(cfg.Database)
 	}
 
 	_ = numBlocks
 	_ = db
 
-	fmt.Println("Connecting to Ethereum node at", config.EthNode)
+	fmt.Println("Connecting to Ethereum node at", cfg.EthNode)
 	fmt.Println("")
-	client, err := ethclient.Dial(config.EthNode)
+	client, err := ethclient.Dial(cfg.EthNode)
 	ethstats.Perror(err)
 
 	// var result *ethstats.AnalysisResult
@@ -130,7 +131,7 @@ func main() {
 
 		startTimestamp = startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
-		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, config.Debug)
+		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, cfg.Debug)
 		ethstats.Perror(err)
 		startBlockHeight = startBlockHeader.Number.Int64()
 		date = startTime.Format("2006-01-02")
@@ -144,7 +145,7 @@ func main() {
 	} else if timespanSec > 0 {
 		endTimestamp := startTimestamp + int64(timespanSec)
 		fmt.Printf("endTime:   %d / %v ... ", endTimestamp, time.Unix(endTimestamp, 0).UTC())
-		endBlockHeader, _ := ethstats.GetBlockHeaderAtTimestamp(client, endTimestamp, config.Debug)
+		endBlockHeader, _ := ethstats.GetBlockHeaderAtTimestamp(client, endTimestamp, cfg.Debug)
 		endBlockHeight = endBlockHeader.Number.Int64() - 1
 	} else {
 		panic("No valid block range")
@@ -158,7 +159,7 @@ func main() {
 	fmt.Println("")
 
 	result := ethstats.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
-	if !ethstats.GetConfig().HideOutput {
+	if !cfg.HideOutput {
 		fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 		printResult(result)
 	}
@@ -215,7 +216,8 @@ func addressWithName(address string) string {
 func printTopAddr(msg string, list []ethstats.AddressStats, max int) {
 	printH2(msg)
 	for i, v := range list {
-		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethstats.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethstats.WeiBigIntToEthString(v.ValueSentWei, 2), ethstats.WeiBigIntToEthString(v.GasFeeTotal, 2), ethstats.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
+		// fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethstats.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethstats.WeiBigIntToEthString(v.ValueSentWei, 2), ethstats.WeiBigIntToEthString(v.GasFeeTotal, 2), ethstats.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
+		fmt.Printf("%-66v \n", addressWithName(v.AddressDetail.Address))
 		if max > 0 && i == max {
 			break
 		}
@@ -242,52 +244,46 @@ func printResult(result *ethstats.AnalysisResult) {
 	fmt.Println("Total gas fees:", ethstats.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
 	fmt.Println("Gas for failed tx:", ethstats.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
 
-	if ethstats.GetConfig().HideOutput {
+	if config.GetConfig().HideOutput {
 		fmt.Println("End because of config.HideOutput")
 		return
 	}
 
-	fmt.Println("")
-	printH1("Transactions")
-	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
-	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
-	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
-
-	fmt.Println("")
-	printH1("\nSmart Contracts")
-
-	printH2("\nERC20: most token tranfers")
-	for _, v := range result.TopAddresses["NumTxErc20Transfer"] {
-		tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
-		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
-	}
-
 	// fmt.Println("")
-	// fmt.Printf("Top %d addresses by erc20 sent\n", len(result.TopAddresses.NumTxErc20Sent))
-	// for _, v := range result.TopAddresses.NumTxErc20Sent {
-	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \n", addressWithName(v.Address), v.NumTxErc20Sent, v.NumTxSentSuccess)
+	// printH1("Transactions")
+	// printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
+	// printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
+	// printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
+
+	fmt.Println("")
+	// printH1("\nSmart Contracts")
+
+	// printH2("\nERC20: most token tranfers")
+	// for _, v := range result.TopAddresses["NumTxErc20Transfer"] {
+	// 	tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
+	// 	tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
+	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
 	// }
 
-	printH2("\nERC721: most token transfers")
-	for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
-		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
-	}
+	// printH2("\nERC721: most token transfers")
+	// for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
+	// 	fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
+	// }
 
 	fmt.Println("")
 	printH1("\nAddresses")
 
-	interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", ethstats.TopAddressValueReceived, ethstats.TopAddressValueSent, "NumTxReceivedFailed", "NumTxSentFailed"}
-	for _, key := range interesting {
+	// interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", ethstats.TopAddressValueReceived, ethstats.TopAddressValueSent, "NumTxReceivedFailed", "NumTxSentFailed"}
+	// for _, key := range interesting {
+	// 	fmt.Println("")
+	// 	printTopAddr(key, result.TopAddresses[key], 0)
+	// }
+
+	for k, v := range result.TopAddresses {
 		fmt.Println("")
-		printTopAddr(key, result.TopAddresses[key], 0)
+		fmt.Println(k, len(v))
+		printTopAddr(k, result.TopAddresses[k], 0)
 	}
-	// printTopAddr("\nTop addresses by number of transactions received (success)", result.TopAddresses.NumTxReceivedSuccess, 0)
-	// printTopAddr("\nTop addresses by number of transactions sent (success)", result.TopAddresses.NumTxSentSuccess, 0)
-	// printTopAddr("\nTop addresses by value received", result.TopAddresses.ValueReceived, 0)
-	// printTopAddr("\nTop addresses by value sent", result.TopAddresses.ValueSent, 0)
-	// printTopAddr("\nTop addresses by failed tx received", result.TopAddresses.NumTxReceivedFailed, 0)
-	// printTopAddr("\nTop addresses by failed tx sent", result.TopAddresses.NumTxSentFailed, 0)
 }
 
 func formatBigFloat(number *big.Float) string {
