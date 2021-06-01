@@ -12,9 +12,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/jmoiron/sqlx"
-	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/consts"
+	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/ethereum-go-experiments/database"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
@@ -77,21 +77,20 @@ func main() {
 		numBlocks, _ = strconv.Atoi(*lenPtr)
 	}
 
-	cfg := config.GetConfig()
+	cfg := core.GetConfig()
 	// fmt.Println(config)
 
-	var db *sqlx.DB
+	var db database.StatsService
 	if *addToDbPtr { // try to open DB at the beginning, to fail before the analysis
-		db = ethstats.NewDatabaseConnection(cfg.Database)
+		db = database.NewStatsService(cfg.Database)
 	}
 
 	_ = numBlocks
-	_ = db
 
 	fmt.Println("Connecting to Ethereum node at", cfg.EthNode)
 	fmt.Println("")
 	client, err := ethclient.Dial(cfg.EthNode)
-	ethstats.Perror(err)
+	core.Perror(err)
 
 	// var result *ethstats.AnalysisResult
 	date := *datePtr
@@ -107,7 +106,7 @@ func main() {
 
 	if *blockHeightPtr > 0 { // start at timestamp
 		startBlockHeader, err := client.HeaderByNumber(context.Background(), big.NewInt(int64(*blockHeightPtr)))
-		ethstats.Perror(err)
+		core.Perror(err)
 		startTimestamp = int64(startBlockHeader.Time)
 		startTime = time.Unix(startTimestamp, 0)
 
@@ -127,15 +126,16 @@ func main() {
 				panic(fmt.Sprintf("Not a valid date: %s", *datePtr))
 			}
 		} else {
-			startTime = ethstats.MakeTime(date, hour, min)
+			startTime = core.MakeTime(date, hour, min)
 		}
 
 		startTimestamp = startTime.Unix()
 		fmt.Printf("startTime: %d / %v ... ", startTimestamp, time.Unix(startTimestamp, 0).UTC())
 		startBlockHeader, err := ethstats.GetBlockHeaderAtTimestamp(client, startTimestamp, cfg.Debug)
-		ethstats.Perror(err)
+		core.Perror(err)
 		startBlockHeight = startBlockHeader.Number.Int64()
 		date = startTime.Format("2006-01-02")
+		_ = date
 	}
 
 	fmt.Printf("startBlock: %d \n", startBlockHeight)
@@ -159,7 +159,7 @@ func main() {
 	fmt.Printf("  endBlock: %d \n", endBlockHeight)
 	fmt.Println("")
 
-	result := ethstats.AnalyzeBlocks(client, db, startBlockHeight, endBlockHeight)
+	result := ethstats.AnalyzeBlocks(client, startBlockHeight, endBlockHeight)
 	if !cfg.HideOutput {
 		fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
 		printResult(result)
@@ -173,7 +173,7 @@ func main() {
 		// Add to database
 		fmt.Printf("\nSaving to database...\n")
 		timeStartAddToDb := time.Now()
-		ethstats.AddAnalysisResultToDatabase(db, client, date, hour, min, sec, timespanSec, result)
+		db.AddAnalysisResultToDatabase(result)
 		timeNeededAddToDb := time.Since(timeStartAddToDb)
 		fmt.Printf("Saved to database (%.2fs)\n", timeNeededAddToDb.Seconds())
 	}
@@ -202,21 +202,21 @@ func printH2(msg string) {
 	fmt.Println(strings.Repeat("-", utf8.RuneCountInString(m)))
 }
 
-func printTopTx(msg string, txList []ethstats.TxStats) {
+func printTopTx(msg string, txList []core.TxStats) {
 	printH2(msg)
 	for _, v := range txList {
 		fmt.Println(v)
 	}
 }
 
-func AddressWithName(addressDetail ethstats.AddressDetail) string {
+func AddressWithName(addressDetail core.AddressDetail) string {
 	return fmt.Sprintf("%s %-28s", addressDetail.Address, addressDetail.Name)
 }
 
-func printTopAddr(msg string, list []ethstats.AddressStats, max int) {
+func printTopAddr(msg string, list []core.AddressStats, max int) {
 	printH2(msg)
 	for i, v := range list {
-		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxReceivedSuccess), v.Get(consts.NumTxSentSuccess), v.Get(consts.NumTxReceivedFailed), v.Get(consts.NumTxSentFailed), ethstats.WeiBigIntToEthString(v.Get(consts.ValueReceivedWei), 2), ethstats.WeiBigIntToEthString(v.Get(consts.ValueSentWei), 2), ethstats.WeiBigIntToEthString(v.Get(consts.GasFeeTotal), 2), ethstats.WeiBigIntToEthString(v.Get(consts.GasFeeFailedTx), 2))
+		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxReceivedSuccess), v.Get(consts.NumTxSentSuccess), v.Get(consts.NumTxReceivedFailed), v.Get(consts.NumTxSentFailed), core.WeiBigIntToEthString(v.Get(consts.ValueReceivedWei), 2), core.WeiBigIntToEthString(v.Get(consts.ValueSentWei), 2), core.WeiBigIntToEthString(v.Get(consts.GasFeeTotal), 2), core.WeiBigIntToEthString(v.Get(consts.GasFeeFailedTx), 2))
 		// fmt.Printf("%-66v \n", addressWithName(v.AddressDetail.Address))
 		if max > 0 && i == max {
 			break
@@ -225,26 +225,26 @@ func printTopAddr(msg string, list []ethstats.AddressStats, max int) {
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
-func printResult(result *ethstats.AnalysisResult) {
-	fmt.Println("Total blocks:", ethstats.NumberToHumanReadableString(result.NumBlocks, 0))
-	fmt.Println("- without tx:", ethstats.NumberToHumanReadableString(result.NumBlocksWithoutTx, 0))
+func printResult(result *core.AnalysisResult) {
+	fmt.Println("Total blocks:", core.NumberToHumanReadableString(result.NumBlocks, 0))
+	fmt.Println("- without tx:", core.NumberToHumanReadableString(result.NumBlocksWithoutTx, 0))
 	fmt.Println("")
-	fmt.Println("Total transactions:", ethstats.NumberToHumanReadableString(result.NumTransactions, 0), "\t tx-types:", result.TxTypes)
-	fmt.Printf("- failed:         %7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactionsFailed, 0), (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with value:     %7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactions-result.NumTransactionsWithZeroValue, 0), (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
-	fmt.Printf("- zero value:     %7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactionsWithZeroValue, 0), (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with data:      %7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactionsWithData, 0), (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
-	fmt.Printf("- erc20 transfer: %7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactionsErc20Transfer, 0), (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- erc721 transfer:%7s \t %.2f%%\n", ethstats.NumberToHumanReadableString(result.NumTransactionsErc721Transfer, 0), (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- flashbots:       %s ok, %s failed \n", ethstats.NumberToHumanReadableString(result.NumFlashbotsTransactionsSuccess, 0), ethstats.NumberToHumanReadableString(result.NumFlashbotsTransactionsFailed, 0))
+	fmt.Println("Total transactions:", core.NumberToHumanReadableString(result.NumTransactions, 0), "\t tx-types:", result.TxTypes)
+	fmt.Printf("- failed:         %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsFailed, 0), (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactions-result.NumTransactionsWithZeroValue, 0), (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
+	fmt.Printf("- zero value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsWithZeroValue, 0), (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
+	fmt.Printf("- with data:      %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsWithData, 0), (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
+	fmt.Printf("- erc20 transfer: %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsErc20Transfer, 0), (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
+	fmt.Printf("- erc721 transfer:%7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsErc721Transfer, 0), (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
+	fmt.Printf("- flashbots:       %s ok, %s failed \n", core.NumberToHumanReadableString(result.NumFlashbotsTransactionsSuccess, 0), core.NumberToHumanReadableString(result.NumFlashbotsTransactionsFailed, 0))
 	fmt.Println("")
 
-	fmt.Println("Total addresses:", ethstats.NumberToHumanReadableString(len(result.Addresses), 0))
-	fmt.Println("Total value transferred:", ethstats.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
-	fmt.Println("Total gas fees:", ethstats.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
-	fmt.Println("Gas for failed tx:", ethstats.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
+	fmt.Println("Total addresses:", core.NumberToHumanReadableString(len(result.Addresses), 0))
+	fmt.Println("Total value transferred:", core.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
+	fmt.Println("Total gas fees:", core.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
+	fmt.Println("Gas for failed tx:", core.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
 
-	if config.GetConfig().HideOutput {
+	if core.GetConfig().HideOutput {
 		fmt.Println("End because of config.HideOutput")
 		return
 	}
@@ -261,7 +261,7 @@ func printResult(result *ethstats.AnalysisResult) {
 
 	printH2("\nERC20: most token-tranfer tx")
 	for _, v := range result.TopAddresses[consts.NumTxErc20Transfer] {
-		tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Get(consts.Erc20TokensTransferred), v.AddressDetail)
+		tokensTransferredInUnit, tokenSymbol := core.GetErc20TokensInUnit(v.Get(consts.Erc20TokensTransferred), v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
 		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxErc20Transfer), v.Get(consts.NumTxReceivedSuccess), tokenAmount)
 	}

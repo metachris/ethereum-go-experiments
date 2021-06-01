@@ -1,15 +1,16 @@
-package ethstats
+package core
 
 import (
 	"fmt"
 	"math"
 	"math/big"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/metachris/ethereum-go-experiments/config"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var One = big.NewInt(1)
@@ -41,7 +42,7 @@ func Abs(x int64) int64 {
 	return x
 }
 
-func isBigIntZero(n *big.Int) bool {
+func IsBigIntZero(n *big.Int) bool {
 	return len(n.Bits()) == 0
 }
 
@@ -100,7 +101,7 @@ func NumberToHumanReadableString(value interface{}, decimals int) string {
 	}
 }
 
-func printBlock(block *types.Block) {
+func PrintBlock(block *types.Block) {
 	t := time.Unix(int64(block.Header().Time), 0).UTC()
 	fmt.Printf("%d \t %s \t %d \t tx=%-4d \t gas=%d\n", block.Header().Number, t, block.Header().Time, len(block.Transactions()), block.GasUsed())
 }
@@ -113,13 +114,13 @@ func Perror(err error) {
 }
 
 func DebugPrintf(format string, a ...interface{}) {
-	if config.GetConfig().Debug {
+	if GetConfig().Debug {
 		_, _ = fmt.Printf(format, a...)
 	}
 }
 
 func DebugPrintln(a ...interface{}) {
-	if config.GetConfig().Debug {
+	if GetConfig().Debug {
 		_, _ = fmt.Println(a...)
 	}
 }
@@ -142,4 +143,24 @@ func GetTxSender(tx *types.Transaction) (from common.Address, err error) {
 		from, err = types.Sender(types.HomesteadSigner{}, tx)
 	}
 	return from, err
+}
+
+// Takes pointer to all addresses and builds a top-list
+func GetTopAddressesForStats(allAddresses *[]AddressStats, client *ethclient.Client, key string, numItems int) (ret []AddressStats) {
+	ret = make([]AddressStats, 0, numItems)
+	sort.SliceStable(*allAddresses, func(i, j int) bool {
+		a := (*allAddresses)[i].Get(key)
+		b := (*allAddresses)[j].Get(key)
+		return a.Cmp(b) == 1
+	})
+
+	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
+		item := (*allAddresses)[i]
+		if item.Get(key).Cmp(common.Big0) == 1 {
+			item.AddressDetail.EnsureIsLoaded(client)
+			ret = append(ret, item)
+		}
+	}
+
+	return ret
 }

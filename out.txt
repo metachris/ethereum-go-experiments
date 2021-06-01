@@ -1,0 +1,352 @@
+Connecting to Ethereum node at /server/geth.ipc
+
+startTime: 1622419200 / 2021-05-31 00:00:00 +0000 UTC ... startBlock: 12538796 
+endTime:   1622505600 / 2021-06-01 00:00:00 +0000 UTC ...   endBlock: 12545218 
+
+12538800 	 2021-05-31 00:01:25 +0000 UTC 	 1622419285 	 tx=0    	 gas=0
+...
+12545216 	 2021-05-31 23:59:21 +0000 UTC 	 1622505561 	 tx=238  	 gas=14983783
+Reading blocks done (468.449s). Sorting 652368 addresses and checking address information...
+Sorting & checking addresses done (20.303s)
+
+===================
+  ANALYSIS RESULT  
+===================
+
+Total blocks: 6,423
+- without tx: 58
+
+Total transactions: 1,297,889 	 tx-types: map[0:1247524 1:2348]
+- failed:          48,017 	 3.70%
+- with value:     690,790 	 53.22%
+- zero value:     607,099 	 46.78%
+- with data:      695,445 	 53.58%
+- erc20 transfer: 275,684 	 21.24%
+- erc721 transfer:  1,585 	 0.12%
+- flashbots:       10,094 ok, 6 failed 
+
+Total addresses: 652,368
+Total value transferred: 2,263,604.57 ETH
+Total gas fees: 3,078.77 ETH
+Gas for failed tx: 183.64 ETH
+
+============
+Transactions
+============
+
+Top transactions by GAS FEE
+---------------------------
+0x13c3837bec7aeaf34569b33d4d9f662b73e3bad72a0413a3ba3a617fde33acfd         	gasfee:  15.0930 ETH	val:         0.0000 	 datasize: 508      		 0x003FD5F6030b8C1a4D2503339b14466b9bA6C6cf -> 0x0000000000007f150bd6f54c40a34d7c3d5e9f56
+0x95ba3aa12b4e3c59331f77bd1ddf014562576a4c2da0409c507dd4b770cb5aac         	gasfee:   7.7299 ETH	val:         0.0000 	 datasize: 388      		 0x60b86AF869f23aEb552fB7F3CaBD11B829f6Ab2F -> 0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf
+0x10d7093ee67c5d6b4b3c6e00de40d4349ad1ed7ecef485f5c5a3ff9df08444b5         	gasfee:   4.6409 ETH	val:         0.0000 	 datasize: 260      		 0x38ED4CaAe12e5fD14ead80084B3c8A54Ed45E519 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x16185eb2ccb56f52b53eddf2ff3e01661635953d217f3db26190bd703cd916de         	gasfee:   2.3237 ETH	val:         2.0000 	 datasize: 228      		 0xd50883693A56A625572F8721Ab77D5A6E405b26d -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x703c00889b9c356d58f62d69ef13188d01a55839bca28c6e2a74289b5563d7f3         	gasfee:   2.2499 ETH	val:         0.0000 	 datasize: 1572     		 0x328DB7533203C9B9bdd21d071490B667A4030f26 -> 0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf
+0x5f5d7e88a64842bebe54e8af92e7b3fabab87edf86c3f487b36ae25bfde83c32 (failed)	gasfee:   1.5963 ETH	val:         0.0000 	 datasize: 260      		 0x6b3D63aCCF3F6D802C04E6Dd12713a8aB5109172 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x2ecc2c3bb19a6972fc61b513f29a63ed7979efb3e9c27ebdee50eb0fcef3b35b (failed)	gasfee:   1.3600 ETH	val:         0.0000 	 datasize: 260      		 0x0af7E23Ca25865667e51fc2abC406c408344317b -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x000258ee5b94e0ec59db74a195b74c6abda2ca24d285cf9414da5f028ae49353         	gasfee:   1.3597 ETH	val:         0.0000 	 datasize: 260      		 0x4Bea1fBFFa98B51762897FE821539A9768869765 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x22e2bd062260f44fc9f32231a211554b91da8268b8b9da336675e1b1588a35b8         	gasfee:   1.1574 ETH	val:         0.2000 	 datasize: 228      		 0xA62c5bA4D3C95b3dDb247EAbAa2C8E56BAC9D6dA -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x3a346a945e30f2d56cb348be3d110f84b5a97ea0ee67962e6b122fd076e4c820 (failed)	gasfee:   0.9996 ETH	val:         0.0000 	 datasize: 260      		 0xAcEcE2C109AF6fDA78125cDa83c40E04dafEe10d -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0xe911169a2a5b233b6ac360f40bb2e9538db8c3d966f19dd18ac35fb199b392c9         	gasfee:   0.9287 ETH	val:         0.0000 	 datasize: 260      		 0x46858C3eaF2AbF84Ab148d02759d9F64F4A77917 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0xa32040fa664936258fd7f9cb1d193a82b0aa5f183f6f566264fd3cac90e4445e         	gasfee:   0.8772 ETH	val:         0.0000 	 datasize: 16830    		 0x21Ddf70Bfb842E9eed59DF7aF411fc602d7eED4B -> 
+0xbcc10ed3f13047a8745871ba0e3617af64b70823c7110b079d88d723cd0d7a20 (failed)	gasfee:   0.8528 ETH	val:         0.0000 	 datasize: 260      		 0x0af7E23Ca25865667e51fc2abC406c408344317b -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x3f97a8708dba840bf852ddda478e9c44588dafa50a0be86c6b3403cb11362b51 (failed)	gasfee:   0.7985 ETH	val:         0.0000 	 datasize: 260      		 0x6536A58F2e32a4CF711E74B2A816cb927d58E1F7 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x0220480473b09cce2579ffb04842a9cdda874d38e99c2b2008a8dfc2ac658776 (failed)	gasfee:   0.7848 ETH	val:         0.0000 	 datasize: 260      		 0xb7CC77c4096f661f9320ac59E79F8fD1bd78572e -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x2404ea4311e94afb5b97e5cbaf32d890928ba42802aca100e19d3e49be8e345d (failed)	gasfee:   0.6939 ETH	val:         0.0000 	 datasize: 260      		 0x1E4E21Fc0F03dd05e47645b0Ac4ABCe6BD932Daf -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x7592c4df26045d5eb30dfc829e39941491a7f13d263526ccf9a357f22fe42e21 (failed)	gasfee:   0.6939 ETH	val:         0.0000 	 datasize: 260      		 0xAA104F976D35f99a770F2c4741724f675fCEEBa8 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0xf267293969feed10da38e16e87e0fba79361ffd70d99b4c7f1175db12bd86fcb         	gasfee:   0.6805 ETH	val:         0.0000 	 datasize: 260      		 0x9bA4923FCf7C14083FB3e830AC4ad84b49001E5e -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0x817563ecb8dc73cf77494e5e4336331696413ffed68c25493e175881f8521a37         	gasfee:   0.6801 ETH	val:         0.0000 	 datasize: 260      		 0x6b3D63aCCF3F6D802C04E6Dd12713a8aB5109172 -> 0x7a250d5630b4cf539739df2c5dacb4c659f2488d (Uniswap V2)
+0xb0c2787944865f2df40e07eec350f30e3f16a6afe3916b0c5d08f2abcb553171         	gasfee:   0.6377 ETH	val:         0.0000 	 datasize: 16804    		 0xB43984074FFf6e0AF7fD717BBA78Fa31bc69B65e -> 0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf
+
+Top transactions by ETH VALUE
+-----------------------------
+0xe4eab0ed6d8e405ffe4d4fd1e58d592e774559b4dd5fead8fec1922f760bdb6e         	gasfee:   0.0008 ETH	val:   126,076.0000 	 datasize: 0        		 0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be (Binance) -> 0xF977814e90dA44bFA03b6295A0616a897441aceC
+0x7744d2690ab99c2915fc28866111a0274fb478e8f11994bfc343f1b3c9fb43a8         	gasfee:   0.0005 ETH	val:    21,607.8860 	 datasize: 0        		 0x28c6c06298d514db089934071355e5743bf21d60 (Binance) -> 0x21a31ee1afc51d94c2efccaa2092ad1028285549 (Binance)
+0x2c0591d6012f1d443f27709cc3dff3193a3ebcdc613f73c0931d4c04f96e0c33         	gasfee:   0.0008 ETH	val:    20,396.3600 	 datasize: 0        		 0x28c6c06298d514db089934071355e5743bf21d60 (Binance) -> 0x9696f59E4d72E237BE84fFD425DCaD154Bf96976
+0xc5fd1ae796f7b33beeb34043c2e9163a11748a343c68f8dfa9cc01b110d3bb12         	gasfee:   0.0005 ETH	val:    20,330.2613 	 datasize: 0        		 0x28c6c06298d514db089934071355e5743bf21d60 (Binance) -> 0xDFd5293D8e347dFe59E90eFd55b2956a1343963d
+0x66286d4ccaceda2760af7783d2e3d70936ebe8b4adfbe820cdca52135ab1ad5d         	gasfee:   0.0008 ETH	val:    20,151.1171 	 datasize: 0        		 0x28c6c06298d514db089934071355e5743bf21d60 (Binance) -> 0x21a31ee1afc51d94c2efccaa2092ad1028285549 (Binance)
+0x1c9b35de3e42fc4bbbf26810f5f410bc3436262f0da8cfdc9920c022667ead92         	gasfee:   0.0005 ETH	val:    20,018.6919 	 datasize: 0        		 0x28c6c06298d514db089934071355e5743bf21d60 (Binance) -> 0x56Eddb7aa87536c09CCc2793473599fD21A8b17F
+0x1907d64c22af7c866a50f22285840c769333e6bbecec998426ef153d1144a4da         	gasfee:   0.0013 ETH	val:    15,000.0000 	 datasize: 0        		 0x742d35cc6634c0532925a3b844bc454e4438f44e (Bitfinex) -> 0x876eabf441b2ee5b5b0554fd502a8e0600950cfa (Bitfinex)
+0x0a4ec277d43c35a01ca12db82a82a7303cf7bf55d0137706f850c4a7be88c0c3         	gasfee:   0.0143 ETH	val:    14,500.0000 	 datasize: 100      		 0x51346D389ec7ADf11C5b96695ef003dbb849af9A -> 0xcc9a0b7c43dc2a5f023bb9b738e45b0ef6b06e04
+0x125682cdf753b5ff48d3fa5bce2e87d7b59bc1af7c62400d1794a75bd1999715         	gasfee:   0.0006 ETH	val:    14,000.0000 	 datasize: 0        		 0xEFb2E870b14D7e555a31B392541ACf002Dae6aE9 -> 0x7Be98E1D8f29D23338E61694007D50D67144C7eF
+0xff52d96ef76bbe0709b6a43ecd3ce14ff57980dc53c75ec79d35f663c48a1d3d         	gasfee:   0.0009 ETH	val:    13,999.9991 	 datasize: 0        		 0xa2d78481393bc162FB768CdE8d5484bE6B019759 -> 0x9d36F0C440CDf29898483FaEfb9511f571c47A78
+0x7ce0e4aad9b7b7951cbe7783d48945164f34642789329e41ace3411393bda858         	gasfee:   0.0005 ETH	val:    13,999.9986 	 datasize: 0        		 0x9d36F0C440CDf29898483FaEfb9511f571c47A78 -> 0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511
+0x93aafddd8314a2a5042b65c5cd75d81739d304bc6f2fb3b5c530043b301d264e         	gasfee:   0.0092 ETH	val:    12,000.0000 	 datasize: 100      		 0x4093FBe60aB50AB79a5Bd32Fa2adEC255372f80E -> 0xcc9a0b7c43dc2a5f023bb9b738e45b0ef6b06e04
+0xfe30a9c1a7129fbf274d090a9c18550fd6fcde1ad4df949a8b63ba1487a64c4e         	gasfee:   0.0267 ETH	val:    12,000.0000 	 datasize: 100      		 0x4093FBe60aB50AB79a5Bd32Fa2adEC255372f80E -> 0xcc9a0b7c43dc2a5f023bb9b738e45b0ef6b06e04
+0x4e41dee0a8ccb2d55a2b3d5e343933f417a786ca0ff00ddaf295a2aa18522715         	gasfee:   0.0007 ETH	val:    10,973.7652 	 datasize: 0        		 0x1149E9143C407F3Be1df24C463E48963c6dE1715 -> 0x27E9F4748a2eb776bE193a1F7dec2Bb6DAAfE9Cf
+0x98b95f7d115206ee2c89aeae9d900c9c5e61293d7c762192826571a4fc96d866         	gasfee:   0.0032 ETH	val:    10,000.0000 	 datasize: 100      		 0xead735c299de709EEcFD84eaf0632E0D7458C3Ca -> 0xdc24316b9ae028f1497c275eb9192a3ea0f67022
+0x101c3a43b914c64e99ac2061e1fdc61cf389097651d596ba89620e5fe95506ea         	gasfee:   0.0016 ETH	val:    10,000.0000 	 datasize: 0        		 0x4862733B5FdDFd35f35ea8CCf08F5045e57388B3 -> 0xa4AfaFFA791355e136d829Ad0E9671D9ecA62589
+0xafa80f9fbc429f68318f5bf2157f56b81836c34b5af3775e585f8b169d45a719         	gasfee:   0.0007 ETH	val:     9,999.9485 	 datasize: 0        		 0xa4AfaFFA791355e136d829Ad0E9671D9ecA62589 -> 0x876eabf441b2ee5b5b0554fd502a8e0600950cfa (Bitfinex)
+0x5b2180aa9031de5846cec48ce8804cdc1cf74fac048c99df3b4427a4dfc4c4b0         	gasfee:   0.0007 ETH	val:     9,998.5762 	 datasize: 0        		 0x3Ad63fE9Ce75874CD4f88422c44bFD17CB5F4754 -> 0xf66852bC122fD40bFECc63CD48217E88bda12109
+0x285340281c492837cccc10b0a6c7e1fe0750bc21d6093b2b66c3eb6e4accd5a2         	gasfee:   0.0059 ETH	val:     9,760.8963 	 datasize: 100      		 0xead735c299de709EEcFD84eaf0632E0D7458C3Ca -> 0xcc9a0b7c43dc2a5f023bb9b738e45b0ef6b06e04
+0x5cbde1df8874327541aa45d77e0c517c371a3609355537884cb76f9ce5b77f90         	gasfee:   0.0009 ETH	val:     8,350.5191 	 datasize: 0        		 0x4B21007f513b7a3888A862685080842A98Beda76 -> 0xE3aF6DE65E0ac0544A8d44cBB8327c20855FDecE
+
+Top transactions by MOST DATA
+-----------------------------
+0xc77f9c403b2f4674e7266673f6e371fe4de5fe48baa0c461d4deb1c0032f6ecc         	gasfee:   0.0316 ETH	val:         0.0000 	 datasize: 119588   		 0xcCe5c6cFF61C49b4d53dd6024f8295F3c5230513 -> 0x4c6f947Ae67F572afa4ae0730947DE7C874F95Ef
+0x853746423ef43769731305c7435f3bca4b3dfc8d01db8ba348b7383f1709ff6b         	gasfee:   0.0302 ETH	val:         0.0000 	 datasize: 101700   		 0xcCe5c6cFF61C49b4d53dd6024f8295F3c5230513 -> 0x4c6f947Ae67F572afa4ae0730947DE7C874F95Ef
+0xba98200b39cb92b5a4f349615aac4715db0a3e69ccbe74c1220b1f7fd750e3f6         	gasfee:   0.0296 ETH	val:         0.0000 	 datasize: 101444   		 0xcCe5c6cFF61C49b4d53dd6024f8295F3c5230513 -> 0x4c6f947Ae67F572afa4ae0730947DE7C874F95Ef
+0x4eb209a74bbb35e85272bc234b8b42a40d18e8832b2285aeddd2000e1562b6d0         	gasfee:   0.0272 ETH	val:         0.0000 	 datasize: 74853    		 0x6887246668a3b87F54DeB3b94Ba47a6f63F32985 -> 0xa88e220c7FC7F0D845D2624a5dF1DfD6874B9a44
+0xa16cfed494d71a67c73828549090686fb0b4760938d64a57daaae592aa493b83         	gasfee:   0.2029 ETH	val:         0.0000 	 datasize: 58916    		 0x73Ca8E7a9A6EEC0ed257262ed8b6f8C0404b1227 -> 0x11111112542d85b3ef69ae05771c2dccff4faa26
+0x99959975f1d6ca55f998b93e0f140d79b46bc7cb4ea33ce43d805a8c8f1cc37c         	gasfee:   0.0204 ETH	val:         0.0000 	 datasize: 56260    		 0xcCe5c6cFF61C49b4d53dd6024f8295F3c5230513 -> 0x4c6f947Ae67F572afa4ae0730947DE7C874F95Ef
+0x3bab2d891423a478eeea85287c6c7043b65f1b02180e2d0f24cf980464e187df         	gasfee:   0.2284 ETH	val:         0.0000 	 datasize: 55076    		 0x73Ca8E7a9A6EEC0ed257262ed8b6f8C0404b1227 -> 0x11111112542d85b3ef69ae05771c2dccff4faa26
+0x39b14924387db0d4466c1369f49758898bfc22d3aa21a3186c4036b343e9c665         	gasfee:   0.0481 ETH	val:         0.0000 	 datasize: 51396    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x8166d6238e89c83008bc54d2f6bb3acac0c5402bb6af7e7d6c75a8587915c330         	gasfee:   0.0495 ETH	val:         0.0000 	 datasize: 50884    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x5b06d2007b022dbc4b42f4859666b3478571f3836800696d0b64adb54e6608b5         	gasfee:   0.0387 ETH	val:         0.0000 	 datasize: 50660    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0xea2f3800c3f4301f17ccfe593fda21cd3a1a95d332473f0abc018135538bfe98         	gasfee:   0.0428 ETH	val:         0.0000 	 datasize: 50340    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x9000e3b5aa9323d546bea5ef24d6433c80dea98a0cb5a5c08ea58650a005e5c4         	gasfee:   0.0178 ETH	val:         0.0000 	 datasize: 47647    		 0x6887246668a3b87F54DeB3b94Ba47a6f63F32985 -> 0xa88e220c7FC7F0D845D2624a5dF1DfD6874B9a44
+0x23869941d88f13071d1d784805d7269bd6381048759063f5e0b5371c09d9e692         	gasfee:   0.0629 ETH	val:         0.0000 	 datasize: 47364    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x315e360c6510359a04d956f9537fbd8813d98ade5f52a3aa8477a03d81743b16         	gasfee:   0.0250 ETH	val:         0.0000 	 datasize: 46916    		 0x8129b737912e17212C8693B781928f5D0303390a -> 0xD54f502e184B6B739d7D27a6410a67dc462D69c8
+0xa9b0340e60cd1c56bd4a18a93c516d8e892ce041369875eaeac1fc92aefeb516         	gasfee:   0.1488 ETH	val:         0.0000 	 datasize: 46276    		 0xcc9F2BdBD4802087f682452E2f390E754d4ad02e -> 0x111111125434b319222cdbf8c261674adb56f3ae
+0x7451093920b757abd83f06fdecbe846cbc2806eb0b52b89875459a47ae9944f2         	gasfee:   0.0414 ETH	val:         0.0000 	 datasize: 43716    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x05035e57ff3c5cdae5ede27928f778dc30fe150f582aa25c3fb01cb1d7d707be         	gasfee:   0.1378 ETH	val:         0.0000 	 datasize: 43620    		 0xcc9F2BdBD4802087f682452E2f390E754d4ad02e -> 0x111111125434b319222cdbf8c261674adb56f3ae
+0xccbab365b148801910773b5826552bdebf132c73c916ce73782a4a1abbaa4efa         	gasfee:   0.0201 ETH	val:         0.0000 	 datasize: 42920    		 0x6887246668a3b87F54DeB3b94Ba47a6f63F32985 -> 0xa88e220c7FC7F0D845D2624a5dF1DfD6874B9a44
+0x346bd97ad216402163d3766b876e79664d0e290e418d3810c7a0aed04c4cc9ad         	gasfee:   0.0446 ETH	val:         0.0000 	 datasize: 42116    		 0xda7357bBCe5e8C616Bc7B0C3C86f0C71c5b4EaBb -> 0xaBEA9132b05A70803a4E85094fD0e1800777fBEF
+0x16f9eb85926de94c93926621be14e7948e52ca8cfad16613c3c9330005733df7         	gasfee:   0.0688 ETH	val:         0.0000 	 datasize: 42115    		 0x6887246668a3b87F54DeB3b94Ba47a6f63F32985 -> 0xa88e220c7FC7F0D845D2624a5dF1DfD6874B9a44
+
+Tagged transactions
+-------------------
+FlashBotsFailedTx	0x3eab648288a7a538ab43f26fcbdaec60c305b22d581b7adbf09b4549b09518dc (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 420      		 0x0Ed9C6774381D58B04F8956D966DC247Fa2f2495 -> 0x8330A86E74A94919f36F9442ff211580f59e9e46
+FlashBotsFailedTx	0x93bc9d3552777f6cb90205868402ba3a47f3dd923d1a5c0b8dd767089d508148 (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 68       		 0xAfadc4302f07e9460Eb4c31ec741C0f3e308fF3a -> 0x8eB24319393716668D768dCEC29356ae9CfFe285 (SingularityNET Token)
+FlashBotsFailedTx	0xc4d8ecfeaa1dd5fdfe832b511695ea9b0ec3cb0ba7ce75be8eb6d19a97178052 (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 420      		 0x0Ed9C6774381D58B04F8956D966DC247Fa2f2495 -> 0x8330A86E74A94919f36F9442ff211580f59e9e46
+FlashBotsFailedTx	0xae042644c32647254c3de90628d5510e31edb0ffcd4f8afa3f3c63e93821dbb8 (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 420      		 0x0Ed9C6774381D58B04F8956D966DC247Fa2f2495 -> 0x8330A86E74A94919f36F9442ff211580f59e9e46
+FlashBotsFailedTx	0xbc10b72e2401dfd39e38e8caad942af9c66b3cdc7f0b328d223779b0c34c8e3a (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 420      		 0x0Ed9C6774381D58B04F8956D966DC247Fa2f2495 -> 0x8330A86E74A94919f36F9442ff211580f59e9e46
+FlashBotsFailedTx	0x70aa8ecbcccd397b75c2095269394f48c10a1c153c5c062a7cdd3589939cb73e (failed)	gasfee:   0.0000 ETH	val:         0.0000 	 datasize: 420      		 0x0Ed9C6774381D58B04F8956D966DC247Fa2f2495 -> 0x8330A86E74A94919f36F9442ff211580f59e9e46
+
+===============
+Smart Contracts
+===============
+
+ERC20: most token-tranfer tx
+----------------------------
+0xdac17f958d2ee523a2206206994597c13d831ec7 Tether USD                   	   131578 erc20-tx 	   136095 tx 	              8,718,797,603 USDT 
+0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 USD Coin                     	    26229 erc20-tx 	    30580 tx 	              2,006,538,553 USDC 
+0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0 Matic Token                  	     8862 erc20-tx 	    10477 tx 	                237,670,460 MATIC
+0x6b175474e89094c44da98b954eedeac495271d0f Dai Stablecoin               	     6451 erc20-tx 	     7956 tx 	                124,490,449 DAI  
+0x514910771af9ca656af840dff83e8264ecf986ca ChainLink Token              	     5984 erc20-tx 	     6548 tx 	                  9,693,731 LINK 
+0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce SHIBA INU                    	     5766 erc20-tx 	     6804 tx 	          7,160,964,017,404 SHIB 
+0x6b87b095d9cf64e06bf535d794d316dfde5e2bb7 Vcash                        	     3345 erc20-tx 	     3345 tx 	             27,955,643,058 Vcash
+0x9b9647431632af44be02ddd22477ed94d14aacaa KOK Coin                     	     3270 erc20-tx 	     3270 tx 	                  5,372,000 KOK  
+0x1f9840a85d5af5bf1d1762f925bdaddc4201f984 Uniswap                      	     2315 erc20-tx 	     2858 tx 	                  3,659,528 UNI  
+0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f Synthetix Network Token      	     1741 erc20-tx 	     2067 tx 	                    719,509 SNX  
+0x4fabb145d64652a948d72533023f6e7a623c7c53 Binance USD                  	     1652 erc20-tx 	     1894 tx 	              1,023,568,799 BUSD 
+0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9 Aave Token                   	     1580 erc20-tx 	     1917 tx 	                    189,950 AAVE 
+0x0d8775f648430679a709e98d2b0cb6250d2887ef Basic Attention Token        	     1543 erc20-tx 	     1637 tx 	                  8,985,699 BAT  
+0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c Enjin Coin                   	     1513 erc20-tx 	     1739 tx 	                 24,927,002 ENJ  
+0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d Celsius                      	     1476 erc20-tx 	     1564 tx 	                  2,031,147 CEL  
+0xba11d00c5f74255f56a5e366f4f77f5a186d7f55 BandToken                    	     1303 erc20-tx 	     1322 tx 	                  6,667,444 BAND 
+0xcc8fa225d80b9c7d42f96e9570156c65d6caaa25 Smooth Love Potion           	     1300 erc20-tx 	     1465 tx 	                 28,931,726 SLP  
+0xc00e94cb662c3520282e6f5717214004a7f26888 Compound                     	     1252 erc20-tx 	     1416 tx 	                     61,835 COMP 
+0x3506424f91fd33084466f402d5d97f05f8e3b4af chiliZ                       	     1248 erc20-tx 	     1386 tx 	                 71,030,161 CHZ  
+0x6b3595068778dd592e39a122f4f5a5cf09c90fe2 SushiToken                   	     1172 erc20-tx 	     1571 tx 	                 11,876,649 SUSHI
+0xf411903cbc70a74d22900a5de66a2dda66507255 VERA                         	     1125 erc20-tx 	     1182 tx 	              1,383,263,219 VRA  
+0x0f5d2fb29fb7d3cfee444a200298f468908cc942 Decentraland MANA            	     1122 erc20-tx 	     1263 tx 	                  9,786,744 MANA 
+0x653430560be843c4a3d143d0110e896c2ab8ac0d Molecular Future             	     1085 erc20-tx 	     1086 tx 	                  7,749,803 MOF  
+0x7ff4169a6b5122b664c51c95727d87750ec07c84 10Set Token                  	     1043 erc20-tx 	     1295 tx 	                 10,053,150 10SET
+0xa3e059c0b01f07f211c85bf7b4f1d907afb011df EthereumMax                  	      998 erc20-tx 	     2111 tx 	         85,880,171,265,363 eMax 
+
+ERC721: most token transfers
+----------------------------
+0x5283fc3a1aac4dac6b9581d3ab65f4ee2f3de7dc AsciiPunks                                                	      177 erc721-tx 	      178 tx
+0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d BoredApeYachtClub                                         	       85 erc721-tx 	      199 tx
+0x5dc60c4d5e75d22588fa17ffeb90a63e535efce0 dKargo                                                    	       69 erc721-tx 	       69 tx
+0x00b7db6b4431e345eee5cc23d21e8dbc1d5cada3 CyberTronChain                                            	       68 erc721-tx 	       68 tx
+0x06012c8cf97bead5deae237070f9587f8e7a266d CryptoKitties                                             	       64 erc721-tx 	      412 tx
+0xb932a70a57673d89f4acffbe830e8ed7f75fb9e0 SuperRare                                                 	       51 erc721-tx 	       88 tx
+0x9196e18bc349b1f64bc08784eae259525329a1ad PUSSY token                                               	       47 erc721-tx 	      143 tx
+0x1cb7176c90426ec53246f5b86b041913b3cc668e Gener8tive Mutations                                      	       45 erc721-tx 	       97 tx
+0x375ea781c49eafedde07afe6196f885761f166ae CryptoTrunks                                              	       43 erc721-tx 	      519 tx
+0xe74ac81b14021d0cfb835f269f48f25918c5cae6 Carbon GEMS                                               	       39 erc721-tx 	      221 tx
+0xee7827d3d267648371a05c2468981d74b93c55b7 Ecoban                                                    	       39 erc721-tx 	       39 tx
+0x60f80121c31a0d46b5279700f9df786054aa5ee5 Rarible                                                   	       35 erc721-tx 	      881 tx
+0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270 Art Blocks                                                	       32 erc721-tx 	       79 tx
+0x7bd29408f11d2bfc23c34f18275bbf23bb716bc7 Meebits                                                   	       30 erc721-tx 	       59 tx
+0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85                                                           	       28 erc721-tx 	      150 tx
+0x5d858bcd53e085920620549214a8b27ce2f04670 POP Network Token                                         	       25 erc721-tx 	       29 tx
+0x538a151dd910c1d1227719bd400d6c4f99ea06d0 Cryptochrome                                              	       24 erc721-tx 	       42 tx
+0x71fbc1d795fcfbca43a3ebf6de0101952f31a410 revelation.finance                                        	       24 erc721-tx 	       25 tx
+0x9040e237c3bf18347bb00957dc22167d0f2b999d Standard                                                  	       23 erc721-tx 	       31 tx
+0x8b2bb0773ffae3f5aed484a929ed81f728c908dd RealCryptoPunks by VT3.com                                	       20 erc721-tx 	       62 tx
+0x0580ae26963230bfbd2a775ff0afa937fd157774 CosmoMasks                                                	       20 erc721-tx 	       24 tx
+0x557b933a7c2c45672b610f8954a3deb39a51a8ca REVV                                                      	       18 erc721-tx 	       33 tx
+0x50f5474724e0ee42d9a4e711ccfb275809fd6d4a Sandbox's LANDs                                           	       15 erc721-tx 	       35 tx
+0x155040625d7ae3e9cada9a73e3e44f76d3ed1409 Revomon                                                   	       14 erc721-tx 	       33 tx
+0xd5525d397898e5502075ea5e830d8914f6f0affe MEME                                                      	       14 erc721-tx 	       31 tx
+
+=========
+Addresses
+=========
+
+NumTxReceivedSuccess
+--------------------
+0xdac17f958d2ee523a2206206994597c13d831ec7 Tether USD                   txInOk:  136095  	  txOutOk:       0 	 txInFail:  1498 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x7a250d5630b4cf539739df2c5dacb4c659f2488d Uniswap V2                   txInOk:  115339  	  txOutOk:       0 	 txInFail: 23620 	 txOutFail:     0 	  41,659.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xa090e606e30bd747d4e6245a1517ebe430f0057e                              txInOk:   47888  	  txOutOk:     222 	 txInFail:     0 	 txOutFail:     0 	   1,606.07 ETH received 	   1,607.31 ETH sent 	 gasFee 0.15 ETH / for failed: 0.00 ETH 
+0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 USD Coin                     txInOk:   30580  	  txOutOk:       0 	 txInFail:   189 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xb89a597fa1c7230afbafacbb43a3b7edfaaa4a94                              txInOk:   23017  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	      13.72 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xe592427a0aece92de3edee1f18e0157c05861564 Uniswap V3: Router           txInOk:   14653  	  txOutOk:       0 	 txInFail:  2190 	 txOutFail:     0 	  25,410.26 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0 Matic Token                  txInOk:   10477  	  txOutOk:       0 	 txInFail:    50 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xeba337eeedf030f88a7b0066ec137638f9355189                              txInOk:   10327  	  txOutOk:       1 	 txInFail:     0 	 txOutFail:     0 	     186.65 ETH received 	       0.01 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf                              txInOk:    9830  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	      40.08 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x881d40237659c251811cec9c364ef91dc08d300c MetaMask Dex                 txInOk:    8737  	  txOutOk:       0 	 txInFail:   473 	 txOutFail:     0 	   2,925.82 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x0000000000007f150bd6f54c40a34d7c3d5e9f56                              txInOk:    8678  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x59584128d9901b9f7925cdbbb92113ce25bf01fd                              txInOk:    8172  	  txOutOk:      61 	 txInFail:     0 	 txOutFail:     0 	       3.33 ETH received 	       0.39 ETH sent 	 gasFee 0.02 ETH / for failed: 0.00 ETH 
+0x6b175474e89094c44da98b954eedeac495271d0f Dai Stablecoin               txInOk:    7956  	  txOutOk:       0 	 txInFail:    95 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce SHIBA INU                    txInOk:    6804  	  txOutOk:       0 	 txInFail:    36 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x514910771af9ca656af840dff83e8264ecf986ca ChainLink Token              txInOk:    6548  	  txOutOk:       0 	 txInFail:    60 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xa0c68c638235ee32657e8f720a23cec1bfc77c77                              txInOk:    5858  	  txOutOk:       0 	 txInFail:   106 	 txOutFail:     0 	  16,101.94 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x7be8076f4ea4a4ad08075c2508e481d6c946d12b                              txInOk:    4716  	  txOutOk:       0 	 txInFail:   486 	 txOutFail:     0 	     837.11 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f SushiSwap: Router            txInOk:    4677  	  txOutOk:       0 	 txInFail:   874 	 txOutFail:     0 	  16,357.03 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x11111112542d85b3ef69ae05771c2dccff4faa26                              txInOk:    4380  	  txOutOk:       0 	 txInFail:   381 	 txOutFail:     0 	  25,269.65 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x0000006daea1723962647b7e189d311d757fb793                              txInOk:    4132  	  txOutOk:       0 	 txInFail:    10 	 txOutFail:     0 	   8,330.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 Wrapped Ether                txInOk:    3890  	  txOutOk:       0 	 txInFail:    78 	 txOutFail:     0 	  20,409.69 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x520d4cee24dc34b03fb7c877dfdab73bdac44099                              txInOk:    3565  	  txOutOk:      13 	 txInFail:     0 	 txOutFail:     0 	       4.51 ETH received 	       0.02 ETH sent 	 gasFee 0.02 ETH / for failed: 0.00 ETH 
+0x6b87b095d9cf64e06bf535d794d316dfde5e2bb7 Vcash                        txInOk:    3345  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x1a2a1c938ce3ec39b6d47113c7955baa9dd454f2                              txInOk:    3323  	  txOutOk:       0 	 txInFail:   200 	 txOutFail:     0 	     682.95 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x9b9647431632af44be02ddd22477ed94d14aacaa KOK Coin                     txInOk:    3270  	  txOutOk:       0 	 txInFail:     1 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+
+NumTxSentSuccess
+----------------
+0xea674fdde714fd979de3edf0f56aa9716b898ec8                              txInOk:       2  	  txOutOk:   64754 	 txInFail:     0 	 txOutFail:     1 	     500.20 ETH received 	   4,058.73 ETH sent 	 gasFee 1.41 ETH / for failed: 0.00 ETH 
+0x3cd751e6b0078be393132286c442345e5dc49699                              txInOk:     602  	  txOutOk:   16934 	 txInFail:     0 	 txOutFail:    10 	  16,567.82 ETH received 	  13,659.71 ETH sent 	 gasFee 17.15 ETH / for failed: 0.01 ETH 
+0xddfabcdc4d8ffc6d5beaf154f18b778f892a0740                              txInOk:     774  	  txOutOk:   15335 	 txInFail:     0 	 txOutFail:    12 	  21,445.46 ETH received 	  17,566.74 ETH sent 	 gasFee 15.10 ETH / for failed: 0.01 ETH 
+0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511                              txInOk:     644  	  txOutOk:   14948 	 txInFail:     0 	 txOutFail:    12 	  31,430.02 ETH received 	  29,484.15 ETH sent 	 gasFee 13.50 ETH / for failed: 0.01 ETH 
+0xeb2629a2734e272bcc07bda959863f316f4bd4cf                              txInOk:     858  	  txOutOk:   12403 	 txInFail:     0 	 txOutFail:    11 	  16,112.17 ETH received 	  13,973.24 ETH sent 	 gasFee 8.74 ETH / for failed: 0.01 ETH 
+0x46340b20830761efd32832a74d7169b29feb9758                              txInOk:       2  	  txOutOk:    7950 	 txInFail:     0 	 txOutFail:     1 	       0.01 ETH received 	   2,244.96 ETH sent 	 gasFee 8.20 ETH / for failed: 0.00 ETH 
+0x21a31ee1afc51d94c2efccaa2092ad1028285549 Binance                      txInOk:       4  	  txOutOk:    7758 	 txInFail:     0 	 txOutFail:     4 	  41,759.01 ETH received 	  39,139.35 ETH sent 	 gasFee 10.84 ETH / for failed: 0.02 ETH 
+0x28c6c06298d514db089934071355e5743bf21d60 Binance                      txInOk:    3032  	  txOutOk:    7690 	 txInFail:     0 	 txOutFail:     6 	  60,737.25 ETH received 	 137,686.20 ETH sent 	 gasFee 10.24 ETH / for failed: 0.00 ETH 
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d                              txInOk:       1  	  txOutOk:    7095 	 txInFail:     0 	 txOutFail:     1 	  20,330.26 ETH received 	  25,457.33 ETH sent 	 gasFee 10.02 ETH / for failed: 0.00 ETH 
+0x8fd00f170fdf3772c5ebdcd90bf257316c69ba45                              txInOk:      50  	  txOutOk:    6996 	 txInFail:     0 	 txOutFail:     0 	   5,191.25 ETH received 	   4,104.10 ETH sent 	 gasFee 0.89 ETH / for failed: 0.00 ETH 
+0x00192fb10df37c9fb26829eb2cc623cd1bf599e8                              txInOk:       0  	  txOutOk:    6728 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	     453.34 ETH sent 	 gasFee 0.15 ETH / for failed: 0.00 ETH 
+0x0d0707963952f2fba59dd06f2b425ace40b492fe                              txInOk:      46  	  txOutOk:    6607 	 txInFail:     0 	 txOutFail:     1 	   1,840.69 ETH received 	   6,065.39 ETH sent 	 gasFee 7.49 ETH / for failed: 0.00 ETH 
+0x1ad91ee08f21be3de0ba2ba6918e714da6b45836                              txInOk:       0  	  txOutOk:    6566 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	     909.06 ETH sent 	 gasFee 0.45 ETH / for failed: 0.00 ETH 
+0x56eddb7aa87536c09ccc2793473599fd21a8b17f                              txInOk:       2  	  txOutOk:    5912 	 txInFail:     0 	 txOutFail:     4 	  20,018.69 ETH received 	  27,521.66 ETH sent 	 gasFee 6.36 ETH / for failed: 0.01 ETH 
+0x75e89d5979e4f6fba9f97c104c2f0afb3f1dcb88                              txInOk:      70  	  txOutOk:    5674 	 txInFail:     0 	 txOutFail:     0 	     186.09 ETH received 	     215.50 ETH sent 	 gasFee 5.47 ETH / for failed: 0.00 ETH 
+0x9696f59e4d72e237be84ffd425dcad154bf96976                              txInOk:       1  	  txOutOk:    5586 	 txInFail:     0 	 txOutFail:     1 	  20,396.36 ETH received 	  25,845.32 ETH sent 	 gasFee 5.89 ETH / for failed: 0.01 ETH 
+0x829bd824b016326a401d083b33d092293333a830 F2Pool Old                   txInOk:       0  	  txOutOk:    5391 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	   1,697.29 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2 FTX                          txInOk:     398  	  txOutOk:    5236 	 txInFail:     0 	 txOutFail:     0 	      58.25 ETH received 	      47.64 ETH sent 	 gasFee 11.91 ETH / for failed: 0.00 ETH 
+0xd2c82f2e5fa236e114a81173e375a73664610998                              txInOk:       0  	  txOutOk:    5013 	 txInFail:     0 	 txOutFail:    18 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 13.40 ETH / for failed: 0.02 ETH 
+0x99c85bb64564d9ef9a99621301f22c9993cb89e3                              txInOk:       0  	  txOutOk:    4670 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	     761.36 ETH sent 	 gasFee 0.39 ETH / for failed: 0.00 ETH 
+0x49b21bdfa30333858956342f4028ce72e37eb851                              txInOk:       3  	  txOutOk:    4317 	 txInFail:     0 	 txOutFail:     0 	   1,635.20 ETH received 	   1,772.70 ETH sent 	 gasFee 0.91 ETH / for failed: 0.00 ETH 
+0xd24400ae8bfebb18ca49be86258a3c749cf46853                              txInOk:       4  	  txOutOk:    4100 	 txInFail:     0 	 txOutFail:     0 	   1,121.80 ETH received 	  21,470.91 ETH sent 	 gasFee 5.97 ETH / for failed: 0.00 ETH 
+0x503828976d22510aad0201ac7ec88293211d23da                              txInOk:       0  	  txOutOk:    3968 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 7.44 ETH / for failed: 0.00 ETH 
+0x52bc44d5378309ee2abf1539bf71de1b7d7be3b5                              txInOk:       0  	  txOutOk:    3722 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	     569.89 ETH sent 	 gasFee 2.45 ETH / for failed: 0.00 ETH 
+0xa1d8d972560c2f8144af871db508f0b0b10a3fbf                              txInOk:       0  	  txOutOk:    3098 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 6.84 ETH / for failed: 0.00 ETH 
+
+ValueReceivedWei
+----------------
+0xf977814e90da44bfa03b6295a0616a897441acec                              txInOk:       1  	  txOutOk:       5 	 txInFail:     0 	 txOutFail:     0 	 126,076.00 ETH received 	       0.00 ETH sent 	 gasFee 0.01 ETH / for failed: 0.00 ETH 
+0xcc9a0b7c43dc2a5f023bb9b738e45b0ef6b06e04                              txInOk:     309  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	  68,205.90 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x28c6c06298d514db089934071355e5743bf21d60 Binance                      txInOk:    3032  	  txOutOk:    7690 	 txInFail:     0 	 txOutFail:     6 	  60,737.25 ETH received 	 137,686.20 ETH sent 	 gasFee 10.24 ETH / for failed: 0.00 ETH 
+0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 FTX                          txInOk:     872  	  txOutOk:    1362 	 txInFail:     0 	 txOutFail:     0 	  54,596.59 ETH received 	  34,391.53 ETH sent 	 gasFee 1.33 ETH / for failed: 0.00 ETH 
+0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be Binance                      txInOk:    2149  	  txOutOk:    2445 	 txInFail:     0 	 txOutFail:     0 	  42,395.17 ETH received 	 126,076.00 ETH sent 	 gasFee 5.22 ETH / for failed: 0.00 ETH 
+0x21a31ee1afc51d94c2efccaa2092ad1028285549 Binance                      txInOk:       4  	  txOutOk:    7758 	 txInFail:     0 	 txOutFail:     4 	  41,759.01 ETH received 	  39,139.35 ETH sent 	 gasFee 10.84 ETH / for failed: 0.02 ETH 
+0x7a250d5630b4cf539739df2c5dacb4c659f2488d Uniswap V2                   txInOk:  115339  	  txOutOk:       0 	 txInFail: 23620 	 txOutFail:     0 	  41,659.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xe5782724e87bcd5a1f48737ff6cfeaf875ab5873                              txInOk:      44  	  txOutOk:       3 	 txInFail:     0 	 txOutFail:     0 	  32,000.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511                              txInOk:     644  	  txOutOk:   14948 	 txInFail:     0 	 txOutFail:    12 	  31,430.02 ETH received 	  29,484.15 ETH sent 	 gasFee 13.50 ETH / for failed: 0.01 ETH 
+0xc36442b4a4522e871399cd717abdd847ab11fe88 Uniswap V3 Positions NFT-V1  txInOk:    2827  	  txOutOk:       0 	 txInFail:   274 	 txOutFail:     0 	  30,099.87 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x729b66834740d58107441d5364a770f6da7c6bd6                              txInOk:      46  	  txOutOk:      46 	 txInFail:     0 	 txOutFail:     0 	  30,098.13 ETH received 	  30,098.10 ETH sent 	 gasFee 0.04 ETH / for failed: 0.00 ETH 
+0x876eabf441b2ee5b5b0554fd502a8e0600950cfa Bitfinex                     txInOk:     247  	  txOutOk:     717 	 txInFail:     0 	 txOutFail:     1 	  28,949.78 ETH received 	  37,456.19 ETH sent 	 gasFee 2.52 ETH / for failed: 0.00 ETH 
+0xdc24316b9ae028f1497c275eb9192a3ea0f67022                              txInOk:     115  	  txOutOk:       0 	 txInFail:     3 	 txOutFail:     0 	  26,545.16 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xe592427a0aece92de3edee1f18e0157c05861564 Uniswap V3: Router           txInOk:   14653  	  txOutOk:       0 	 txInFail:  2190 	 txOutFail:     0 	  25,410.26 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x11111112542d85b3ef69ae05771c2dccff4faa26                              txInOk:    4380  	  txOutOk:       0 	 txInFail:   381 	 txOutFail:     0 	  25,269.65 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x27e9f4748a2eb776be193a1f7dec2bb6daafe9cf                              txInOk:     189  	  txOutOk:     195 	 txInFail:     0 	 txOutFail:     0 	  21,602.06 ETH received 	  18,228.50 ETH sent 	 gasFee 0.18 ETH / for failed: 0.00 ETH 
+0xddfabcdc4d8ffc6d5beaf154f18b778f892a0740                              txInOk:     774  	  txOutOk:   15335 	 txInFail:     0 	 txOutFail:    12 	  21,445.46 ETH received 	  17,566.74 ETH sent 	 gasFee 15.10 ETH / for failed: 0.01 ETH 
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 Wrapped Ether                txInOk:    3890  	  txOutOk:       0 	 txInFail:    78 	 txOutFail:     0 	  20,409.69 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x9696f59e4d72e237be84ffd425dcad154bf96976                              txInOk:       1  	  txOutOk:    5586 	 txInFail:     0 	 txOutFail:     1 	  20,396.36 ETH received 	  25,845.32 ETH sent 	 gasFee 5.89 ETH / for failed: 0.01 ETH 
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d                              txInOk:       1  	  txOutOk:    7095 	 txInFail:     0 	 txOutFail:     1 	  20,330.26 ETH received 	  25,457.33 ETH sent 	 gasFee 10.02 ETH / for failed: 0.00 ETH 
+0x56eddb7aa87536c09ccc2793473599fd21a8b17f                              txInOk:       2  	  txOutOk:    5912 	 txInFail:     0 	 txOutFail:     4 	  20,018.69 ETH received 	  27,521.66 ETH sent 	 gasFee 6.36 ETH / for failed: 0.01 ETH 
+0x1149e9143c407f3be1df24c463e48963c6de1715                              txInOk:      26  	  txOutOk:      96 	 txInFail:     0 	 txOutFail:     0 	  19,671.24 ETH received 	  19,670.92 ETH sent 	 gasFee 0.31 ETH / for failed: 0.00 ETH 
+0xc333e80ef2dec2805f239e3f1e810612d294f771                              txInOk:      39  	  txOutOk:     109 	 txInFail:     0 	 txOutFail:     0 	  19,480.94 ETH received 	  24,951.26 ETH sent 	 gasFee 0.22 ETH / for failed: 0.00 ETH 
+0xfa52274dd61e1643d2205169732f29114bc240b3 Kraken                       txInOk:    1462  	  txOutOk:       0 	 txInFail:     0 	 txOutFail:     0 	  18,750.05 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x3cd751e6b0078be393132286c442345e5dc49699                              txInOk:     602  	  txOutOk:   16934 	 txInFail:     0 	 txOutFail:    10 	  16,567.82 ETH received 	  13,659.71 ETH sent 	 gasFee 17.15 ETH / for failed: 0.01 ETH 
+
+ValueSentWei
+------------
+0x28c6c06298d514db089934071355e5743bf21d60 Binance                      txInOk:    3032  	  txOutOk:    7690 	 txInFail:     0 	 txOutFail:     6 	  60,737.25 ETH received 	 137,686.20 ETH sent 	 gasFee 10.24 ETH / for failed: 0.00 ETH 
+0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be Binance                      txInOk:    2149  	  txOutOk:    2445 	 txInFail:     0 	 txOutFail:     0 	  42,395.17 ETH received 	 126,076.00 ETH sent 	 gasFee 5.22 ETH / for failed: 0.00 ETH 
+0x422162745b12b8c58d19e348d7c8c134bbedf886                              txInOk:     283  	  txOutOk:    1095 	 txInFail:     0 	 txOutFail:    66 	  11,784.79 ETH received 	  42,522.13 ETH sent 	 gasFee 11.46 ETH / for failed: 1.58 ETH 
+0x21a31ee1afc51d94c2efccaa2092ad1028285549 Binance                      txInOk:       4  	  txOutOk:    7758 	 txInFail:     0 	 txOutFail:     4 	  41,759.01 ETH received 	  39,139.35 ETH sent 	 gasFee 10.84 ETH / for failed: 0.02 ETH 
+0x876eabf441b2ee5b5b0554fd502a8e0600950cfa Bitfinex                     txInOk:     247  	  txOutOk:     717 	 txInFail:     0 	 txOutFail:     1 	  28,949.78 ETH received 	  37,456.19 ETH sent 	 gasFee 2.52 ETH / for failed: 0.00 ETH 
+0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 FTX                          txInOk:     872  	  txOutOk:    1362 	 txInFail:     0 	 txOutFail:     0 	  54,596.59 ETH received 	  34,391.53 ETH sent 	 gasFee 1.33 ETH / for failed: 0.00 ETH 
+0x729b66834740d58107441d5364a770f6da7c6bd6                              txInOk:      46  	  txOutOk:      46 	 txInFail:     0 	 txOutFail:     0 	  30,098.13 ETH received 	  30,098.10 ETH sent 	 gasFee 0.04 ETH / for failed: 0.00 ETH 
+0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511                              txInOk:     644  	  txOutOk:   14948 	 txInFail:     0 	 txOutFail:    12 	  31,430.02 ETH received 	  29,484.15 ETH sent 	 gasFee 13.50 ETH / for failed: 0.01 ETH 
+0x0000f079e68bbcc79ab9600ace786b0a4db1c83c                              txInOk:       2  	  txOutOk:     429 	 txInFail:     0 	 txOutFail:     0 	   3,527.00 ETH received 	  28,950.80 ETH sent 	 gasFee 0.86 ETH / for failed: 0.00 ETH 
+0x56eddb7aa87536c09ccc2793473599fd21a8b17f                              txInOk:       2  	  txOutOk:    5912 	 txInFail:     0 	 txOutFail:     4 	  20,018.69 ETH received 	  27,521.66 ETH sent 	 gasFee 6.36 ETH / for failed: 0.01 ETH 
+0x9696f59e4d72e237be84ffd425dcad154bf96976                              txInOk:       1  	  txOutOk:    5586 	 txInFail:     0 	 txOutFail:     1 	  20,396.36 ETH received 	  25,845.32 ETH sent 	 gasFee 5.89 ETH / for failed: 0.01 ETH 
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d                              txInOk:       1  	  txOutOk:    7095 	 txInFail:     0 	 txOutFail:     1 	  20,330.26 ETH received 	  25,457.33 ETH sent 	 gasFee 10.02 ETH / for failed: 0.00 ETH 
+0xc333e80ef2dec2805f239e3f1e810612d294f771                              txInOk:      39  	  txOutOk:     109 	 txInFail:     0 	 txOutFail:     0 	  19,480.94 ETH received 	  24,951.26 ETH sent 	 gasFee 0.22 ETH / for failed: 0.00 ETH 
+0x4093fbe60ab50ab79a5bd32fa2adec255372f80e                              txInOk:       1  	  txOutOk:       8 	 txInFail:     0 	 txOutFail:     0 	   6,390.28 ETH received 	  24,000.00 ETH sent 	 gasFee 0.12 ETH / for failed: 0.00 ETH 
+0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0 Kraken                       txInOk:       1  	  txOutOk:    1864 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	  21,596.13 ETH sent 	 gasFee 1.26 ETH / for failed: 0.00 ETH 
+0xd24400ae8bfebb18ca49be86258a3c749cf46853                              txInOk:       4  	  txOutOk:    4100 	 txInFail:     0 	 txOutFail:     0 	   1,121.80 ETH received 	  21,470.91 ETH sent 	 gasFee 5.97 ETH / for failed: 0.00 ETH 
+0xead735c299de709eecfd84eaf0632e0d7458c3ca                              txInOk:       0  	  txOutOk:      14 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	  19,760.90 ETH sent 	 gasFee 0.04 ETH / for failed: 0.00 ETH 
+0x86f3bd96d6eaf4591c4414867b8695bc533c42dc                              txInOk:       0  	  txOutOk:      16 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	  19,670.95 ETH sent 	 gasFee 0.01 ETH / for failed: 0.00 ETH 
+0x1149e9143c407f3be1df24c463e48963c6de1715                              txInOk:      26  	  txOutOk:      96 	 txInFail:     0 	 txOutFail:     0 	  19,671.24 ETH received 	  19,670.92 ETH sent 	 gasFee 0.31 ETH / for failed: 0.00 ETH 
+0xcac725bef4f114f728cbcfd744a731c2a463c3fc                              txInOk:     223  	  txOutOk:     226 	 txInFail:     0 	 txOutFail:     0 	   5,584.52 ETH received 	  19,000.46 ETH sent 	 gasFee 0.21 ETH / for failed: 0.00 ETH 
+0xbb8db958d7b5a627dcf94cdc84f6073f822652dd                              txInOk:       0  	  txOutOk:       5 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	  18,564.01 ETH sent 	 gasFee 0.01 ETH / for failed: 0.00 ETH 
+0x76c49d0e2b00ded0611862f0713c624a9bd0a432                              txInOk:       0  	  txOutOk:      14 	 txInFail:     0 	 txOutFail:     0 	       0.00 ETH received 	  18,318.69 ETH sent 	 gasFee 0.01 ETH / for failed: 0.00 ETH 
+0x27e9f4748a2eb776be193a1f7dec2bb6daafe9cf                              txInOk:     189  	  txOutOk:     195 	 txInFail:     0 	 txOutFail:     0 	  21,602.06 ETH received 	  18,228.50 ETH sent 	 gasFee 0.18 ETH / for failed: 0.00 ETH 
+0xddfabcdc4d8ffc6d5beaf154f18b778f892a0740                              txInOk:     774  	  txOutOk:   15335 	 txInFail:     0 	 txOutFail:    12 	  21,445.46 ETH received 	  17,566.74 ETH sent 	 gasFee 15.10 ETH / for failed: 0.01 ETH 
+0x18e24850fdeceee577da1e08c63b260cff69b962                              txInOk:      15  	  txOutOk:      13 	 txInFail:     0 	 txOutFail:     0 	  14,193.84 ETH received 	  16,779.00 ETH sent 	 gasFee 0.01 ETH / for failed: 0.00 ETH 
+
+NumTxReceivedFailed
+-------------------
+0x7a250d5630b4cf539739df2c5dacb4c659f2488d Uniswap V2                   txInOk:  115339  	  txOutOk:       0 	 txInFail: 23620 	 txOutFail:     0 	  41,659.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xe592427a0aece92de3edee1f18e0157c05861564 Uniswap V3: Router           txInOk:   14653  	  txOutOk:       0 	 txInFail:  2190 	 txOutFail:     0 	  25,410.26 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xdac17f958d2ee523a2206206994597c13d831ec7 Tether USD                   txInOk:  136095  	  txOutOk:       0 	 txInFail:  1498 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xba11d00c5f74255f56a5e366f4f77f5a186d7f55 BandToken                    txInOk:    1322  	  txOutOk:       0 	 txInFail:  1164 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f SushiSwap: Router            txInOk:    4677  	  txOutOk:       0 	 txInFail:   874 	 txOutFail:     0 	  16,357.03 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x0e69d0a2bbb30abcb7e5cfea0e4fde19c00a8d47 CarLive Chain                txInOk:       0  	  txOutOk:       0 	 txInFail:   694 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x61c86828fd30ca479c51413abc03f0f8dcec2120                              txInOk:      89  	  txOutOk:       0 	 txInFail:   667 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x7be8076f4ea4a4ad08075c2508e481d6c946d12b                              txInOk:    4716  	  txOutOk:       0 	 txInFail:   486 	 txOutFail:     0 	     837.11 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x881d40237659c251811cec9c364ef91dc08d300c MetaMask Dex                 txInOk:    8737  	  txOutOk:       0 	 txInFail:   473 	 txOutFail:     0 	   2,925.82 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x78cce34b82f8cef05eb658ddcf10f9a154298ed4                              txInOk:     160  	  txOutOk:       0 	 txInFail:   463 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xda1faeb056a2f568b138ca0ad9ad8a51915ba336                              txInOk:     114  	  txOutOk:       0 	 txInFail:   396 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x11111112542d85b3ef69ae05771c2dccff4faa26                              txInOk:    4380  	  txOutOk:       0 	 txInFail:   381 	 txOutFail:     0 	  25,269.65 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x9282dc5c422fa91ff2f6ff3a0b45b7bf97cf78e7                              txInOk:     117  	  txOutOk:       0 	 txInFail:   380 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xfad95b6089c53a0d1d861eabfaadd8901b0f8533                              txInOk:     112  	  txOutOk:       0 	 txInFail:   371 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x901bb9583b24d97e995513c6778dc6888ab6870e                              txInOk:       0  	  txOutOk:       0 	 txInFail:   277 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xc36442b4a4522e871399cd717abdd847ab11fe88 Uniswap V3 Positions NFT-V1  txInOk:    2827  	  txOutOk:       0 	 txInFail:   274 	 txOutFail:     0 	  30,099.87 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x111111125434b319222cdbf8c261674adb56f3ae                              txInOk:     840  	  txOutOk:       0 	 txInFail:   265 	 txOutFail:     0 	   1,093.68 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x388a3bd8f54f305266898e77b126609ec6265f1e                              txInOk:    1722  	  txOutOk:       0 	 txInFail:   241 	 txOutFail:     0 	       0.50 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x80c48f90d835c641e293962f44bb57ae18bf48b4                              txInOk:    2449  	  txOutOk:       0 	 txInFail:   219 	 txOutFail:     0 	   5,671.50 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x0000000000a8fb09af944ab3baf7a9b3e1ab29d8                              txInOk:     809  	  txOutOk:       0 	 txInFail:   213 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x1a2a1c938ce3ec39b6d47113c7955baa9dd454f2                              txInOk:    3323  	  txOutOk:       0 	 txInFail:   200 	 txOutFail:     0 	     682.95 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0x8576acc5c05d6ce88f4e49bf65bdf0c62f91353c                              txInOk:       0  	  txOutOk:       0 	 txInFail:   197 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xdef1c0ded9bec7f1a1670819833240f027b25eff                              txInOk:    2609  	  txOutOk:       0 	 txInFail:   196 	 txOutFail:     0 	  12,865.52 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 USD Coin                     txInOk:   30580  	  txOutOk:       0 	 txInFail:   189 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xc12d1c73ee7dc3615ba4e37e4abfdbddfa38907e KickToken                    txInOk:     300  	  txOutOk:       0 	 txInFail:   174 	 txOutFail:     0 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+
+NumTxSentFailed
+---------------
+0xa2f21e340890408625c27a37aabbc8ccf51b727f                              txInOk:      84  	  txOutOk:     196 	 txInFail:     0 	 txOutFail:   648 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 2.39 ETH / for failed: 1.18 ETH 
+0x4532d9754f82c42385862b25fd775dc33524d20c                              txInOk:     136  	  txOutOk:     296 	 txInFail:     0 	 txOutFail:   641 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 1.50 ETH / for failed: 0.75 ETH 
+0x17dee3cb531ad67f0f824cc870ecb474d886bcdb                              txInOk:       1  	  txOutOk:      32 	 txInFail:     0 	 txOutFail:   560 	      10.00 ETH received 	       0.00 ETH sent 	 gasFee 0.67 ETH / for failed: 0.64 ETH 
+0xd2e0f41e091f0e98a0672f441fb4ff995277686d                              txInOk:     108  	  txOutOk:     341 	 txInFail:     0 	 txOutFail:   396 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 1.45 ETH / for failed: 0.71 ETH 
+0x96ca003cb319b5024125154a94a7911ef898cd7e                              txInOk:      82  	  txOutOk:     482 	 txInFail:     0 	 txOutFail:   380 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 2.28 ETH / for failed: 0.82 ETH 
+0x76729e434f98cc48d1cd145f3a23ab9292a3a542                              txInOk:       0  	  txOutOk:       3 	 txInFail:     0 	 txOutFail:   274 	       0.00 ETH received 	      11.45 ETH sent 	 gasFee 0.35 ETH / for failed: 0.34 ETH 
+0x1a1c87d9a6f55d3bbb064bff1059ad37b6bdc097                              txInOk:       2  	  txOutOk:    1254 	 txInFail:     0 	 txOutFail:   262 	       5.22 ETH received 	       0.74 ETH sent 	 gasFee 2.71 ETH / for failed: 1.51 ETH 
+0x45276a61559274033d23248b111cf16af57e51f6                              txInOk:       5  	  txOutOk:      22 	 txInFail:     0 	 txOutFail:   218 	     100.00 ETH received 	     156.65 ETH sent 	 gasFee 0.34 ETH / for failed: 0.32 ETH 
+0x5ab9d116a53ef41063e3eae26a7ebe736720e9ba                              txInOk:       1  	  txOutOk:     436 	 txInFail:     0 	 txOutFail:   163 	      19.99 ETH received 	       0.00 ETH sent 	 gasFee 3.62 ETH / for failed: 0.36 ETH 
+0x6de2b77d89759c1275b99175494e29299f845cbc                              txInOk:      14  	  txOutOk:      96 	 txInFail:     0 	 txOutFail:   163 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 4.72 ETH / for failed: 1.61 ETH 
+0x0832b0393e3a920913cc2974bf78b0463db01119                              txInOk:      20  	  txOutOk:      41 	 txInFail:     0 	 txOutFail:   114 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.39 ETH / for failed: 0.22 ETH 
+0x20558ef82fa4c10e30f869d1b8a0fda86e65c55c                              txInOk:       3  	  txOutOk:      14 	 txInFail:     0 	 txOutFail:   101 	       2.83 ETH received 	       1.20 ETH sent 	 gasFee 0.93 ETH / for failed: 0.81 ETH 
+0xb3f923eabaf178fc1bd8e13902fc5c61d3ddef5b                              txInOk:       3  	  txOutOk:      27 	 txInFail:     0 	 txOutFail:    90 	   4,197.00 ETH received 	       0.00 ETH sent 	 gasFee 0.10 ETH / for failed: 0.07 ETH 
+0xaed8838ca12a396ec3ad82354c5d5e1ee86e535e                              txInOk:       0  	  txOutOk:      38 	 txInFail:     0 	 txOutFail:    88 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.55 ETH / for failed: 0.35 ETH 
+0x287dc8295e10878be9e20cb72e28c0e89bfe73b7                              txInOk:       1  	  txOutOk:     308 	 txInFail:     0 	 txOutFail:    72 	      18.00 ETH received 	       0.00 ETH sent 	 gasFee 11.25 ETH / for failed: 3.41 ETH 
+0xa619cf8df0854b9745b8654fb3c1256a7b086580                              txInOk:       0  	  txOutOk:       2 	 txInFail:     0 	 txOutFail:    72 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.06 ETH / for failed: 0.05 ETH 
+0x422162745b12b8c58d19e348d7c8c134bbedf886                              txInOk:     283  	  txOutOk:    1095 	 txInFail:     0 	 txOutFail:    66 	  11,784.79 ETH received 	  42,522.13 ETH sent 	 gasFee 11.46 ETH / for failed: 1.58 ETH 
+0xbf9192c234ecb4bd99b9e83b3ea66b78081d5de4                              txInOk:      13  	  txOutOk:    1113 	 txInFail:     0 	 txOutFail:    62 	       2.38 ETH received 	       0.48 ETH sent 	 gasFee 2.14 ETH / for failed: 0.06 ETH 
+0x1e05b04e4a6bd2c88118ab1a47d72ad9c8699982                              txInOk:       0  	  txOutOk:      28 	 txInFail:     0 	 txOutFail:    61 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.44 ETH / for failed: 0.28 ETH 
+0x0277e93f7bb5c65f6288f5153ef89c2ed8961bbf                              txInOk:       2  	  txOutOk:      90 	 txInFail:     0 	 txOutFail:    58 	     157.38 ETH received 	     134.40 ETH sent 	 gasFee 0.78 ETH / for failed: 0.25 ETH 
+0x8748a8abed62f8b8ead72c6baed89c44af2bc7e9                              txInOk:       0  	  txOutOk:       1 	 txInFail:     0 	 txOutFail:    56 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.04 ETH / for failed: 0.04 ETH 
+0x7be310473489e228e685b108a0662725c97ec6a1                              txInOk:       7  	  txOutOk:      62 	 txInFail:     0 	 txOutFail:    54 	       2.11 ETH received 	       8.03 ETH sent 	 gasFee 0.55 ETH / for failed: 0.17 ETH 
+0x7589319ed0fd750017159fb4e4d96c63966173c1                              txInOk:       1  	  txOutOk:      38 	 txInFail:     0 	 txOutFail:    54 	       4.90 ETH received 	      15.69 ETH sent 	 gasFee 1.69 ETH / for failed: 0.50 ETH 
+0xd98e3bd1c47f04481c2421f6750a46910f9e764d                              txInOk:       7  	  txOutOk:      11 	 txInFail:     0 	 txOutFail:    54 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.58 ETH / for failed: 0.54 ETH 
+0x5c6ee738607801c34e598c1f0ca297f0b3803b11                              txInOk:       6  	  txOutOk:      13 	 txInFail:     0 	 txOutFail:    50 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 1.22 ETH / for failed: 1.13 ETH 
+
+FlashBotsFailedTxSent
+---------------------
+0x0ed9c6774381d58b04f8956d966dc247fa2f2495                              txInOk:       0  	  txOutOk:      21 	 txInFail:     0 	 txOutFail:     5 	       0.00 ETH received 	       0.00 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+0xafadc4302f07e9460eb4c31ec741c0f3e308ff3a                              txInOk:      14  	  txOutOk:      14 	 txInFail:     0 	 txOutFail:     1 	      24.98 ETH received 	       5.18 ETH sent 	 gasFee 0.00 ETH / for failed: 0.00 ETH 
+
+Analysis finished (488.92s)

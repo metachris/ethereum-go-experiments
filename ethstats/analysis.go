@@ -5,88 +5,15 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/metachris/ethereum-go-experiments/config"
 	"github.com/metachris/ethereum-go-experiments/consts"
+	"github.com/metachris/ethereum-go-experiments/core"
 )
 
-// Keys for top addresses
-var (
-	TopAddressValueSent     string = "ValueSent"
-	TopAddressValueReceived        = "ValueReceived"
-)
-
-type AnalysisResult struct {
-	StartBlockNumber    int64
-	StartBlockTimestamp uint64
-	EndBlockNumber      int64
-	EndBlockTimestamp   uint64
-
-	Addresses          map[string]*AddressStats `json:"-"`
-	TopAddresses       map[string][]AddressStats
-	TopTransactions    TopTransactionData // todo: refactor for generic counters, like topaddresses
-	TaggedTransactions []TxStats
-
-	TxTypes       map[uint8]int
-	ValueTotalWei *big.Int
-
-	NumBlocks          int
-	NumBlocksWithoutTx int
-	GasUsed            *big.Int
-	GasFeeTotal        *big.Int
-	GasFeeFailedTx     *big.Int
-
-	NumTransactions              int
-	NumTransactionsFailed        int
-	NumTransactionsWithZeroValue int
-	NumTransactionsWithData      int
-
-	NumTransactionsErc20Transfer  int
-	NumTransactionsErc721Transfer int
-
-	NumFlashbotsTransactionsSuccess int
-	NumFlashbotsTransactionsFailed  int
-}
-
-func NewAnalysis() *AnalysisResult {
-	return &AnalysisResult{
-		ValueTotalWei: new(big.Int),
-		TxTypes:       make(map[uint8]int),
-		Addresses:     make(map[string]*AddressStats),
-		TopAddresses:  make(map[string][]AddressStats),
-
-		GasUsed:        new(big.Int),
-		GasFeeTotal:    new(big.Int),
-		GasFeeFailedTx: new(big.Int),
-
-		TopTransactions: TopTransactionData{
-			GasFee:   make([]TxStats, 0, config.GetConfig().NumTopTransactions),
-			Value:    make([]TxStats, 0, config.GetConfig().NumTopTransactions),
-			DataSize: make([]TxStats, 0, config.GetConfig().NumTopTransactions),
-		},
-	}
-}
-
-func (result *AnalysisResult) GetOrCreateAddressStats(address *common.Address) *AddressStats {
-	if address == nil {
-		return NewAddressStats("")
-	}
-
-	addr := strings.ToLower(address.String())
-	addrStats, isAddressKnown := result.Addresses[addr]
-	if !isAddressKnown {
-		addrStats = NewAddressStats(addr)
-		result.Addresses[addr] = addrStats
-	}
-
-	return addrStats
-}
-
-func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client) {
+func ProcessBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client, result *core.AnalysisResult) {
 	if result.StartBlockTimestamp == 0 {
 		result.StartBlockTimestamp = block.block.Time()
 	}
@@ -101,7 +28,7 @@ func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, c
 	// Iterate over all transactions
 	for _, tx := range block.block.Transactions() {
 		receipt := block.txReceipts[tx.Hash()]
-		result.AddTransaction(client, tx, receipt)
+		ProcessTransaction(client, tx, receipt, result)
 	}
 
 	// If no transactions in this block then record that
@@ -110,19 +37,12 @@ func (result *AnalysisResult) AddBlockWithReceipts(block *BlockWithTxReceipts, c
 	}
 }
 
-func (result *AnalysisResult) AddTaggedTransactionStats(txStats TxStats, tag string, client *ethclient.Client) {
-	txStats.Tag = tag
-	txStats.FromAddr.EnsureIsLoaded(client)
-	txStats.ToAddr.EnsureIsLoaded(client)
-	result.TaggedTransactions = append(result.TaggedTransactions, txStats)
-}
-
-func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt) {
-	result.AddTxToTopList(tx, receipt)
+func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt, result *core.AnalysisResult) {
+	// result.AddTxToTopList(tx, receipt)
 
 	txToAddrStats := result.GetOrCreateAddressStats(tx.To())
 	txFromAddrStats := result.GetOrCreateAddressStats(nil)
-	if from, err := GetTxSender(tx); err == nil {
+	if from, err := core.GetTxSender(tx); err == nil {
 		txFromAddrStats = result.GetOrCreateAddressStats(&from)
 	}
 
@@ -155,7 +75,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
 			result.NumFlashbotsTransactionsFailed += 1
 			fmt.Printf("Flashbots fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
-			result.AddTaggedTransactionStats(NewTxStatsFromTransactions(tx, receipt), consts.FlashBotsFailedTx, client)
+			result.TagTransactionStats(core.NewTxStatsFromTransactions(tx, receipt), consts.TxFlashBotsFailed, client)
 			txFromAddrStats.Add1(consts.FlashBotsFailedTxSent)
 		}
 
@@ -172,7 +92,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 	txToAddrStats.Add1(consts.NumTxReceivedSuccess)
 	txToAddrStats.Add(consts.ValueReceivedWei, tx.Value())
 
-	if isBigIntZero(tx.Value()) {
+	if core.IsBigIntZero(tx.Value()) {
 		result.NumTransactionsWithZeroValue += 1
 	}
 
@@ -190,7 +110,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 			txFromAddrStats.Add1(consts.NumTxFlashbotsSent)
 			txToAddrStats.Add1(consts.NumTxFlashbotsReceived)
 
-			if config.GetConfig().DebugPrintFlashbotsTx {
+			if core.GetConfig().DebugPrintFlashbotsTx {
 				fmt.Printf("Flashbots ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
 		}
@@ -199,8 +119,8 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 			methodId := hex.EncodeToString(data[:4])
 			// fmt.Println(methodId)
 			if methodId == "a9059cbb" || methodId == "23b872dd" {
-				txFromAddrStats.EnsureAddressDetails(client)
-				txToAddrStats.EnsureAddressDetails(client)
+				txFromAddrStats.AddressDetail.EnsureIsLoaded(client)
+				txToAddrStats.AddressDetail.EnsureIsLoaded(client)
 
 				// Calculate and store the number of tokens transferred
 				valueSenderStats := txFromAddrStats
@@ -212,6 +132,7 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 					_receiverAddr := common.HexToAddress(_receiverAddrString)
 					// fmt.Println("transfer. to", _receiverAddr, "\t .. tx from:", txFromAddrStats.Address)
 					valueReceiverStats = result.GetOrCreateAddressStats(&_receiverAddr)
+					valueReceiverStats.AddressDetail.EnsureIsLoaded(client)
 
 					value = hex.EncodeToString(data[36:68])
 
@@ -219,10 +140,12 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 					_senderAddrString := hex.EncodeToString(data[4:36])
 					_senderAddr := common.HexToAddress(_senderAddrString)
 					valueSenderStats = result.GetOrCreateAddressStats(&_senderAddr)
+					valueSenderStats.AddressDetail.EnsureIsLoaded(client)
 
 					_receiverAddrString := hex.EncodeToString(data[36:68])
 					_receiverAddr := common.HexToAddress(_receiverAddrString)
 					valueReceiverStats = result.GetOrCreateAddressStats(&_receiverAddr)
+					valueReceiverStats.AddressDetail.EnsureIsLoaded(client)
 
 					value = hex.EncodeToString(data[68:100])
 					// fmt.Println("transferFrom. from", _senderAddr, ", tx", txFromAddrStats.Address, "... to", _receiverAddr)
@@ -274,8 +197,8 @@ func (result *AnalysisResult) AddTransaction(client *ethclient.Client, tx *types
 }
 
 // AddTxToTopList builds the top transactions list
-func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *types.Receipt) {
-	stats := NewTxStatsFromTransactions(tx, receipt)
+func AddTxToTopList(tx *types.Transaction, receipt *types.Receipt, result *core.AnalysisResult) {
+	stats := core.NewTxStatsFromTransactions(tx, receipt)
 
 	// Sort by Gas fee
 	if len(result.TopTransactions.GasFee) < cap(result.TopTransactions.GasFee) { // add new item to array
@@ -308,7 +231,7 @@ func (result *AnalysisResult) AddTxToTopList(tx *types.Transaction, receipt *typ
 	})
 }
 
-func (analysis *AnalysisResult) EnsureTopTransactionAddressDetails(client *ethclient.Client) {
+func EnsureTopTransactionAddressDetails(analysis *core.AnalysisResult, client *ethclient.Client) {
 	for i := range analysis.TopTransactions.Value {
 		analysis.TopTransactions.Value[i].FromAddr.EnsureIsLoaded(client)
 		analysis.TopTransactions.Value[i].ToAddr.EnsureIsLoaded(client)
@@ -321,30 +244,4 @@ func (analysis *AnalysisResult) EnsureTopTransactionAddressDetails(client *ethcl
 		analysis.TopTransactions.DataSize[i].FromAddr.EnsureIsLoaded(client)
 		analysis.TopTransactions.DataSize[i].ToAddr.EnsureIsLoaded(client)
 	}
-}
-
-// AnalysisResult.BuildTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
-// Ensures that details for all top addresses are queried from blockchain
-func (analysis *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
-	numEntries := config.GetConfig().NumTopAddresses
-
-	// Convert addresses from map into a sortable array
-	addressArray := make([]AddressStats, 0, len(analysis.Addresses))
-	for _, k := range analysis.Addresses {
-		addressArray = append(addressArray, *k)
-	}
-
-	// Get top entries for each key
-	for _, key := range consts.AddressStatsKeys {
-		analysis.TopAddresses[key] = GetTopAddressesForStats(&addressArray, client, key, numEntries)
-	}
-}
-
-// GetAllTopAddressStats returns a list of all top addresses across any of the statistics
-func (analysis *AnalysisResult) GetAllTopAddressStats() []AddressStats {
-	ret := make([]AddressStats, 0)
-	for k := range analysis.TopAddresses {
-		ret = append(ret, analysis.TopAddresses[k]...)
-	}
-	return ret
 }

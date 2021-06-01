@@ -1,10 +1,18 @@
-package config
+package core
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 )
+
+type PostgresConfig struct {
+	User       string
+	Password   string
+	Host       string
+	Name       string
+	DisableTLS bool
+}
 
 type Config struct {
 	EthNode string
@@ -28,14 +36,6 @@ type Config struct {
 
 func (c Config) String() string {
 	return fmt.Sprintf("eth:%s psql:%s@%s/%s, numAddr:%d, numTx:%d, debug=%t, lowApiCall=%t", c.EthNode, c.Database.User, c.Database.Host, c.Database.Name, c.NumTopAddresses, c.NumTopTransactions, c.Debug, c.LowApiCallMode)
-}
-
-type PostgresConfig struct {
-	User       string
-	Password   string
-	Host       string
-	Name       string
-	DisableTLS bool
 }
 
 func getEnvStr(key string, defaultVal string) string {
@@ -69,12 +69,12 @@ func getEnvInt(key string, defaultVal int) int {
 	}
 }
 
-var config *Config
+// var config *Config
 
-func GetConfig() *Config {
-	if config != nil {
-		return config
-	}
+func GetConfig() Config {
+	// if config != nil {
+	// 	return config
+	// }
 
 	dbConfig := PostgresConfig{
 		User:       getEnvStr("DB_USER", ""),
@@ -84,7 +84,7 @@ func GetConfig() *Config {
 		DisableTLS: len(getEnvStr("DB_DISABLE_TLS", "")) > 0,
 	}
 
-	config = &Config{
+	config := Config{
 		Database: dbConfig,
 
 		WebserverHost: getEnvStr("WEBSERVER_HOST", ""),

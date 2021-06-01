@@ -49,7 +49,3 @@ var AddressStatsKeys = [...]string{
 	GasUsed, GasFeeTotal, GasFeeFailedTx,
 	FlashBotsFailedTxSent,
 }
-
-var (
-	FlashBotsFailedTx string = "FlashBotsFailedTx"
-)
