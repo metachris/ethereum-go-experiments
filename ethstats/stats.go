@@ -32,9 +32,18 @@ func (stats *AddressStats) Add1(key string) {
 	stats.Add(key, common.Big1)
 }
 
+// Get is guaranteed to return a non-nil *big.Int for the stat key
+func (stats *AddressStats) Get(key string) *big.Int {
+	if v, found := stats.Stats[key]; found && v != nil {
+		return v
+	} else {
+		return new(big.Int)
+	}
+}
+
 func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
 	if !stats.AddressDetail.IsLoaded() && client != nil {
-		// stats.AddressDetail, _ = GetAddressDetail(stats.AddressDetail.a, client)
+		stats.AddressDetail, _ = GetAddressDetail(stats.AddressDetail.Address, client)
 	}
 }
 
@@ -42,14 +51,14 @@ func (stats *AddressStats) EnsureAddressDetails(client *ethclient.Client) {
 func GetTopAddressesForStats(allAddresses *[]AddressStats, client *ethclient.Client, key string, numItems int) (ret []AddressStats) {
 	ret = make([]AddressStats, 0, numItems)
 	sort.SliceStable(*allAddresses, func(i, j int) bool {
-		a := (*allAddresses)[i].Stats[key]
-		b := (*allAddresses)[j].Stats[key]
-		return a != nil && b != nil && a.Cmp(b) == 1
+		a := (*allAddresses)[i].Get(key)
+		b := (*allAddresses)[j].Get(key)
+		return a.Cmp(b) == 1
 	})
 
 	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
 		item := (*allAddresses)[i]
-		if item.Stats[key] != nil && item.Stats[key].Cmp(common.Big0) == 1 {
+		if item.Get(key).Cmp(common.Big0) == 1 {
 			ret = append(ret, item)
 		}
 	}

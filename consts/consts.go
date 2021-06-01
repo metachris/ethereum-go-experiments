@@ -17,10 +17,10 @@ var (
 	NumTxWithDataReceived = "NumTxWithDataReceived"
 
 	NumTxErc20Sent      = "NumTxErc20Sent"
-	NumTxErc721Sent     = "NumTxErc721Sent"
 	NumTxErc20Received  = "NumTxErc20Received"
-	NumTxErc721Received = "NumTxErc721Received"
 	NumTxErc20Transfer  = "NumTxErc20Transfer"
+	NumTxErc721Sent     = "NumTxErc721Sent"
+	NumTxErc721Received = "NumTxErc721Received"
 	NumTxErc721Transfer = "NumTxErc721Transfer"
 
 	ValueSentWei     = "ValueSentWei"
@@ -40,16 +40,9 @@ var StatsKeys = [...]string{
 	NumTxSent, NumTxSentSuccess, NumTxSentFailed,
 	NumTxFlashbotsSent, NumTxFlashbotsReceived,
 	NumTxWithDataSent, NumTxWithDataReceived,
-	NumTxErc721Sent, NumTxErc20Received,
-	NumTxErc721Received,
-	NumTxErc20Transfer,
-	NumTxErc721Transfer,
-	ValueSentWei,
-	ValueReceivedWei,
-	Erc20TokensSent,
-	Erc20TokensReceived,
-	Erc20TokensTransferred,
-	GasUsed,
-	GasFeeTotal,
-	GasFeeFailedTx,
+	NumTxErc20Sent, NumTxErc20Received, NumTxErc20Transfer,
+	NumTxErc721Sent, NumTxErc721Received, NumTxErc721Transfer,
+	ValueSentWei, ValueReceivedWei,
+	Erc20TokensSent, Erc20TokensReceived, Erc20TokensTransferred,
+	GasUsed, GasFeeTotal, GasFeeFailedTx,
 }

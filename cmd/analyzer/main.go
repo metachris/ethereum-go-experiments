@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jmoiron/sqlx"
 	"github.com/metachris/ethereum-go-experiments/config"
+	"github.com/metachris/ethereum-go-experiments/consts"
 	"github.com/metachris/ethereum-go-experiments/ethstats"
 )
 
@@ -279,10 +280,12 @@ func printResult(result *ethstats.AnalysisResult) {
 	// 	printTopAddr(key, result.TopAddresses[key], 0)
 	// }
 
-	for k, v := range result.TopAddresses {
+	for _, k := range consts.StatsKeys {
+		// fmt.Println(k, len(v))
+		// if strings.Contains(k, "721") {
 		fmt.Println("")
-		fmt.Println(k, len(v))
 		printTopAddr(k, result.TopAddresses[k], 0)
+		// }
 	}
 }
 
