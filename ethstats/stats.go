@@ -59,6 +59,7 @@ func GetTopAddressesForStats(allAddresses *[]AddressStats, client *ethclient.Cli
 	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
 		item := (*allAddresses)[i]
 		if item.Get(key).Cmp(common.Big0) == 1 {
+			item.EnsureAddressDetails(client)
 			ret = append(ret, item)
 		}
 	}

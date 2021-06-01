@@ -209,16 +209,15 @@ func printTopTx(msg string, txList []ethstats.TxStats) {
 	}
 }
 
-func addressWithName(address string) string {
-	detail, _ := ethstats.GetAddressDetail(address, nil)
-	return fmt.Sprintf("%s %-28s", detail.Address, detail.Name)
+func AddressWithName(addressDetail ethstats.AddressDetail) string {
+	return fmt.Sprintf("%s %-28s", addressDetail.Address, addressDetail.Name)
 }
 
 func printTopAddr(msg string, list []ethstats.AddressStats, max int) {
 	printH2(msg)
 	for i, v := range list {
-		// fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", addressWithName(v.Address), v.NumTxReceivedSuccess, v.NumTxSentSuccess, v.NumTxReceivedFailed, v.NumTxSentFailed, ethstats.WeiBigIntToEthString(v.ValueReceivedWei, 2), ethstats.WeiBigIntToEthString(v.ValueSentWei, 2), ethstats.WeiBigIntToEthString(v.GasFeeTotal, 2), ethstats.WeiBigIntToEthString(v.GasFeeFailedTx, 2))
-		fmt.Printf("%-66v \n", addressWithName(v.AddressDetail.Address))
+		fmt.Printf("%-66v txInOk: %7d  \t  txOutOk: %7d \t txInFail: %5d \t txOutFail: %5d \t %10v ETH received \t %10v ETH sent \t gasFee %v ETH / for failed: %v ETH \n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxReceivedSuccess), v.Get(consts.NumTxSentSuccess), v.Get(consts.NumTxReceivedFailed), v.Get(consts.NumTxSentFailed), ethstats.WeiBigIntToEthString(v.Get(consts.ValueReceivedWei), 2), ethstats.WeiBigIntToEthString(v.Get(consts.ValueSentWei), 2), ethstats.WeiBigIntToEthString(v.Get(consts.GasFeeTotal), 2), ethstats.WeiBigIntToEthString(v.Get(consts.GasFeeFailedTx), 2))
+		// fmt.Printf("%-66v \n", addressWithName(v.AddressDetail.Address))
 		if max > 0 && i == max {
 			break
 		}
@@ -257,36 +256,36 @@ func printResult(result *ethstats.AnalysisResult) {
 	// printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
 
 	fmt.Println("")
-	// printH1("\nSmart Contracts")
+	printH1("\nSmart Contracts")
 
-	// printH2("\nERC20: most token tranfers")
-	// for _, v := range result.TopAddresses["NumTxErc20Transfer"] {
-	// 	tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Erc20TokensTransferred, v.AddressDetail)
-	// 	tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
-	// 	fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", addressWithName(v.Address), v.NumTxErc20Transfer, v.NumTxReceivedSuccess, tokenAmount)
-	// }
+	printH2("\nERC20: most token-tranfer tx")
+	for _, v := range result.TopAddresses[consts.NumTxErc20Transfer] {
+		tokensTransferredInUnit, tokenSymbol := ethstats.GetErc20TokensInUnit(v.Get(consts.Erc20TokensTransferred), v.AddressDetail)
+		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
+		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxErc20Transfer), v.Get(consts.NumTxReceivedSuccess), tokenAmount)
+	}
 
-	// printH2("\nERC721: most token transfers")
-	// for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
-	// 	fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx \t %s\n", addressWithName(v.Address), v.NumTxErc721Transfer, v.NumTxReceivedSuccess, v.AddressDetail.Type)
-	// }
+	printH2("\nERC721: most token transfers")
+	for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
+		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx\n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxErc721Transfer), v.Get(consts.NumTxReceivedSuccess))
+	}
 
 	fmt.Println("")
 	printH1("\nAddresses")
 
-	// interesting := [...]string{"NumTxReceivedSuccess", "NumTxSentSuccess", ethstats.TopAddressValueReceived, ethstats.TopAddressValueSent, "NumTxReceivedFailed", "NumTxSentFailed"}
-	// for _, key := range interesting {
-	// 	fmt.Println("")
-	// 	printTopAddr(key, result.TopAddresses[key], 0)
-	// }
-
-	for _, k := range consts.StatsKeys {
-		// fmt.Println(k, len(v))
-		// if strings.Contains(k, "721") {
+	interesting := [...]string{consts.NumTxReceivedSuccess, consts.NumTxSentSuccess, consts.ValueReceivedWei, consts.ValueSentWei, consts.NumTxReceivedFailed, consts.NumTxSentFailed}
+	for _, key := range interesting {
 		fmt.Println("")
-		printTopAddr(k, result.TopAddresses[k], 0)
-		// }
+		printTopAddr(key, result.TopAddresses[key], 0)
 	}
+
+	// for _, k := range consts.StatsKeys {
+	// 	// fmt.Println(k, len(v))
+	// 	// if strings.Contains(k, "721") {
+	// 	fmt.Println("")
+	// 	printTopAddr(k, result.TopAddresses[k], 0)
+	// 	// }
+	// }
 }
 
 func formatBigFloat(number *big.Float) string {
