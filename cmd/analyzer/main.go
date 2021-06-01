@@ -159,10 +159,10 @@ func main() {
 	fmt.Printf("  endBlock: %d \n", endBlockHeight)
 	fmt.Println("")
 
-	result := ethstats.AnalyzeBlocks(client, startBlockHeight, endBlockHeight)
+	analysis := ethstats.AnalyzeBlocks(client, startBlockHeight, endBlockHeight)
 	if !cfg.HideOutput {
 		fmt.Printf("\n===================\n  ANALYSIS RESULT  \n===================\n\n")
-		printResult(result)
+		printResult(analysis)
 	}
 
 	timeNeeded := time.Since(timestampMainStart)
@@ -173,7 +173,7 @@ func main() {
 		// Add to database
 		fmt.Printf("\nSaving to database...\n")
 		timeStartAddToDb := time.Now()
-		db.AddAnalysisResultToDatabase(result)
+		db.AddAnalysisResultToDatabase(analysis)
 		timeNeededAddToDb := time.Since(timeStartAddToDb)
 		fmt.Printf("Saved to database (%.2fs)\n", timeNeededAddToDb.Seconds())
 	}
@@ -225,24 +225,24 @@ func printTopAddr(msg string, list []core.AddressStats, max int) {
 }
 
 // Processes a raw result into the export data structure, and prints the stats to stdout
-func printResult(result *core.AnalysisResult) {
-	fmt.Println("Total blocks:", core.NumberToHumanReadableString(result.NumBlocks, 0))
-	fmt.Println("- without tx:", core.NumberToHumanReadableString(result.NumBlocksWithoutTx, 0))
+func printResult(analysis *core.Analysis) {
+	fmt.Println("Total blocks:", core.NumberToHumanReadableString(analysis.Data.NumBlocks, 0))
+	fmt.Println("- without tx:", core.NumberToHumanReadableString(analysis.Data.NumBlocksWithoutTx, 0))
 	fmt.Println("")
-	fmt.Println("Total transactions:", core.NumberToHumanReadableString(result.NumTransactions, 0), "\t tx-types:", result.TxTypes)
-	fmt.Printf("- failed:         %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsFailed, 0), (float64(result.NumTransactionsFailed)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactions-result.NumTransactionsWithZeroValue, 0), (float64((result.NumTransactions-result.NumTransactionsWithZeroValue))/float64(result.NumTransactions))*100)
-	fmt.Printf("- zero value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsWithZeroValue, 0), (float64(result.NumTransactionsWithZeroValue)/float64(result.NumTransactions))*100)
-	fmt.Printf("- with data:      %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsWithData, 0), (float64(result.NumTransactionsWithData)/float64(result.NumTransactions))*100)
-	fmt.Printf("- erc20 transfer: %7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsErc20Transfer, 0), (float64(result.NumTransactionsErc20Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- erc721 transfer:%7s \t %.2f%%\n", core.NumberToHumanReadableString(result.NumTransactionsErc721Transfer, 0), (float64(result.NumTransactionsErc721Transfer)/float64(result.NumTransactions))*100)
-	fmt.Printf("- flashbots:       %s ok, %s failed \n", core.NumberToHumanReadableString(result.NumFlashbotsTransactionsSuccess, 0), core.NumberToHumanReadableString(result.NumFlashbotsTransactionsFailed, 0))
+	fmt.Println("Total transactions:", core.NumberToHumanReadableString(analysis.Data.NumTransactions, 0), "\t tx-types:", analysis.Data.TxTypes)
+	fmt.Printf("- failed:         %7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactionsFailed, 0), (float64(analysis.Data.NumTransactionsFailed)/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- with value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactions-analysis.Data.NumTransactionsWithZeroValue, 0), (float64((analysis.Data.NumTransactions-analysis.Data.NumTransactionsWithZeroValue))/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- zero value:     %7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactionsWithZeroValue, 0), (float64(analysis.Data.NumTransactionsWithZeroValue)/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- with data:      %7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactionsWithData, 0), (float64(analysis.Data.NumTransactionsWithData)/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- erc20 transfer: %7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactionsErc20Transfer, 0), (float64(analysis.Data.NumTransactionsErc20Transfer)/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- erc721 transfer:%7s \t %.2f%%\n", core.NumberToHumanReadableString(analysis.Data.NumTransactionsErc721Transfer, 0), (float64(analysis.Data.NumTransactionsErc721Transfer)/float64(analysis.Data.NumTransactions))*100)
+	fmt.Printf("- flashbots:       %s ok, %s failed \n", core.NumberToHumanReadableString(analysis.Data.NumFlashbotsTransactionsSuccess, 0), core.NumberToHumanReadableString(analysis.Data.NumFlashbotsTransactionsFailed, 0))
 	fmt.Println("")
 
-	fmt.Println("Total addresses:", core.NumberToHumanReadableString(len(result.Addresses), 0))
-	fmt.Println("Total value transferred:", core.WeiBigIntToEthString(result.ValueTotalWei, 2), "ETH")
-	fmt.Println("Total gas fees:", core.WeiBigIntToEthString(result.GasFeeTotal, 2), "ETH")
-	fmt.Println("Gas for failed tx:", core.WeiBigIntToEthString(result.GasFeeFailedTx, 2), "ETH")
+	fmt.Println("Total addresses:", core.NumberToHumanReadableString(len(analysis.Addresses), 0))
+	fmt.Println("Total value transferred:", core.WeiBigIntToEthString(analysis.Data.ValueTotalWei, 2), "ETH")
+	fmt.Println("Total gas fees:", core.WeiBigIntToEthString(analysis.Data.GasFeeTotal, 2), "ETH")
+	fmt.Println("Gas for failed tx:", core.WeiBigIntToEthString(analysis.Data.GasFeeFailedTx, 2), "ETH")
 
 	if core.GetConfig().HideOutput {
 		fmt.Println("End because of config.HideOutput")
@@ -251,23 +251,23 @@ func printResult(result *core.AnalysisResult) {
 
 	fmt.Println("")
 	printH1("Transactions")
-	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
-	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
-	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
-	printTopTx("\nTagged transactions", result.TaggedTransactions)
+	printTopTx("\nTop transactions by GAS FEE", analysis.Data.TopTransactions.GasFee)
+	printTopTx("\nTop transactions by ETH VALUE", analysis.Data.TopTransactions.Value)
+	printTopTx("\nTop transactions by MOST DATA", analysis.Data.TopTransactions.DataSize)
+	printTopTx("\nTagged transactions", analysis.Data.TaggedTransactions)
 
 	fmt.Println("")
 	printH1("\nSmart Contracts")
 
 	printH2("\nERC20: most token-tranfer tx")
-	for _, v := range result.TopAddresses[consts.NumTxErc20Transfer] {
+	for _, v := range analysis.Data.TopAddresses[consts.NumTxErc20Transfer] {
 		tokensTransferredInUnit, tokenSymbol := core.GetErc20TokensInUnit(v.Get(consts.Erc20TokensTransferred), v.AddressDetail)
 		tokenAmount := fmt.Sprintf("%s %-5v", formatBigFloat(tokensTransferredInUnit), tokenSymbol)
 		fmt.Printf("%s \t %8d erc20-tx \t %8d tx \t %32v\n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxErc20Transfer), v.Get(consts.NumTxReceivedSuccess), tokenAmount)
 	}
 
 	printH2("\nERC721: most token transfers")
-	for _, v := range result.TopAddresses["NumTxErc721Transfer"] {
+	for _, v := range analysis.Data.TopAddresses["NumTxErc721Transfer"] {
 		fmt.Printf("%-100s \t %8d erc721-tx \t %8d tx\n", AddressWithName(v.AddressDetail), v.Get(consts.NumTxErc721Transfer), v.Get(consts.NumTxReceivedSuccess))
 	}
 
@@ -277,7 +277,7 @@ func printResult(result *core.AnalysisResult) {
 	interesting := [...]string{consts.NumTxReceivedSuccess, consts.NumTxSentSuccess, consts.ValueReceivedWei, consts.ValueSentWei, consts.NumTxReceivedFailed, consts.NumTxSentFailed, consts.FlashBotsFailedTxSent}
 	for _, key := range interesting {
 		fmt.Println("")
-		printTopAddr(key, result.TopAddresses[key], 0)
+		printTopAddr(key, analysis.Data.TopAddresses[key], 0)
 	}
 
 	// for _, k := range consts.StatsKeys {

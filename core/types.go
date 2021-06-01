@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"math/big"
+	"sort"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -63,19 +64,6 @@ func (a *AddressDetail) IsErc20() bool {
 
 func (a *AddressDetail) IsErc721() bool {
 	return a.Type == AddressTypeErc721
-}
-
-func (a *AddressDetail) EnsureIsLoaded(client *ethclient.Client) {
-	if a.IsLoaded() {
-		return
-	}
-
-	// // b, _ := GetAddressDetail(a.Address, client)
-	// a.Address = b.Address
-	// a.Type = b.Type
-	// a.Name = b.Name
-	// a.Symbol = b.Symbol
-	// a.Decimals = b.Decimals
 }
 
 //
@@ -182,13 +170,12 @@ type TopTransactionData struct {
 //
 // Analysis
 //
-type AnalysisResult struct {
+type AnalysisData struct {
 	StartBlockNumber    int64
 	StartBlockTimestamp uint64
 	EndBlockNumber      int64
 	EndBlockTimestamp   uint64
 
-	Addresses          map[string]*AddressStats `json:"-"`
 	TopAddresses       map[string][]AddressStats
 	TopTransactions    TopTransactionData // todo: refactor for generic counters, like topaddresses
 	TaggedTransactions []TxStats
@@ -214,11 +201,31 @@ type AnalysisResult struct {
 	NumFlashbotsTransactionsFailed  int
 }
 
-func NewAnalysis(cfg Config) *AnalysisResult {
-	return &AnalysisResult{
+// GetAllTopAddressStats returns a list of all top addresses across any of the statistics
+func (analysis *AnalysisData) GetAllTopAddressStats() []AddressStats {
+	ret := make([]AddressStats, 0)
+	for k := range analysis.TopAddresses {
+		ret = append(ret, analysis.TopAddresses[k]...)
+	}
+	return ret
+}
+
+type IAddressDetailService interface {
+	EnsureIsLoaded(a *AddressDetail, client *ethclient.Client)
+}
+
+type Analysis struct {
+	Data      AnalysisData
+	Addresses map[string]*AddressStats `json:"-"`
+
+	addressDetailService IAddressDetailService
+	client               *ethclient.Client
+}
+
+func NewAnalysis(cfg Config, client *ethclient.Client, addressDetailsService IAddressDetailService) *Analysis {
+	data := AnalysisData{
 		ValueTotalWei: new(big.Int),
 		TxTypes:       make(map[uint8]int),
-		Addresses:     make(map[string]*AddressStats),
 		TopAddresses:  make(map[string][]AddressStats),
 
 		GasUsed:        new(big.Int),
@@ -231,9 +238,16 @@ func NewAnalysis(cfg Config) *AnalysisResult {
 			DataSize: make([]TxStats, 0, cfg.NumTopTransactions),
 		},
 	}
+
+	return &Analysis{
+		Data:                 data,
+		Addresses:            make(map[string]*AddressStats),
+		addressDetailService: addressDetailsService,
+		client:               client,
+	}
 }
 
-func (result *AnalysisResult) GetOrCreateAddressStats(address *common.Address) *AddressStats {
+func (result *Analysis) GetOrCreateAddressStats(address *common.Address) *AddressStats {
 	if address == nil {
 		return NewAddressStats("")
 	}
@@ -248,16 +262,20 @@ func (result *AnalysisResult) GetOrCreateAddressStats(address *common.Address) *
 	return addrStats
 }
 
-func (result *AnalysisResult) TagTransactionStats(txStats TxStats, tag string, client *ethclient.Client) {
+func (analysis *Analysis) EnsureAddressDetailIsLoaded(a *AddressDetail) {
+	analysis.addressDetailService.EnsureIsLoaded(a, analysis.client)
+}
+
+func (analysis *Analysis) TagTransactionStats(txStats TxStats, tag string, client *ethclient.Client) {
 	txStats.Tag = tag
-	txStats.FromAddr.EnsureIsLoaded(client)
-	txStats.ToAddr.EnsureIsLoaded(client)
-	result.TaggedTransactions = append(result.TaggedTransactions, txStats)
+	analysis.EnsureAddressDetailIsLoaded(&txStats.FromAddr)
+	analysis.EnsureAddressDetailIsLoaded(&txStats.ToAddr)
+	analysis.Data.TaggedTransactions = append(analysis.Data.TaggedTransactions, txStats)
 }
 
 // AnalysisResult.BuildTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
 // Ensures that details for all top addresses are queried from blockchain
-func (analysis *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
+func (analysis *Analysis) BuildTopAddresses() {
 	numEntries := GetConfig().NumTopAddresses
 
 	// Convert addresses from map into a sortable array
@@ -268,15 +286,77 @@ func (analysis *AnalysisResult) BuildTopAddresses(client *ethclient.Client) {
 
 	// Get top entries for each key
 	for _, key := range consts.AddressStatsKeys {
-		analysis.TopAddresses[key] = GetTopAddressesForStats(&addressArray, client, key, numEntries)
+		analysis.BuildTopAddressesForKey(&addressArray, key, numEntries)
 	}
 }
 
-// GetAllTopAddressStats returns a list of all top addresses across any of the statistics
-func (analysis *AnalysisResult) GetAllTopAddressStats() []AddressStats {
-	ret := make([]AddressStats, 0)
-	for k := range analysis.TopAddresses {
-		ret = append(ret, analysis.TopAddresses[k]...)
+// Takes pointer to all addresses and builds a top-list
+func (analysis *Analysis) BuildTopAddressesForKey(allAddresses *[]AddressStats, key string, numItems int) (ret []AddressStats) {
+	ret = make([]AddressStats, 0, numItems)
+	sort.SliceStable(*allAddresses, func(i, j int) bool {
+		a := (*allAddresses)[i].Get(key)
+		b := (*allAddresses)[j].Get(key)
+		return a.Cmp(b) == 1
+	})
+
+	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
+		item := (*allAddresses)[i]
+		if item.Get(key).Cmp(common.Big0) == 1 {
+			analysis.EnsureAddressDetailIsLoaded(&item.AddressDetail)
+			ret = append(ret, item)
+		}
 	}
+
+	analysis.Data.TopAddresses[key] = ret
 	return ret
+}
+
+// AddTxToTopList builds the top transactions list
+func (analysis *Analysis) AddTxToTopList(tx *types.Transaction, receipt *types.Receipt) {
+	stats := NewTxStatsFromTransactions(tx, receipt)
+
+	// Sort by Gas fee
+	if len(analysis.Data.TopTransactions.GasFee) < cap(analysis.Data.TopTransactions.GasFee) { // add new item to array
+		analysis.Data.TopTransactions.GasFee = append(analysis.Data.TopTransactions.GasFee, stats)
+	} else if stats.GasFee.Cmp(analysis.Data.TopTransactions.GasFee[len(analysis.Data.TopTransactions.GasFee)-1].GasFee) == 1 { // replace last item
+		analysis.Data.TopTransactions.GasFee[len(analysis.Data.TopTransactions.GasFee)-1] = stats
+	}
+	sort.SliceStable(analysis.Data.TopTransactions.GasFee, func(i, j int) bool {
+		return analysis.Data.TopTransactions.GasFee[i].GasFee.Cmp(analysis.Data.TopTransactions.GasFee[j].GasFee) == 1
+	})
+
+	// Sort by value
+	if len(analysis.Data.TopTransactions.Value) < cap(analysis.Data.TopTransactions.Value) { // add new item to array
+		analysis.Data.TopTransactions.Value = append(analysis.Data.TopTransactions.Value, stats)
+	} else if stats.Value.Cmp(analysis.Data.TopTransactions.Value[len(analysis.Data.TopTransactions.Value)-1].Value) == 1 {
+		analysis.Data.TopTransactions.Value[len(analysis.Data.TopTransactions.Value)-1] = stats
+	}
+	sort.SliceStable(analysis.Data.TopTransactions.Value, func(i, j int) bool {
+		return analysis.Data.TopTransactions.Value[i].Value.Cmp(analysis.Data.TopTransactions.Value[j].Value) == 1
+	})
+
+	// Sort by len(data)
+	if len(analysis.Data.TopTransactions.DataSize) < cap(analysis.Data.TopTransactions.DataSize) { // add new item to array
+		analysis.Data.TopTransactions.DataSize = append(analysis.Data.TopTransactions.DataSize, stats)
+	} else if stats.DataSize > analysis.Data.TopTransactions.DataSize[len(analysis.Data.TopTransactions.DataSize)-1].DataSize {
+		analysis.Data.TopTransactions.DataSize[len(analysis.Data.TopTransactions.DataSize)-1] = stats
+	}
+	sort.SliceStable(analysis.Data.TopTransactions.DataSize, func(i, j int) bool {
+		return analysis.Data.TopTransactions.DataSize[i].DataSize > analysis.Data.TopTransactions.DataSize[j].DataSize
+	})
+}
+
+func (analysis *Analysis) EnsureTopTransactionAddressDetails() {
+	for i := range analysis.Data.TopTransactions.Value {
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.Value[i].FromAddr)
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.Value[i].ToAddr)
+	}
+	for i := range analysis.Data.TopTransactions.GasFee {
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.GasFee[i].FromAddr)
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.GasFee[i].ToAddr)
+	}
+	for i := range analysis.Data.TopTransactions.DataSize {
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.DataSize[i].FromAddr)
+		analysis.EnsureAddressDetailIsLoaded(&analysis.Data.TopTransactions.DataSize[i].ToAddr)
+	}
 }

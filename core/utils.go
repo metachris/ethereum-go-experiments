@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var One = big.NewInt(1)
@@ -143,24 +141,4 @@ func GetTxSender(tx *types.Transaction) (from common.Address, err error) {
 		from, err = types.Sender(types.HomesteadSigner{}, tx)
 	}
 	return from, err
-}
-
-// Takes pointer to all addresses and builds a top-list
-func GetTopAddressesForStats(allAddresses *[]AddressStats, client *ethclient.Client, key string, numItems int) (ret []AddressStats) {
-	ret = make([]AddressStats, 0, numItems)
-	sort.SliceStable(*allAddresses, func(i, j int) bool {
-		a := (*allAddresses)[i].Get(key)
-		b := (*allAddresses)[j].Get(key)
-		return a.Cmp(b) == 1
-	})
-
-	for i := 0; i < len(*allAddresses) && i < numItems; i++ {
-		item := (*allAddresses)[i]
-		if item.Get(key).Cmp(common.Big0) == 1 {
-			item.AddressDetail.EnsureIsLoaded(client)
-			ret = append(ret, item)
-		}
-	}
-
-	return ret
 }

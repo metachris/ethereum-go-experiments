@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/metachris/ethereum-go-experiments/addressdata"
 	"github.com/metachris/ethereum-go-experiments/core"
 	"github.com/metachris/ethereum-go-experiments/database"
 )
@@ -71,9 +72,9 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 }
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
-func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNumber int64) *core.AnalysisResult {
-	result := core.NewAnalysis(core.GetConfig())
-	result.StartBlockNumber = startBlockNumber
+func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNumber int64) *core.Analysis {
+	analysis := core.NewAnalysis(core.GetConfig(), client, addressdata.AddressDetailService{})
+	analysis.Data.StartBlockNumber = startBlockNumber
 
 	blockHeightChan := make(chan int64, 100)          // blockHeight to fetch with receipts
 	blockChan := make(chan *BlockWithTxReceipts, 100) // channel for resulting BlockWithTxReceipt
@@ -92,7 +93,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNum
 
 		for block := range blockChan {
 			core.PrintBlock(block.block)
-			ProcessBlockWithReceipts(block, client, result)
+			ProcessBlockWithReceipts(block, client, analysis)
 		}
 	}
 
@@ -115,18 +116,18 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNum
 	analyzeLock.Lock()
 
 	timeNeededBlockProcessing := time.Since(timeStartBlockProcessing)
-	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses and checking address information...\n", timeNeededBlockProcessing.Seconds(), len(result.Addresses))
+	fmt.Printf("Reading blocks done (%.3fs). Sorting %d addresses and checking address information...\n", timeNeededBlockProcessing.Seconds(), len(analysis.Addresses))
 
 	// Sort now
 	timeStartSort := time.Now()
-	result.BuildTopAddresses(client)
+	analysis.BuildTopAddresses()
 	timeNeededSort := time.Since(timeStartSort)
 	fmt.Printf("Sorting & checking addresses done (%.3fs)\n", timeNeededSort.Seconds())
 
 	// Update address details for top transactions
 	// result.EnsureTopTransactionAddressDetails(client)
 
-	return result
+	return analysis
 }
 
 // GetBlockHeaderAtTimestamp returns the header of the first block at or after the timestamp. If timestamp is after

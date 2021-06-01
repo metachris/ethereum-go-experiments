@@ -17,8 +17,8 @@ const ( // iota is reset to 0
 	DATASET_BOTH      = iota
 )
 
-const FN_JSON_TOKENS string = "data/tokens.json"
-const FN_JSON_ADDRESSES string = "data/addresses.json"
+const FN_JSON_TOKENS string = "addressdata/tokens.json"
+const FN_JSON_ADDRESSES string = "addressdata/addresses.json"
 
 func GetAddressesFromJson(filename string) []core.AddressDetail {
 	fn, _ := filepath.Abs(filename)

@@ -121,6 +121,6 @@ func (s *StatsService) AddBlock(block *types.Block) {
 func (s *StatsService) AddAddressStats(block *types.Block, analysisId int, addr core.AddressStats) {
 }
 
-func (s *StatsService) AddAnalysisResultToDatabase(analysis *core.AnalysisResult) {
+func (s *StatsService) AddAnalysisResultToDatabase(analysis *core.Analysis) {
 	// todo
 }
