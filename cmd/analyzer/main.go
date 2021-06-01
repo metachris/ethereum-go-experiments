@@ -249,11 +249,12 @@ func printResult(result *ethstats.AnalysisResult) {
 		return
 	}
 
-	// fmt.Println("")
-	// printH1("Transactions")
-	// printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
-	// printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
-	// printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
+	fmt.Println("")
+	printH1("Transactions")
+	printTopTx("\nTop transactions by GAS FEE", result.TopTransactions.GasFee)
+	printTopTx("\nTop transactions by ETH VALUE", result.TopTransactions.Value)
+	printTopTx("\nTop transactions by MOST DATA", result.TopTransactions.DataSize)
+	printTopTx("\nTagged transactions", result.TaggedTransactions)
 
 	fmt.Println("")
 	printH1("\nSmart Contracts")
@@ -273,7 +274,7 @@ func printResult(result *ethstats.AnalysisResult) {
 	fmt.Println("")
 	printH1("\nAddresses")
 
-	interesting := [...]string{consts.NumTxReceivedSuccess, consts.NumTxSentSuccess, consts.ValueReceivedWei, consts.ValueSentWei, consts.NumTxReceivedFailed, consts.NumTxSentFailed}
+	interesting := [...]string{consts.NumTxReceivedSuccess, consts.NumTxSentSuccess, consts.ValueReceivedWei, consts.ValueSentWei, consts.NumTxReceivedFailed, consts.NumTxSentFailed, consts.FlashBotsFailedTxSent}
 	for _, key := range interesting {
 		fmt.Println("")
 		printTopAddr(key, result.TopAddresses[key], 0)

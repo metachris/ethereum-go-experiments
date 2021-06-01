@@ -72,6 +72,18 @@
         "address": "0xA7EFAe728D2936e78BDA97dc267687568dD593f3"
     },
     {
+        "name": "F2Pool",
+        "address": "0xF20b338752976878754518183873602902360704"
+    },
+    {
+        "name": "F2Pool Old",
+        "address": "0x829bd824b016326a401d083b33d092293333a830"
+    },
+    {
+        "name": "F2Pool Old",
+        "address": "0x61C808D82A3Ac53231750daDc13c777b59310bD9"
+    },
+    {
         "name": "MetaMask Dex",
         "type": "OtherContract",
         "address": "0x881D40237659C251811CEC9c364ef91dC08D300C",

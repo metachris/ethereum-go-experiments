@@ -124,6 +124,7 @@ func AnalyzeBlocks(client *ethclient.Client, db *sqlx.DB, startBlockNumber int64
 	fmt.Printf("Sorting & checking addresses done (%.3fs)\n", timeNeededSort.Seconds())
 
 	// Update address details for top transactions
+	result.EnsureTopTransactionAddressDetails(client)
 	// result.UpdateTxAddressDetails(client)
 
 	return result

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -44,8 +43,33 @@ func (a AddressDetail) String() string {
 	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
 }
 
+func (a AddressDetail) AsAddressWithName(brackets bool) string {
+	namePart := ""
+	if len(a.Name) > 0 {
+		if brackets {
+			namePart = fmt.Sprintf(" (%s)", a.Name)
+		} else {
+			namePart = fmt.Sprintf(" %s", a.Name)
+		}
+	}
+	return fmt.Sprintf("%s%s", a.Address, namePart)
+}
+
 func (a *AddressDetail) IsLoaded() bool {
 	return a.Type != AddressTypeInit
+}
+
+func (a *AddressDetail) EnsureIsLoaded(client *ethclient.Client) {
+	if a.IsLoaded() {
+		return
+	}
+
+	b, _ := GetAddressDetail(a.Address, client)
+	a.Address = b.Address
+	a.Type = b.Type
+	a.Name = b.Name
+	a.Symbol = b.Symbol
+	a.Decimals = b.Decimals
 }
 
 func (a *AddressDetail) IsErc20() bool {
@@ -123,25 +147,25 @@ func GetAddressDetailMap(dataset int) map[string]AddressDetail {
 	return AddressDetailMap
 }
 
-func AddTokenToJson(address *AddressDetail) {
-	addressMap := GetAddressDetailMap(DATASET_TOKENS)
-	addressMap[address.Address] = *address
+// func AddTokenToJson(address *AddressDetail) {
+// 	addressMap := GetAddressDetailMap(DATASET_TOKENS)
+// 	addressMap[address.Address] = *address
 
-	// Convert map to JSON
-	addressList := make([]AddressDetail, 0, len(addressMap))
-	for _, address := range addressMap {
-		addressList = append(addressList, address)
-	}
+// 	// Convert map to JSON
+// 	addressList := make([]AddressDetail, 0, len(addressMap))
+// 	for _, address := range addressMap {
+// 		addressList = append(addressList, address)
+// 	}
 
-	b, err := json.MarshalIndent(addressList, "", "  ")
-	Perror(err)
-	// fmt.Println(b)
+// 	b, err := json.MarshalIndent(addressList, "", "  ")
+// 	Perror(err)
+// 	// fmt.Println(b)
 
-	err = ioutil.WriteFile(FN_JSON_TOKENS, b, 0644)
-	Perror(err)
+// 	err = ioutil.WriteFile(FN_JSON_TOKENS, b, 0644)
+// 	Perror(err)
 
-	fmt.Println("Updated", FN_JSON_TOKENS)
-}
+// 	fmt.Println("Updated", FN_JSON_TOKENS)
+// }
 
 func IsContract(address string, client *ethclient.Client) bool {
 	addr := common.HexToAddress(address)
@@ -277,4 +301,8 @@ func GetAddressDetail(address string, client *ethclient.Client) (detail AddressD
 
 func AddAddressDetailToCache(detail AddressDetail) {
 	AddressDetailCache[strings.ToLower(detail.Address)] = detail
+}
+
+func UpdateAddressDetail() {
+
 }

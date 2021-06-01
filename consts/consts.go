@@ -1,6 +1,6 @@
 package consts
 
-// Types of stats
+// Types of address stats
 var (
 	NumTxReceived        string = "NumTxReceived"
 	NumTxReceivedSuccess        = "NumTxReceivedSuccess"
@@ -33,9 +33,11 @@ var (
 	GasUsed        = "GasUsed"
 	GasFeeTotal    = "GasFeeTotal"
 	GasFeeFailedTx = "GasFeeFailedTx"
+
+	FlashBotsFailedTxSent = "FlashBotsFailedTxSent"
 )
 
-var StatsKeys = [...]string{
+var AddressStatsKeys = [...]string{
 	NumTxReceived, NumTxReceivedSuccess, NumTxReceivedFailed,
 	NumTxSent, NumTxSentSuccess, NumTxSentFailed,
 	NumTxFlashbotsSent, NumTxFlashbotsReceived,
@@ -45,4 +47,9 @@ var StatsKeys = [...]string{
 	ValueSentWei, ValueReceivedWei,
 	Erc20TokensSent, Erc20TokensReceived, Erc20TokensTransferred,
 	GasUsed, GasFeeTotal, GasFeeFailedTx,
+	FlashBotsFailedTxSent,
 }
+
+var (
+	FlashBotsFailedTx string = "FlashBotsFailedTx"
+)
