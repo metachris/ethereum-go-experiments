@@ -2,7 +2,7 @@
 
 Collect statistics about addresses, transactions, smart contracts and more.
 
-[Example output analyzing 24h of 2021-05-28 (UTC)](https://gist.github.com/metachris/2e4d10d57f8f675f69a075d4fbd1926d)
+[Example output analyzing 24h of 2021-06-09 (UTC)](https://metachris.github.io/ethereum-go-experiments/2021-06-09.txt)
 
 Notes:
 
