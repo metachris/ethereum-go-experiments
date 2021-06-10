@@ -3,6 +3,7 @@ package ethstats
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -148,7 +149,11 @@ func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt
 					valueReceiverStats = analysis.GetOrCreateAddressStats(&_receiverAddr)
 					analysis.EnsureAddressDetailIsLoaded(&valueReceiverStats.AddressDetail)
 
-					value = hex.EncodeToString(data[68:100])
+					if len(data) < 100 {
+						log.Printf("warn: transferFrom with data < 100. tx: %s, len: %d", tx.Hash().String(), len(data))
+					} else {
+						value = hex.EncodeToString(data[68:100])
+					}
 					// fmt.Println("transferFrom. from", _senderAddr, ", tx", txFromAddrStats.Address, "... to", _receiverAddr)
 				}
 
