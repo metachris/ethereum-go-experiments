@@ -10,29 +10,30 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/metachris/ethereum-go-experiments/consts"
 	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/go-ethutils/blockswithtx"
 	"github.com/metachris/go-ethutils/utils"
 )
 
-func ProcessBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client, analysis *core.Analysis) {
+func ProcessBlockWithReceipts(block *blockswithtx.BlockWithTxReceipts, client *ethclient.Client, analysis *core.Analysis) {
 	if analysis.Data.StartBlockTimestamp == 0 {
-		analysis.Data.StartBlockTimestamp = block.block.Time()
+		analysis.Data.StartBlockTimestamp = block.Block.Time()
 	}
 
-	analysis.Data.EndBlockNumber = block.block.Number().Int64()
-	analysis.Data.EndBlockTimestamp = block.block.Time()
+	analysis.Data.EndBlockNumber = block.Block.Number().Int64()
+	analysis.Data.EndBlockTimestamp = block.Block.Time()
 
 	analysis.Data.NumBlocks += 1
-	analysis.Data.NumTransactions += len(block.block.Transactions())
-	analysis.Data.GasUsed = new(big.Int).Add(analysis.Data.GasUsed, big.NewInt(int64(block.block.GasUsed())))
+	analysis.Data.NumTransactions += len(block.Block.Transactions())
+	analysis.Data.GasUsed = new(big.Int).Add(analysis.Data.GasUsed, big.NewInt(int64(block.Block.GasUsed())))
 
 	// Iterate over all transactions
-	for _, tx := range block.block.Transactions() {
-		receipt := block.txReceipts[tx.Hash()]
+	for _, tx := range block.Block.Transactions() {
+		receipt := block.TxReceipts[tx.Hash()]
 		ProcessTransaction(client, tx, receipt, analysis)
 	}
 
 	// If no transactions in this block then record that
-	if len(block.block.Transactions()) == 0 {
+	if len(block.Block.Transactions()) == 0 {
 		analysis.Data.NumBlocksWithoutTx += 1
 	}
 }
