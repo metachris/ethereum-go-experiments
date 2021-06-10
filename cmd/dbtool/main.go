@@ -13,8 +13,7 @@ func main() {
 	flag.Parse()
 
 	if *resetPtr {
-		cfg := core.GetConfig()
-		db := database.NewStatsService(cfg.Database)
+		db := database.NewStatsService(core.Cfg.Database)
 		db.Reset()
 		return
 	}

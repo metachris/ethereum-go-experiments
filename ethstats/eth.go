@@ -15,6 +15,7 @@ import (
 	"github.com/metachris/ethereum-go-experiments/addressdata"
 	"github.com/metachris/ethereum-go-experiments/core"
 	"github.com/metachris/ethereum-go-experiments/database"
+	"github.com/metachris/go-ethutils/utils"
 )
 
 type BlockWithTxReceipts struct {
@@ -26,14 +27,14 @@ type BlockWithTxReceipts struct {
 func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWithTxReceipts) {
 	var err error
 	if client == nil {
-		client, err = ethclient.Dial(core.GetConfig().EthNode)
-		core.Perror(err)
+		client, err = ethclient.Dial(core.Cfg.EthNode)
+		utils.Perror(err)
 	}
 	res.block, err = client.BlockByNumber(context.Background(), big.NewInt(height))
-	core.Perror(err)
+	utils.Perror(err)
 
 	res.txReceipts = make(map[common.Hash]*types.Receipt)
-	if core.GetConfig().LowApiCallMode {
+	if core.Cfg.LowApiCallMode {
 		return res
 	}
 
@@ -58,10 +59,10 @@ func GetBlockWithTxReceipts(client *ethclient.Client, height int64) (res BlockWi
 func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int64, blockChan chan<- *BlockWithTxReceipts) {
 	defer wg.Done()
 
-	client, err := ethclient.Dial(core.GetConfig().EthNode)
-	core.Perror(err)
+	client, err := ethclient.Dial(core.Cfg.EthNode)
+	utils.Perror(err)
 
-	db := database.NewStatsService(core.GetConfig().Database)
+	db := database.NewStatsService(core.Cfg.Database)
 	defer db.Close()
 
 	for blockHeight := range blockHeightChan {
@@ -73,7 +74,8 @@ func GetBlockWithTxReceiptsWorker(wg *sync.WaitGroup, blockHeightChan <-chan int
 
 // Analyze blocks starting at specific block number, until a certain target timestamp
 func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNumber int64) *core.Analysis {
-	analysis := core.NewAnalysis(core.GetConfig(), client, addressdata.AddressDetailService{})
+	ads := addressdata.NewAddressDetailService(client)
+	analysis := core.NewAnalysis(core.Cfg, client, ads)
 	analysis.Data.StartBlockNumber = startBlockNumber
 
 	blockHeightChan := make(chan int64, 100)          // blockHeight to fetch with receipts
@@ -92,7 +94,7 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNum
 		defer analyzeLock.Unlock() // we unlock when done
 
 		for block := range blockChan {
-			core.PrintBlock(block.block)
+			utils.PrintBlock(block.block)
 			ProcessBlockWithReceipts(block, client, analysis)
 		}
 	}
@@ -128,90 +130,4 @@ func AnalyzeBlocks(client *ethclient.Client, startBlockNumber int64, endBlockNum
 	// result.EnsureTopTransactionAddressDetails(client)
 
 	return analysis
-}
-
-// GetBlockHeaderAtTimestamp returns the header of the first block at or after the timestamp. If timestamp is after
-// latest block, then return latest block.
-func GetBlockHeaderAtTimestamp(client *ethclient.Client, targetTimestamp int64, verbose bool) (header *types.Header, err error) {
-	// Get latest header
-	latestBlockHeader, err := client.HeaderByNumber(context.Background(), nil)
-	if err != nil {
-		return header, err
-	}
-
-	// Ensure target timestamp is before latest block
-	if uint64(targetTimestamp) > latestBlockHeader.Time {
-		return header, errors.New("target timestamp after latest block")
-	}
-
-	// Estimate a target block number
-	currentBlockNumber := core.EstimateTargetBlocknumber(targetTimestamp)
-
-	// If estimation later than latest block, then use latest block as estimation base
-	if currentBlockNumber > latestBlockHeader.Number.Int64() {
-		currentBlockNumber = latestBlockHeader.Number.Int64()
-	}
-
-	// approach the target block from below, to be sure it's the first one at/after the timestamp
-	var isNarrowingDownFromBelow = false
-
-	// Ringbuffer for the latest secDiffs, to avoid going in circles when narrowing down
-	lastSecDiffs := make([]int64, 7)
-	lastSecDiffsIncludes := func(a int64) bool {
-		for _, b := range lastSecDiffs {
-			if b == a {
-				return true
-			}
-		}
-		return false
-	}
-
-	core.DebugPrintf("Finding start block:\n")
-	var secDiff int64
-	blockSecAvg := int64(13) // average block time. is adjusted when narrowing down
-
-	for {
-		// core.DebugPrintln("Checking block:", currentBlockNumber)
-		blockNumber := big.NewInt(currentBlockNumber)
-		header, err := client.HeaderByNumber(context.Background(), blockNumber)
-		if err != nil {
-			return header, err
-		}
-
-		secDiff = int64(header.Time) - targetTimestamp
-
-		core.DebugPrintf("%d \t blockTime: %d / %v \t secDiff: %5d\n", currentBlockNumber, header.Time, time.Unix(int64(header.Time), 0).UTC(), secDiff)
-
-		// Check if this secDiff was already seen (avoid circular endless loop)
-		if lastSecDiffsIncludes(secDiff) && blockSecAvg < 25 {
-			blockSecAvg += 1
-			core.DebugPrintln("- Increase blockSecAvg to", blockSecAvg)
-		}
-
-		// Pop & add secDiff to array of last values
-		lastSecDiffs = lastSecDiffs[1:]
-		lastSecDiffs = append(lastSecDiffs, secDiff)
-		// core.DebugPrintln("lastSecDiffs:", lastSecDiffs)
-
-		if core.Abs(secDiff) < 80 || isNarrowingDownFromBelow { // getting close
-			if secDiff < 0 {
-				// still before wanted startTime. Increase by 1 from here...
-				isNarrowingDownFromBelow = true
-				currentBlockNumber += 1
-				continue
-			}
-
-			// Only return if coming block-by-block from below, making sure to take first block after target time
-			if isNarrowingDownFromBelow {
-				return header, nil
-			} else {
-				currentBlockNumber -= 1
-				continue
-			}
-		}
-
-		// Try for better block in big steps
-		blockDiff := secDiff / blockSecAvg
-		currentBlockNumber -= blockDiff
-	}
 }

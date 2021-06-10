@@ -70,42 +70,32 @@ func getEnvInt(key string, defaultVal int) int {
 }
 
 // var config *Config
-
-func GetConfig() Config {
-	// if config != nil {
-	// 	return config
-	// }
-
-	dbConfig := PostgresConfig{
+var Cfg Config = Config{
+	Database: PostgresConfig{
 		User:       getEnvStr("DB_USER", ""),
 		Password:   getEnvStr("DB_PASS", ""),
 		Host:       getEnvStr("DB_HOST", ""),
 		Name:       getEnvStr("DB_NAME", ""),
 		DisableTLS: len(getEnvStr("DB_DISABLE_TLS", "")) > 0,
-	}
+	},
 
-	config := Config{
-		Database: dbConfig,
+	WebserverHost: getEnvStr("WEBSERVER_HOST", ""),
+	WebserverPort: getEnvInt("WEBSERVER_PORT", 8090),
 
-		WebserverHost: getEnvStr("WEBSERVER_HOST", ""),
-		WebserverPort: getEnvInt("WEBSERVER_PORT", 8090),
+	EthNode:         getEnvStr("ETH_NODE", ""),
+	EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
 
-		EthNode:         getEnvStr("ETH_NODE", ""),
-		EthplorerApiKey: getEnvStr("ETHPLORER_API_KEY", "freekey"),
+	NumTopAddresses:    getEnvInt("NUM_TOP_ADDR", 25),
+	NumTopTransactions: getEnvInt("NUM_TOP_TX", 20),
 
-		NumTopAddresses:    getEnvInt("NUM_TOP_ADDR", 25),
-		NumTopTransactions: getEnvInt("NUM_TOP_TX", 20),
+	Debug:                 getEnvBool("DEBUG", false),
+	HideOutput:            getEnvBool("HIDE_OUTPUT", false),
+	DebugPrintFlashbotsTx: getEnvBool("MEV", false),
+	LowApiCallMode:        getEnvBool("LOW_API", false),
+}
 
-		Debug:                 getEnvBool("DEBUG", false),
-		HideOutput:            getEnvBool("HIDE_OUTPUT", false),
-		DebugPrintFlashbotsTx: getEnvBool("MEV", false),
-		LowApiCallMode:        getEnvBool("LOW_API", false),
-	}
-
-	if len(config.EthNode) == 0 {
+func init() {
+	if len(Cfg.EthNode) == 0 {
 		panic("ETH_NODE environment variable not found")
-		// panic("Error: no DB_HOST environment variable set! Please check if you've set all environment variables.")
 	}
-
-	return config
 }

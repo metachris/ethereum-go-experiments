@@ -10,74 +10,22 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/metachris/ethereum-go-experiments/consts"
+	"github.com/metachris/go-ethutils/addressdetail"
+	"github.com/metachris/go-ethutils/utils"
 )
-
-type AddressType string
-
-const (
-	AddressTypeInit AddressType = "" // Init value
-
-	// After detection
-	AddressTypeErc20         AddressType = "Erc20"
-	AddressTypeErc721        AddressType = "Erc721"
-	AddressTypeErcToken      AddressType = "ErcToken" // Just recognized transfer call. Either ERC20 or ERC721. Will be updated on next sync.
-	AddressTypeOtherContract AddressType = "OtherContract"
-	AddressTypePubkey        AddressType = "Wallet" // nothing else detected, probably just a wallet
-)
-
-type AddressDetail struct {
-	Address  string      `json:"address"`
-	Type     AddressType `json:"type"`
-	Name     string      `json:"name"`
-	Symbol   string      `json:"symbol"`
-	Decimals uint8       `json:"decimals"`
-}
-
-// Returns a new unknown address detail
-func NewAddressDetail(address string) AddressDetail {
-	return AddressDetail{Address: address, Type: AddressTypeInit}
-}
-
-func (a AddressDetail) String() string {
-	return fmt.Sprintf("%s [%s] name=%s, symbol=%s, decimals=%d", a.Address, a.Type, a.Name, a.Symbol, a.Decimals)
-}
-
-func (a AddressDetail) AsAddressWithName(brackets bool) string {
-	namePart := ""
-	if len(a.Name) > 0 {
-		if brackets {
-			namePart = fmt.Sprintf(" (%s)", a.Name)
-		} else {
-			namePart = fmt.Sprintf(" %s", a.Name)
-		}
-	}
-	return fmt.Sprintf("%s%s", a.Address, namePart)
-}
-
-func (a *AddressDetail) IsLoaded() bool {
-	return a.Type != AddressTypeInit
-}
-
-func (a *AddressDetail) IsErc20() bool {
-	return a.Type == AddressTypeErc20
-}
-
-func (a *AddressDetail) IsErc721() bool {
-	return a.Type == AddressTypeErc721
-}
 
 //
 // Address Stats
 //
 // AddressStats represents one address and accumulates statistics
 type AddressStats struct {
-	AddressDetail AddressDetail
+	AddressDetail addressdetail.AddressDetail
 	Stats         map[string]*big.Int
 }
 
 func NewAddressStats(address string) *AddressStats {
 	return &AddressStats{
-		AddressDetail: NewAddressDetail(address),
+		AddressDetail: addressdetail.NewAddressDetail(address),
 		Stats:         make(map[string]*big.Int),
 	}
 }
@@ -107,8 +55,8 @@ func (stats *AddressStats) Get(key string) *big.Int {
 //
 type TxStats struct {
 	Hash     string
-	FromAddr AddressDetail
-	ToAddr   AddressDetail
+	FromAddr addressdetail.AddressDetail
+	ToAddr   addressdetail.AddressDetail
 	GasUsed  *big.Int
 	GasFee   *big.Int
 	Value    *big.Int
@@ -127,14 +75,14 @@ func NewTxStatsFromTransactions(tx *types.Transaction, receipt *types.Receipt) T
 
 	txGasFee := new(big.Int).Mul(txGasUsed, tx.GasPrice())
 
-	to := NewAddressDetail("")
+	to := addressdetail.NewAddressDetail("")
 	if tx.To() != nil {
-		to = NewAddressDetail(tx.To().String())
+		to = addressdetail.NewAddressDetail(tx.To().String())
 	}
 
-	from := NewAddressDetail("")
-	if fromAddr, err := GetTxSender(tx); err == nil {
-		from = NewAddressDetail(fromAddr.Hex())
+	from := addressdetail.NewAddressDetail("")
+	if fromAddr, err := utils.GetTxSender(tx); err == nil {
+		from = addressdetail.NewAddressDetail(fromAddr.Hex())
 	}
 
 	return TxStats{
@@ -158,7 +106,7 @@ func (stats TxStats) String() string {
 	if len(stats.Tag) > 0 {
 		tagMsg = fmt.Sprintf("%s\t", stats.Tag)
 	}
-	return fmt.Sprintf("%s%s%s\tgasfee: %8s ETH\tval: %14v \t datasize: %-8d \t\t %s -> %s", tagMsg, stats.Hash, failedMsg, WeiBigIntToEthString(stats.GasFee, 4), WeiBigIntToEthString(stats.Value, 4), stats.DataSize, stats.FromAddr.AsAddressWithName(true), stats.ToAddr.AsAddressWithName(true))
+	return fmt.Sprintf("%s%s%s\tgasfee: %8s ETH\tval: %14v \t datasize: %-8d \t\t %s -> %s", tagMsg, stats.Hash, failedMsg, utils.WeiBigIntToEthString(stats.GasFee, 4), utils.WeiBigIntToEthString(stats.Value, 4), stats.DataSize, stats.FromAddr.Address, stats.ToAddr.Address)
 }
 
 type TopTransactionData struct {
@@ -211,7 +159,7 @@ func (analysis *AnalysisData) GetAllTopAddressStats() []AddressStats {
 }
 
 type IAddressDetailService interface {
-	EnsureIsLoaded(a *AddressDetail, client *ethclient.Client)
+	EnsureIsLoaded(a *addressdetail.AddressDetail)
 }
 
 type Analysis struct {
@@ -262,8 +210,8 @@ func (result *Analysis) GetOrCreateAddressStats(address *common.Address) *Addres
 	return addrStats
 }
 
-func (analysis *Analysis) EnsureAddressDetailIsLoaded(a *AddressDetail) {
-	analysis.addressDetailService.EnsureIsLoaded(a, analysis.client)
+func (analysis *Analysis) EnsureAddressDetailIsLoaded(a *addressdetail.AddressDetail) {
+	analysis.addressDetailService.EnsureIsLoaded(a)
 }
 
 func (analysis *Analysis) TagTransactionStats(txStats TxStats, tag string, client *ethclient.Client) {
@@ -276,7 +224,7 @@ func (analysis *Analysis) TagTransactionStats(txStats TxStats, tag string, clien
 // AnalysisResult.BuildTopAddresses() sorts the addresses into TopAddresses after all blocks have been added.
 // Ensures that details for all top addresses are queried from blockchain
 func (analysis *Analysis) BuildTopAddresses() {
-	numEntries := GetConfig().NumTopAddresses
+	numEntries := Cfg.NumTopAddresses
 
 	// Convert addresses from map into a sortable array
 	addressArray := make([]AddressStats, 0, len(analysis.Addresses))

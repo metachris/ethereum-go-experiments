@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jmoiron/sqlx"
 	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/go-ethutils/addressdetail"
 )
 
 func NewDatabaseConnection(cfg core.PostgresConfig) *sqlx.DB {
@@ -59,7 +60,7 @@ func (s *StatsService) Close() {
 /*
  * READ OPERATIONS
  */
-func (s *StatsService) Address(address string) (addr core.AddressDetail, found bool) {
+func (s *StatsService) Address(address string) (addr addressdetail.AddressDetail, found bool) {
 	err := s.DB.Get(&addr, "SELECT * FROM address WHERE address=$1", strings.ToLower(address))
 	if err != nil {
 		// fmt.Println("err:", err, addr)

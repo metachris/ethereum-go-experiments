@@ -2,7 +2,7 @@ package database
 
 import (
 	_ "github.com/lib/pq"
-	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/go-ethutils/addressdetail"
 )
 
 var Schema = `
@@ -186,7 +186,7 @@ type AnalysisAddressStatsEntryWithAddress struct {
 	GasFeeFailedTx string
 
 	// Fields from joined address
-	Type     core.AddressType
+	Type     addressdetail.AddressType
 	Name     string
 	Symbol   string
 	Decimals uint8

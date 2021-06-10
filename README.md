@@ -82,6 +82,7 @@ features
 * Top data:
   * sender of flashbots tx
   * addr with highest failed gas fee paid
+  * flashbots vs 0-gas tx
 * Count ERC777, ERC1155 transfers
 * Trace calls between SCs within 1tx
 * Search for "todo"

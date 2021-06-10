@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/metachris/ethereum-go-experiments/consts"
 	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/go-ethutils/utils"
 )
 
 func ProcessBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Client, analysis *core.Analysis) {
@@ -37,10 +38,11 @@ func ProcessBlockWithReceipts(block *BlockWithTxReceipts, client *ethclient.Clie
 }
 
 func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt *types.Receipt, analysis *core.Analysis) {
-	// result.AddTxToTopList(tx, receipt)
+	analysis.AddTxToTopList(tx, receipt)
+
 	txToAddrStats := analysis.GetOrCreateAddressStats(tx.To())
 	txFromAddrStats := analysis.GetOrCreateAddressStats(nil)
-	if from, err := core.GetTxSender(tx); err == nil {
+	if from, err := utils.GetTxSender(tx); err == nil {
 		txFromAddrStats = analysis.GetOrCreateAddressStats(&from)
 	}
 
@@ -72,7 +74,7 @@ func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt
 		// Count failed flashbots tx
 		if len(tx.Data()) > 0 && tx.GasPrice().Uint64() == 0 {
 			analysis.Data.NumFlashbotsTransactionsFailed += 1
-			fmt.Printf("Flashbots fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
+			// fmt.Printf("0-gas/Flashbots fail tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			analysis.TagTransactionStats(core.NewTxStatsFromTransactions(tx, receipt), consts.TxFlashBotsFailed, client)
 			txFromAddrStats.Add1(consts.FlashBotsFailedTxSent)
 		}
@@ -90,7 +92,7 @@ func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt
 	txToAddrStats.Add1(consts.NumTxReceivedSuccess)
 	txToAddrStats.Add(consts.ValueReceivedWei, tx.Value())
 
-	if core.IsBigIntZero(tx.Value()) {
+	if utils.IsBigIntZero(tx.Value()) {
 		analysis.Data.NumTransactionsWithZeroValue += 1
 	}
 
@@ -108,7 +110,7 @@ func ProcessTransaction(client *ethclient.Client, tx *types.Transaction, receipt
 			txFromAddrStats.Add1(consts.NumTxFlashbotsSent)
 			txToAddrStats.Add1(consts.NumTxFlashbotsReceived)
 
-			if core.GetConfig().DebugPrintFlashbotsTx {
+			if core.Cfg.DebugPrintFlashbotsTx {
 				fmt.Printf("Flashbots ok tx: https://etherscan.io/tx/%s\n", tx.Hash())
 			}
 		}

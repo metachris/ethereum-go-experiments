@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/metachris/ethereum-go-experiments/core"
+	"github.com/metachris/go-ethutils/addressdetail"
 )
 
 const ( // iota is reset to 0
@@ -20,7 +20,7 @@ const ( // iota is reset to 0
 const FN_JSON_TOKENS string = "addressdata/tokens.json"
 const FN_JSON_ADDRESSES string = "addressdata/addresses.json"
 
-func GetAddressesFromJson(filename string) []core.AddressDetail {
+func GetAddressesFromJson(filename string) []addressdetail.AddressDetail {
 	fn, _ := filepath.Abs(filename)
 	file, err := os.Open(fn)
 	if err != nil {
@@ -31,7 +31,7 @@ func GetAddressesFromJson(filename string) []core.AddressDetail {
 
 	// Load JSON
 	decoder := json.NewDecoder(file)
-	var addressDetails []core.AddressDetail
+	var addressDetails []addressdetail.AddressDetail
 	err = decoder.Decode(&addressDetails)
 	if err != nil {
 		log.Fatal(err)
@@ -41,15 +41,15 @@ func GetAddressesFromJson(filename string) []core.AddressDetail {
 	for i, v := range addressDetails {
 		addressDetails[i].Address = strings.ToLower(addressDetails[i].Address)
 		if v.Type == "" {
-			addressDetails[i].Type = core.AddressTypePubkey
+			addressDetails[i].Type = addressdetail.AddressTypeWallet
 		}
 	}
 
 	return addressDetails
 }
 
-func GetAddressDetailMap(dataset int) map[string]core.AddressDetail {
-	var list []core.AddressDetail
+func GetAddressDetailMap(dataset int) map[string]addressdetail.AddressDetail {
+	var list []addressdetail.AddressDetail
 	if dataset == DATASET_ADDRESSES {
 		list = GetAddressesFromJson(FN_JSON_ADDRESSES)
 	} else if dataset == DATASET_TOKENS {
@@ -61,7 +61,7 @@ func GetAddressDetailMap(dataset int) map[string]core.AddressDetail {
 	}
 
 	// Convert to map
-	AddressDetailMap := make(map[string]core.AddressDetail)
+	AddressDetailMap := make(map[string]addressdetail.AddressDetail)
 	for _, v := range list {
 		AddressDetailMap[strings.ToLower(v.Address)] = v
 	}
